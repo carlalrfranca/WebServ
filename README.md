@@ -22,7 +22,6 @@ O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S
 - [**Diagrams**](https://app.diagrams.net/) : ferramenta para criação de diagramas.
 
 
-
 ## Frameworks, bibliotecas e outros projetos
 
 - [**LibCurl**](https://curl.se/libcurl/) : biblioteca para transferência URL.
@@ -31,7 +30,8 @@ O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S
 
 ## **Divisão em Quatro etapas**
 
-![matriz de tokens dentro nodo de subcomandos](./WebServ.png)
+
+![principal](./WebServ.png)
 
 
 Essa reformulação inclui a divisão de configuração e leitura do arquivo de configuração como uma parte principal, o que é mais apropriado para lidar com essa tarefa específica.
