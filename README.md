@@ -1,15 +1,12 @@
 # WebServ
-#### Desenvolvido por lfranca- e cleticia
-
 
 O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S [entrada e saída] em um loop de eventos.<br>
 
 ## Sobre o repositório
 
-[`WebServ`](./WEBSERV/) : arquivo contendo o código-fonte da aplicação <br>
+[`WebServ`](./WEBSERV/) : arquivo contendo o código-fonte da aplicação
 
 [`Info`](./concepts.md) : conceitos e aprendizados necessários <br>
-
 
 
 ## Tecnologias utilizadas
@@ -39,18 +36,49 @@ O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S
 
 ![matriz de tokens dentro nodo de subcomandos](./WebServ.png)
 
-## Funções
 
-#### Primeira etapa
+Essa reformulação inclui a divisão de configuração e leitura do arquivo de configuração como uma parte principal, o que é mais apropriado para lidar com essa tarefa específica. <br>
+Dessa forma, a estrutura fica mais organizada e modular, onde cada parte tem sua responsabilidade bem definida, tornando o código mais fácil de desenvolver, depurar e manter.<br> 
+
+#### Configuração e Inicialização
+
+Aqui ficará concentrado as classes e componentes responsáveis por ler o arquivo de configuração, fazer o parse e armazenar as configurações do servidor. <br>
+Essa parte também lidará com a inicialização do servidor e a configuração do socket.
+
+##### Classes
+Classe ConfigurationParser: Responsável por fazer o parse do arquivo de configuração e extrair as configurações relevantes do servidor. <br>
+Classe Configuration: Responsável por armazenar as configurações extraídas do arquivo de configuração, como porta, diretório raiz, etc. <br>
+Classe Server: Representa o servidor web em si e gerencia a inicialização com base nas configurações fornecidas. <br>
+Classe Socket: Encapsula o socket de escuta e outras operações relacionadas à comunicação com os clientes. <br>
 
 
-#### Segunda etapa
+#### HTTP Parser e Responder
+
+Nesta parte, estarão as classes responsáveis pelo parseamento das solicitações HTTP recebidas e pela construção das respostas HTTP.
+
+##### Classes
+Classe HTTPRequest: Representa uma solicitação HTTP recebida e contém informações como método, URL e cabeçalhos. <br>
+Classe HTTPResponse: Representa uma resposta HTTP e contém informações como código de status, cabeçalhos e corpo da resposta. <br>
+Classe HTTPRequestParser: Responsável por fazer o parse das solicitações HTTP recebidas e criar objetos HTTPRequest. <br>
+Classe HTTPResponseBuilder: Responsável por construir objetos HTTPResponse com base nas ações do servidor. <br>
+
+#### Serviços (Static File e CGI)
+
+Nesta parte, ficarão as classes responsáveis por servir arquivos estáticos e executar scripts CGI.
+
+##### Classes
+Classe StaticFileHandler: Responsável por lidar com a entrega de arquivos estáticos para os clientes. <br>
+Classe CGIHandler: Responsável por executar scripts CGI e incluir a saída na resposta HTTP.
 
 
-#### Terceira etapa
+#### Gerenciamento de Conexões e Loop Principal
+Essa parte ficarão concentrados as classes relacionadas ao gerenciamento de conexões com os clientes e ao loop principal do servidor.
+
+##### Classes
+Classe ConnectionManager: Responsável por gerenciar as conexões de cliente, incluindo a adição e remoção de sockets da lista de sockets a serem monitorados. <br>
+Classe ServerLoop: Implementa o loop principal do servidor, aguardando e processando as solicitações dos clientes.
 
 
-#### Quarta etapa
 
 
 
