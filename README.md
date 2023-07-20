@@ -30,53 +30,50 @@ O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S
 - [**Markdown**](https://www.markdownguide.org/) : linguagem de marcação padronizada para formatação de textos Web, usada para escrever a documentação.
 
 
-## Outline
-
-#### **Divisão em Quatro etapas**
+## **Divisão em Quatro etapas**
 
 ![matriz de tokens dentro nodo de subcomandos](./WebServ.png)
 
 
-Essa reformulação inclui a divisão de configuração e leitura do arquivo de configuração como uma parte principal, o que é mais apropriado para lidar com essa tarefa específica. <br>
+Essa reformulação inclui a divisão de configuração e leitura do arquivo de configuração como uma parte principal, o que é mais apropriado para lidar com essa tarefa específica.
 Dessa forma, a estrutura fica mais organizada e modular, onde cada parte tem sua responsabilidade bem definida, tornando o código mais fácil de desenvolver, depurar e manter.<br> 
 
-#### Configuração e Inicialização
+### Configuração e Inicialização
 
-Aqui ficará concentrado as classes e componentes responsáveis por ler o arquivo de configuração, fazer o parse e armazenar as configurações do servidor. <br>
+Aqui ficará concentrado as classes e componentes responsáveis por ler o arquivo de configuração, fazer o parse e armazenar as configurações do servidor.
 Essa parte também lidará com a inicialização do servidor e a configuração do socket.
 
-##### Classes
-Classe ConfigurationParser: Responsável por fazer o parse do arquivo de configuração e extrair as configurações relevantes do servidor. <br>
-Classe Configuration: Responsável por armazenar as configurações extraídas do arquivo de configuração, como porta, diretório raiz, etc. <br>
-Classe Server: Representa o servidor web em si e gerencia a inicialização com base nas configurações fornecidas. <br>
-Classe Socket: Encapsula o socket de escuta e outras operações relacionadas à comunicação com os clientes. <br>
+### Classes
+ConfigurationParser: Responsável por fazer o parse do arquivo de configuração e extrair as configurações relevantes do servidor. <br>
+Configuration: Responsável por armazenar as configurações extraídas do arquivo de configuração, como porta, diretório raiz, etc. <br>
+Server: Representa o servidor web em si e gerencia a inicialização com base nas configurações fornecidas. <br>
+Socket: Encapsula o socket de escuta e outras operações relacionadas à comunicação com os clientes.
 
-
-#### HTTP Parser e Responder
+### HTTP Parser e Responder
 
 Nesta parte, estarão as classes responsáveis pelo parseamento das solicitações HTTP recebidas e pela construção das respostas HTTP.
 
-##### Classes
-Classe HTTPRequest: Representa uma solicitação HTTP recebida e contém informações como método, URL e cabeçalhos. <br>
-Classe HTTPResponse: Representa uma resposta HTTP e contém informações como código de status, cabeçalhos e corpo da resposta. <br>
-Classe HTTPRequestParser: Responsável por fazer o parse das solicitações HTTP recebidas e criar objetos HTTPRequest. <br>
-Classe HTTPResponseBuilder: Responsável por construir objetos HTTPResponse com base nas ações do servidor. <br>
+### Classes
+HTTPRequest: Representa uma solicitação HTTP recebida e contém informações como método, URL e cabeçalhos. <br>
+HTTPResponse: Representa uma resposta HTTP e contém informações como código de status, cabeçalhos e corpo da resposta. <br>
+HTTPRequestParser: Responsável por fazer o parse das solicitações HTTP recebidas e criar objetos HTTPRequest. <br>
+HTTPResponseBuilder: Responsável por construir objetos HTTPResponse com base nas ações do servidor.
 
-#### Serviços (Static File e CGI)
+### Serviços (Static File e CGI)
 
 Nesta parte, ficarão as classes responsáveis por servir arquivos estáticos e executar scripts CGI.
 
-##### Classes
-Classe StaticFileHandler: Responsável por lidar com a entrega de arquivos estáticos para os clientes. <br>
-Classe CGIHandler: Responsável por executar scripts CGI e incluir a saída na resposta HTTP.
+### Classes
+StaticFileHandler: Responsável por lidar com a entrega de arquivos estáticos para os clientes. <br>
+CGIHandler: Responsável por executar scripts CGI e incluir a saída na resposta HTTP.
 
+### Gerenciamento de Conexões e Loop Principal
 
-#### Gerenciamento de Conexões e Loop Principal
-Essa parte ficarão concentrados as classes relacionadas ao gerenciamento de conexões com os clientes e ao loop principal do servidor.
+Essa parte ficarão concentrados as classes relacionadas ao gerenciamento de conexões com os clientes e ao loop principal do servidor.<br>
 
-##### Classes
-Classe ConnectionManager: Responsável por gerenciar as conexões de cliente, incluindo a adição e remoção de sockets da lista de sockets a serem monitorados. <br>
-Classe ServerLoop: Implementa o loop principal do servidor, aguardando e processando as solicitações dos clientes.
+### Classes
+ConnectionManager: Responsável por gerenciar as conexões de cliente, incluindo a adição e remoção de sockets da lista de sockets a serem monitorados. <br>
+ServerLoop: Implementa o loop principal do servidor, aguardando e processando as solicitações dos clientes.
 
 
 
