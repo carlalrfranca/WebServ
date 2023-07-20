@@ -37,7 +37,7 @@ O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S
 
 #### **Divisão em Quatro etapas**
 
-![matriz de tokens dentro nodo de subcomandos](./gifs_doc/subcmd_node_struct.png)
+![matriz de tokens dentro nodo de subcomandos](./gifs_doc/WebServ.png)
 
 ## Funções
 
