@@ -1,22 +1,103 @@
 # WebServ
-
-A proposta é criar um servidor HTTP usando Multiplexação de E/S [entrada e saída] em um loop de eventos.
-
-
-## Multiplexação
-O prpósito é transmitir simultaneamente dois ou mais sinais individuais, de forma simultanea por meio de um único canal de comunicação.
-
-## O Loop de Eventos
+#### Desenvolvido por lfranca- e cleticia
 
 
-## Sockets
-"É como uma tomada. Diferentes formatos e diferentes padrões de buracos. E somente plugs corretos se encaixam em determinadas tomadas.O conjunto de endereço IP e porta de saída, do seu navegador conectando em um site e o endereço IP e a porta de entrada do site - as quatro informações é o mínimo para definir um socket. Ou seja, é o plug e a tomada conectada.
-o seu 192.168.1.200:4987  e do site 142.250.219.206:443
-Esse é o conjunto de informações necessário que você precisa para formar uma conexão de rede entre dois processos que é o caminho onde os pacotes vão trafegar.
-Sockets é uma forma de comunicação entre processos."
+O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S [entrada e saída] em um loop de eventos.<br>
+
+## Sobre o repositório
+
+[`WebServ`](./WEBSERV/) : arquivo contendo o código-fonte da aplicação <br>
+
+[`Info`](./concepts.md) : conceitos e aprendizados necessários <br>
 
 
 
+## Tecnologias utilizadas
 
-## Referências
+- [**Analysis tool**](https://valgrind.org/docs/manual/manual-core-adv.html) : software para depuração e localização de erros.
+- [**C++**](https://cplusplus.com/) : linguagem que suporta o paradigma de orientação à objetos. 
+- [**Curl**](https://curl.se/) : ferramenta de linha de comando para transmissão de dados. Protocolos usados : HTTP, DNS, ICMP (como utilitário PING).
+- [**Git**](https://git-scm.com/) : para controle das versões dos arquivos.
+- [**Github**](https://github.com/carlalrfranca/WebServ) : repositório para os arquivos.
+- [**Makefile**](https://www.gnu.org/software/make/) : script aplicado para automatizar a compilação do projeto.
+- [**Trello**](https://trello.com/b/S7qoJpEW/labs) : ferramenta visual para planejamento e organização.
+- [**Stackedit**](https://stackedit.io/) : editor Markdown para escrever a documenntação do projeto.
+- [**Vscode**](https://code.visualstudio.com/) : editor de código-fonte.
+- [**Diagrams**](https://app.diagrams.net/) : ferramenta para criação de diagramas.
 
+
+
+## Frameworks, bibliotecas e outros projetos
+
+- [**LibCurl**](https://curl.se/libcurl/) : biblioteca para transferência URL.
+- [**Markdown**](https://www.markdownguide.org/) : linguagem de marcação padronizada para formatação de textos Web, usada para escrever a documentação.
+
+
+## Outline
+
+#### **Divisão em Quatro etapas**
+
+![matriz de tokens dentro nodo de subcomandos](./gifs_doc/subcmd_node_struct.png)
+
+## Funções
+
+#### Primeira etapa
+
+
+#### Segunda etapa
+
+
+#### Terceira etapa
+
+
+#### Quarta etapa
+
+
+
+
+## Possíveis Soluções
+
+
+## Acesso
+
+#### 1. Repo
+
+`git clone https://github.com/carlalrfranca/WebServ.git`
+
+
+#### 2. Curl
+
+`sudo apt-get install -y libcurl4-gnutls-dev`
+
+
+#### 3. Compilação
+
+`cd webserv` : acessa o diretório <br>
+`make` : compila o projeto <br>
+`make clean` : remove objetos <br>
+`make fclean` : remove objetos e arquivos binários <br>
+`make re` : recompila <br>
+
+
+#### 4. Códigos usados e depuração
+
+
+- Sintaxe do comandos usados : ```$ curl [OPÇÕES] [URL]```
+
+| Comando       | Descrição                                                           |
+|:--------------|:--------------------------------------------------------------------|
+| -i            | <sub> retorna o corpo e a header </sub>                             |
+| -i  --include | <sub> retorna a header no output </sub>                             |
+| -I            | <sub> retorna a header  </sub>                                      |
+| -d  --data	| <sub> dados a serem enviados no POST   </sub>                       |
+| -H  --header  | <sub> envia header da requisição   </sub>                           |
+| -X  --request |	<sub> especifica o método HTTP a ser usado na requisição </sub>   |
+
+
+- Depuração Valgrind : `valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all`
+
+| Comando               | Descrição                                                  |
+|:----------------------|:-----------------------------------------------------------|
+| --track-origins=yes   | <sub> rastreia as origens de valores não iniciados </sub>  |
+| --leak-check=full     | <sub> retorna o detalhamento dos vazamentos </sub>         |
+| --show-leak-kinds=all | <sub> relatório completo dos vazamentos </sub>             |
