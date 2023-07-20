@@ -4,9 +4,8 @@ O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S
 
 ## Sobre o repositório
 
-[`WebServ`](./WEBSERV/) : arquivo contendo o código-fonte da aplicação
-
-[`Info`](./concepts.md) : conceitos e aprendizados necessários <br>
+[`WebServ`](./WEBSERV/) : arquivo contendo o código-fonte da aplicação.
+[`Info`](./concepts.md) : conceitos e aprendizados necessários.
 
 
 ## Tecnologias utilizadas
@@ -38,7 +37,7 @@ O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S
 Essa reformulação inclui a divisão de configuração e leitura do arquivo de configuração como uma parte principal, o que é mais apropriado para lidar com essa tarefa específica.
 Dessa forma, a estrutura fica mais organizada e modular, onde cada parte tem sua responsabilidade bem definida, tornando o código mais fácil de desenvolver, depurar e manter.<br> 
 
-### Configuração e Inicialização
+## Configuração e Inicialização
 
 Aqui ficará concentrado as classes e componentes responsáveis por ler o arquivo de configuração, fazer o parse e armazenar as configurações do servidor.
 Essa parte também lidará com a inicialização do servidor e a configuração do socket.
@@ -49,7 +48,7 @@ Configuration: Responsável por armazenar as configurações extraídas do arqui
 Server: Representa o servidor web em si e gerencia a inicialização com base nas configurações fornecidas. <br>
 Socket: Encapsula o socket de escuta e outras operações relacionadas à comunicação com os clientes.
 
-### HTTP Parser e Responder
+## HTTP Parser e Responder
 
 Nesta parte, estarão as classes responsáveis pelo parseamento das solicitações HTTP recebidas e pela construção das respostas HTTP.
 
@@ -59,7 +58,7 @@ HTTPResponse: Representa uma resposta HTTP e contém informações como código 
 HTTPRequestParser: Responsável por fazer o parse das solicitações HTTP recebidas e criar objetos HTTPRequest. <br>
 HTTPResponseBuilder: Responsável por construir objetos HTTPResponse com base nas ações do servidor.
 
-### Serviços (Static File e CGI)
+## Serviços (Static File e CGI)
 
 Nesta parte, ficarão as classes responsáveis por servir arquivos estáticos e executar scripts CGI.
 
@@ -67,17 +66,13 @@ Nesta parte, ficarão as classes responsáveis por servir arquivos estáticos e 
 StaticFileHandler: Responsável por lidar com a entrega de arquivos estáticos para os clientes. <br>
 CGIHandler: Responsável por executar scripts CGI e incluir a saída na resposta HTTP.
 
-### Gerenciamento de Conexões e Loop Principal
+## Gerenciamento de Conexões e Loop Principal
 
 Essa parte ficarão concentrados as classes relacionadas ao gerenciamento de conexões com os clientes e ao loop principal do servidor.<br>
 
 ### Classes
 ConnectionManager: Responsável por gerenciar as conexões de cliente, incluindo a adição e remoção de sockets da lista de sockets a serem monitorados. <br>
 ServerLoop: Implementa o loop principal do servidor, aguardando e processando as solicitações dos clientes.
-
-
-
-
 
 
 ## Possíveis Soluções
@@ -126,3 +121,6 @@ ServerLoop: Implementa o loop principal do servidor, aguardando e processando as
 | --track-origins=yes   | <sub> rastreia as origens de valores não iniciados </sub>  |
 | --leak-check=full     | <sub> retorna o detalhamento dos vazamentos </sub>         |
 | --show-leak-kinds=all | <sub> relatório completo dos vazamentos </sub>             |
+
+
+#### 5. Comandos usados
