@@ -1,14 +1,14 @@
-# WebServ
+# **WebServ**
 
-O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S [entrada e saída] em um loop de eventos.<br>
+O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S [entrada e saída] em um loop de eventos. <br>
 
-## Sobre o repositório
+## **Sobre o repositório**
 
-[`WebServ`](./WEBSERV/) : arquivo contendo o código-fonte da aplicação.
-[`Info`](./concepts.md) : conceitos e aprendizados necessários.
+[`WebServ`](./WEBSERV/): arquivo contendo o código-fonte da aplicação. <br>
+[`Info`](./concepts.md): conceitos e aprendizados necessários.
 
 
-## Tecnologias utilizadas
+## **Tecnologias utilizadas**
 
 - [**Analysis tool**](https://valgrind.org/docs/manual/manual-core-adv.html) : software para depuração e localização de erros.
 - [**C++**](https://cplusplus.com/) : linguagem que suporta o paradigma de orientação à objetos. 
@@ -16,16 +16,17 @@ O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S
 - [**Git**](https://git-scm.com/) : para controle das versões dos arquivos.
 - [**Github**](https://github.com/carlalrfranca/WebServ) : repositório para os arquivos.
 - [**Makefile**](https://www.gnu.org/software/make/) : script aplicado para automatizar a compilação do projeto.
-- [**Trello**](https://trello.com/b/S7qoJpEW/labs) : ferramenta visual para planejamento e organização.
+- [**Trello**](https://trello.com/c/IVK7hJ26/13-2007) : ferramenta visual para planejamento e organização.
 - [**Stackedit**](https://stackedit.io/) : editor Markdown para escrever a documenntação do projeto.
 - [**Vscode**](https://code.visualstudio.com/) : editor de código-fonte.
 - [**Diagrams**](https://app.diagrams.net/) : ferramenta para criação de diagramas.
-
-
-## Frameworks, bibliotecas e outros projetos
-
-- [**LibCurl**](https://curl.se/libcurl/) : biblioteca para transferência URL.
 - [**Markdown**](https://www.markdownguide.org/) : linguagem de marcação padronizada para formatação de textos Web, usada para escrever a documentação.
+
+
+## **Métodos e verbos usados**
+
+
+## **Árvore do Diretório e a lógica de organização**
 
 
 ## **Divisão em Quatro etapas**
@@ -33,11 +34,10 @@ O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S
 
 ![principal](./WebServ.png)
 
-
 Essa reformulação inclui a divisão de configuração e leitura do arquivo de configuração como uma parte principal, o que é mais apropriado para lidar com essa tarefa específica.
 Dessa forma, a estrutura fica mais organizada e modular, onde cada parte tem sua responsabilidade bem definida, tornando o código mais fácil de desenvolver, depurar e manter.<br> 
 
-## Configuração e Inicialização
+## **Configuração e Inicialização**
 
 Aqui ficará concentrado as classes e componentes responsáveis por ler o arquivo de configuração, fazer o parse e armazenar as configurações do servidor.
 Essa parte também lidará com a inicialização do servidor e a configuração do socket.
@@ -48,7 +48,7 @@ Configuration: Responsável por armazenar as configurações extraídas do arqui
 Server: Representa o servidor web em si e gerencia a inicialização com base nas configurações fornecidas. <br>
 Socket: Encapsula o socket de escuta e outras operações relacionadas à comunicação com os clientes.
 
-## HTTP Parser e Responder
+## **HTTP Parser e Responder**
 
 Nesta parte, estarão as classes responsáveis pelo parseamento das solicitações HTTP recebidas e pela construção das respostas HTTP.
 
@@ -58,7 +58,7 @@ HTTPResponse: Representa uma resposta HTTP e contém informações como código 
 HTTPRequestParser: Responsável por fazer o parse das solicitações HTTP recebidas e criar objetos HTTPRequest. <br>
 HTTPResponseBuilder: Responsável por construir objetos HTTPResponse com base nas ações do servidor.
 
-## Serviços (Static File e CGI)
+## **Serviços (Static File e CGI)**
 
 Nesta parte, ficarão as classes responsáveis por servir arquivos estáticos e executar scripts CGI.
 
@@ -66,7 +66,7 @@ Nesta parte, ficarão as classes responsáveis por servir arquivos estáticos e 
 StaticFileHandler: Responsável por lidar com a entrega de arquivos estáticos para os clientes. <br>
 CGIHandler: Responsável por executar scripts CGI e incluir a saída na resposta HTTP.
 
-## Gerenciamento de Conexões e Loop Principal
+## **Gerenciamento de Conexões e Loop Principal**
 
 Essa parte ficarão concentrados as classes relacionadas ao gerenciamento de conexões com os clientes e ao loop principal do servidor.<br>
 
@@ -75,7 +75,7 @@ ConnectionManager: Responsável por gerenciar as conexões de cliente, incluindo
 ServerLoop: Implementa o loop principal do servidor, aguardando e processando as solicitações dos clientes.
 
 
-## Possíveis Soluções
+## **Erros encontrados e Soluções**
 
 
 ## Acesso
