@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/24 14:15:32 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/24 22:37:49 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,33 +34,33 @@ class Server {
 
     public:
         
-    Server(std::string filename);
-    ~Server();
-    const int& getFD()const;
-    
-    void loadConfiguration();
+        Server(std::string filename);
+        ~Server();
+        const int& getFD()const;
+        void loadConfiguration();
          
     private:
         
-    const int _webServSocket; //FD
-    std::string *_response; //talvez na response class
-    std::string _cssContent;
-    struct sockaddr_in _serverAddress = {0};
-
-    int bindSocketListenConnections(); //vincula socket a um endereço e porta 
+        const int _webServSocket; //FD
+        std::string *_response; //talvez na response class
+        std::string _cssContent;
+        struct sockaddr_in _serverAddress = {0};
+        std::string _ipAddress;
+        int _portNumber;
     
-    class ServerException: public std::exception{
-
-    public:
-    ServerException(const char* errorMessage) : message(errorMessage){}
-    virtual const char* what()const throw(){
-        return message;
-    }
-    
-    private:
-    const char* message;
-    };
+        int bindSocketListenConnections(); //vincula socket a um endereço e porta 
+        class ServerException: public std::exception{
+        public:
+            ServerException(const char* errorMessage) : message(errorMessage){}
+            virtual const char* what()const throw(){
+                return message;
+            }
+        
+        private:
+            const char* message;
+        
+        };
 };
 //esse aqui está mais para depuração e apresentação das informações
 std::ostream& operator<<(std::ostream& output, const Server& instance);
-#endif
+#endifit commit -m
