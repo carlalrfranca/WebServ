@@ -23,10 +23,9 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <cstdlib>
 
 #include "SocketS.hpp"
-
-class SocketS; // Declaração avançada de classe (forward declaration)
 
 class WebServ {
 
@@ -42,8 +41,7 @@ class WebServ {
         std::string _nameConfigFile;
         SocketS     _serverSocket;
         socklen_t   _clientAddressLength;
-        
-        WebServ& operator=(const WebServ& other);
+
         struct sockaddr_in clientAddress;    
 
         class WebServException: public std::exception{
@@ -56,3 +54,11 @@ class WebServ {
 //esse aqui está mais para depuração e apresentação das informações
 std::ostream& operator<<(std::ostream& output, const WebServ &rhs);
 #endif
+
+
+/*
+
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp -o executavel
+    ./executavel ./cfgs/default.config
+
+*/

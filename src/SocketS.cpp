@@ -6,13 +6,19 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/26 17:22:38 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/27 01:10:59 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/SocketS.hpp"
 
 SocketS::SocketS(){
+    _webServSocket = 0;
+    _portNumber = 0;
+    _ipAddress = "";
+    _response = "";
+    _cssContent = "";
+}
 
 
     // aqui vão ser chamados os métodos (que serão criados ainda)
@@ -31,7 +37,6 @@ SocketS::SocketS(){
     server_address.sin_port = htons(8080); 
     server_address.sin_addr.s_addr = INADDR_ANY;
     */
-}
 
 SocketS::~SocketS(){}
 
@@ -57,32 +62,31 @@ const int& SocketS::getPort(void)const{
 const std::string& SocketS::getAddress(void)const{
     return _ipAddress;
 }
-        
-
-int SocketS::bindSocketListenConnections(){
-
-    try{
-        if(bind(_webServSocket,(struct sockaddr*)&_serverAddress, sizeof(_serverAddress)) == -1){
-            throw SocketSException("Error: when binding socket.");
-        }
-        if(listen(_webServSocket, 5) == -1){
-            throw SocketSException("Error: when listening socket.");
-        }
- 
-    }catch(const SocketSException& e){
-        std::cerr << e.what() << std::endl;
-        close(_webServSocket);
-        return -1;
-    }
-    return 0; //coloquei 1 mais para tirar a linha vermelha
-}
-
-std::ostream& operator<<(std::ostream& output, const SocketS& instance){
-    output << "SocketS Info:" << std::endl;
-    output << "WebServ Socket : " << instance.getFD() << std::endl;
-    output << "Socket FD: " << instance.getFD() << std::endl;
-    return (output);
-}
+       
+// int SocketS::bindSocketListenConnections(){
+// 
+    // try{
+        // if(bind(_webServSocket,(struct sockaddr*)&_serverAddress, sizeof(_serverAddress)) == -1){
+            // throw SocketSException("Error: when binding socket.");
+        // }
+        // if(listen(_webServSocket, 5) == -1){
+            // throw SocketSException("Error: when listening socket.");
+        // }
+//  
+    // }catch(const SocketSException& e){
+        // std::cerr << e.what() << std::endl;
+        // close(_webServSocket);
+        // return -1;
+    // }
+    // return 0; //coloquei 1 mais para tirar a linha vermelha
+// }
+// 
+// std::ostream& operator<<(std::ostream& output, const SocketS& instance){
+    // output << "SocketS Info:" << std::endl;
+    // output << "WebServ Socket : " << instance.getFD() << std::endl;
+    // output << "Socket FD: " << instance.getFD() << std::endl;
+    // return (output);
+// }
 
 
     /*
@@ -100,3 +104,13 @@ std::ostream& operator<<(std::ostream& output, const SocketS& instance){
     }
     
     */
+    
+    
+    
+    
+/*
+
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp -o executavel
+    ./executavel ./cfgs/default.config
+
+*/

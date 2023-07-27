@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/26 16:16:52 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/27 01:11:11 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,14 @@ int main(int argc, char **argv){
     return 0;
 }
 
+
+
+/*
+
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp -o executavel
+    ./executavel ./cfgs/default.config
+
+*/
 
 
 /*

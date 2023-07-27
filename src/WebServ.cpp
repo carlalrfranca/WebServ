@@ -6,66 +6,106 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/26 22:01:55 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/27 18:51:51 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/WebServ.hpp"
+#include "../inc/SocketS.hpp"
 
 WebServ::WebServ(std::string filename){
-
     std::ifstream fileToParse;
-    
     fileToParse.open(filename.c_str());
+    
     if(fileToParse.is_open()){
         std::string line;
-        size_t posPort = line.find("80");
-        size_t pos = line.find("listen");
+        bool foundDefaultServer = false;
 
         while(getline(fileToParse, line)){
             std::cout << line << std::endl;
-            if(pos != std::string::npos){
+            
+            size_t posListen = line.find("listen");
+            if(posListen != std::string::npos){
+                std::cout << " --------------------------------- " << std::endl;
+                std::cout << "[TESTE]Posição Listen: " << posListen << std::endl;
+                
+                size_t posIniIP = line.find_first_of("0123456789.:", posListen, + 6); // 6 para pular a palavra listen
+                if(posIniIP != std::string::npos){
+                    size_t posFinIP = line.find_first_of(" \t\n\r\f\v;", posIniIP);
+                    std::string ipAddress = line.substr(posIniIP, posFinIP - posIniIP); // Extrai o endereço IP
+    
+                    if(ipAddress.size() >= 3 && ipAddress.substr(ipAddress.size() - 3) == ":80") // Remove o ":80"
+                        ipAddress = ipAddress.substr(0, ipAddress.size() - 3);
+                        
+                    if(!foundDefaultServer){
+                        _serverSocket.setAddress(ipAddress);
+                        std::cout << "[TESTE]Endereço IP: " << ipAddress << std::endl;
+                        foundDefaultServer = true;
+                        // e se o listen for http://localhost? 
+                    }
+                }
+                    
+                size_t posPort = line.find("80");
                 if(posPort != std::string::npos){
                     std::string eighty = line.substr(posPort, 2);
                     int intPort = std::atoi(eighty.c_str());
+                    std::cout << "[TESTE]Posição da Porta: " << posPort << std::endl;
+                    std::cout << "[TESTE]Porta: " << eighty << std::endl;
+                    std::cout << " --------------------------------- " << std::endl;
                     _serverSocket.setPort(intPort);
-                }  
-            }  
-            size_t posIP = line.find_first_of("0123456789.", pos);
-            size_t posDelimiter = line.rfind(":", posPort - 1);
-            if(posIP && posDelimiter){
-                if(posIP != std::string::npos && posDelimiter != std::string::npos){
-                    std::string ipAddress = line.substr(posIP, (posDelimiter - 1) - posIP);
-                }
-            
+                    _serverSocket.setAddress("0.0.0.0");
+                }else
+                    _serverSocket.setPort(80);
             }
-            
-        }
+            // continua para segunda linha
+            size_t posServerName = line.find("server_name");
+            if(posServerName != std::string::npos){
+                std::cout << " --------------------------------- " << std::endl;
+                std::cout << "[TESTE]Posição server_name: " << line << posServerName << std::endl;
+            }//fim do if maior
+        }// final do while
+        std::cout << "[TESTE] ENDEREÇO ARMAZENADO: "<< _serverSocket.getAddress() << "\n";
+        std::cout << "[TESTE] PORTA ARMAZENADA: "<< _serverSocket.getPort() << "\n";
         fileToParse.close();
-    } else{
+    }else //final if de abertura do arquivo
         std::cout << "Erro ao abrir" << std::endl;
-    }
 }
 
 WebServ::WebServ(){}
 
-
 WebServ::~WebServ(){}
-
-WebServ& WebServ::operator=(const WebServ& other){
-    if (this != &other) 
-        return *this;
-
-}
 
 void WebServ::mainLoop(){
 
     std::cout << "chegamos na mainloop parsa!" << std::endl;
 }
-        
+
+
+
 /*
 
- g++ -std=c++98 src/main.cpp src/WebServ.cpp -I inc/ -o executavel
+    if(posIP && posDelimiter){
+        if(posIP != std::string::npos || posDelimiter != std::string::npos){
+            std::string ipAddress = line.substr(posIP, (posDelimiter - 1) - posIP);
+            std::cout << "ipAddress" << ipAddress << std::endl;
+        }
+        else 
+            std::cout << "realmente" << std::endl;
+            
+                
+                // ou so tem a porta
+                // ou so tem o endereço
+                // ou tem a porta e o endereço
+            
+          
+                // found port
+                // found address
+
+        
+*/
+/*
+
+ g++ -std=c++98 src/main.cpp src/WebServ.cpp src/SocketS.cpp -I inc/ -o executavel
  ./executavel ./cfgs/default.config 
 
 
