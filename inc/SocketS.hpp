@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   SocketS.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/24 22:37:49 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/26 17:22:33 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,30 +28,38 @@
 class WebServ;
 
 // criação do sockt, vinculação com o endereço e a escuta
-// tudo em relação ao socket do server
+// tudo em relação ao socket do SocketS
 
-class Server {
+class SocketS {
 
     public:
         
-        Server(std::string filename);
-        ~Server();
+        SocketS();
+        ~SocketS();
         const int& getFD()const;
         void loadConfiguration();
+        
+        void setPort(int portNumber);
+        void setAddress(std::string ipAddress);
+        
+        const int& getPort(void)const;
+        const std::string& getAddress(void)const;
          
     private:
         
-        const int _webServSocket; //FD
-        std::string *_response; //talvez na response class
-        std::string _cssContent;
-        struct sockaddr_in _serverAddress = {0};
-        std::string _ipAddress;
-        int _portNumber;
+        const int       _webServSocket; //FD
+        int             _portNumber;
+        std::string     _ipAddress;
+        std::string     *_response; //talvez na response class
+        std::string     _cssContent;
+        //struct sockaddr_in _socketAddress;
     
-        int bindSocketListenConnections(); //vincula socket a um endereço e porta 
-        class ServerException: public std::exception{
+        int bindSocketSListenConnections(); //vincula socket a um endereço e porta 
+        
+        
+        class SocketSException: public std::exception{
         public:
-            ServerException(const char* errorMessage) : message(errorMessage){}
+            SocketSException(const char* errorMessage) : message(errorMessage){}
             virtual const char* what()const throw(){
                 return message;
             }
@@ -62,5 +70,5 @@ class Server {
         };
 };
 //esse aqui está mais para depuração e apresentação das informações
-std::ostream& operator<<(std::ostream& output, const Server& instance);
-#endifit commit -m
+std::ostream& operator<<(std::ostream& output, const SocketS& instance);
+#endif

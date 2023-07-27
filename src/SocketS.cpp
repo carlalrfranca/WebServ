@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
+/*   SocketS.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/24 14:05:11 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/26 17:22:38 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/Server.hpp"
+#include "../inc/SocketS.hpp"
 
-Server::Server(std::string filename){
+SocketS::SocketS(){
 
 
     // aqui vão ser chamados os métodos (que serão criados ainda)
@@ -33,26 +33,43 @@ Server::Server(std::string filename){
     */
 }
 
-Server::~Server(){}
+SocketS::~SocketS(){}
 
-const int& Server::getFD()const{
+const int& SocketS::getFD()const{
 
     return _webServSocket;
 }
 
-void Server::loadConfiguration(){}
+void SocketS::loadConfiguration(){}
 
-int Server::bindSocketListenConnections(){
+
+void SocketS::setPort(int portNumber){
+    this->_portNumber = portNumber;
+}
+
+void SocketS::setAddress(std::string ipAddress){
+    this->_ipAddress = ipAddress;
+}
+
+const int& SocketS::getPort(void)const{
+    return _portNumber;
+}
+const std::string& SocketS::getAddress(void)const{
+    return _ipAddress;
+}
+        
+
+int SocketS::bindSocketListenConnections(){
 
     try{
         if(bind(_webServSocket,(struct sockaddr*)&_serverAddress, sizeof(_serverAddress)) == -1){
-            throw ServerException("Error: when binding socket.");
+            throw SocketSException("Error: when binding socket.");
         }
         if(listen(_webServSocket, 5) == -1){
-            throw ServerException("Error: when listening socket.");
+            throw SocketSException("Error: when listening socket.");
         }
  
-    }catch(const ServerException& e){
+    }catch(const SocketSException& e){
         std::cerr << e.what() << std::endl;
         close(_webServSocket);
         return -1;
@@ -60,8 +77,8 @@ int Server::bindSocketListenConnections(){
     return 0; //coloquei 1 mais para tirar a linha vermelha
 }
 
-std::ostream& operator<<(std::ostream& output, const Server& instance){
-    output << "Server Info:" << std::endl;
+std::ostream& operator<<(std::ostream& output, const SocketS& instance){
+    output << "SocketS Info:" << std::endl;
     output << "WebServ Socket : " << instance.getFD() << std::endl;
     output << "Socket FD: " << instance.getFD() << std::endl;
     return (output);

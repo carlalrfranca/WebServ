@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/23 14:08:02 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/26 15:08:13 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,4 +59,4 @@ class Response {
 
 std::ostream& operator<<(std::ostream& out, Response const& rhs);
 
-#endif //_                                                                          */
+#endif                                                                       */

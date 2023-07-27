@@ -18,24 +18,32 @@
 #include <netdb.h>
 #include <iostream>
 #include <exception>
-
+#include <fstream>
+#include <string>
 #include <string>
 #include <vector>
-#include "Server.hpp"
+#include <sstream>
+
+#include "SocketS.hpp"
+
+class SocketS; // Declaração avançada de classe (forward declaration)
 
 class WebServ {
 
     public:
+        WebServ();
         WebServ(std::string filename);
         ~WebServ();
         void mainLoop();
         
     private:
     
-        int _clientSocket;
+        int         _clientSocket;
         std::string _nameConfigFile;
-        Server _WebServ;
-        socklen_t _clientAddressLength;
+        SocketS     _serverSocket;
+        socklen_t   _clientAddressLength;
+        
+        WebServ& operator=(const WebServ& other);
         struct sockaddr_in clientAddress;    
 
         class WebServException: public std::exception{

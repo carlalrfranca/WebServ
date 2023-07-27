@@ -6,23 +6,25 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/23 21:29:41 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/26 16:16:52 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include <cstdlib>
-#include "../inc/Server.hpp"
+#include "../inc/SocketS.hpp"
+#include "../inc/WebServ.hpp"
 
 int main(int argc, char **argv){
 
+    std::string filename(argv[1]);
     if(argc != 2){
         std::cerr << "Error" << std::endl;
         exit(EXIT_FAILURE);
     }
     try
     {
-        WebServ webServ(argv[1]);
+        WebServ WebServ(filename);
     }
     catch(const std::exception& e)
     {
