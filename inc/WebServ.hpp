@@ -13,19 +13,20 @@
 #ifndef _WEBSERV_HPP_
 #define _WEBSERV_HPP_
 
+#include <iostream>
+#include <unistd.h>
 #include <string>
 #include <cstdlib>
 #include <netdb.h>
-#include <iostream>
 #include <exception>
 #include <fstream>
 #include <string>
-#include <string>
-#include <vector>
+//#include <vector>
 #include <sstream>
 #include <cstdlib>
 
 #include "SocketS.hpp"
+#include "ConfigParser.hpp"
 
 class WebServ {
 
@@ -34,13 +35,14 @@ class WebServ {
         WebServ(std::string filename);
         ~WebServ();
         void mainLoop();
+        SocketS         _serverSocket;
         
     private:
     
-        int         _clientSocket;
-        std::string _nameConfigFile;
-        SocketS     _serverSocket;
-        socklen_t   _clientAddressLength;
+        int             _clientSocket;
+        std::string     _nameConfigFile;
+        ConfigParser    _configParser;
+        socklen_t       _clientAddressLength;
 
         struct sockaddr_in clientAddress;    
 

@@ -6,30 +6,60 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/27 18:51:51 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/28 18:17:21 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/WebServ.hpp"
-#include "../inc/SocketS.hpp"
+#include "../inc/ConfigParser.hpp"
+
+WebServ::WebServ(){}
+
+WebServ::~WebServ(){}
 
 WebServ::WebServ(std::string filename){
+
     std::ifstream fileToParse;
     fileToParse.open(filename.c_str());
-    
     if(fileToParse.is_open()){
         std::string line;
-        bool foundDefaultServer = false;
-
         while(getline(fileToParse, line)){
-            std::cout << line << std::endl;
-            
-            size_t posListen = line.find("listen");
-            if(posListen != std::string::npos){
-                std::cout << " --------------------------------- " << std::endl;
-                std::cout << "[TESTE]Posição Listen: " << posListen << std::endl;
+            //verifica a presença de diretivas e chamar os métodos
+            if(line.find("listen") != std::string::npos){
+                _configParser.processListen(line, *this);
+            }else if (line.find("server_name") != std::string::npos){
+                _configParser.processServerName(line);
+            }else if (line.find("host") != std::string::npos){
+                _configParser.processHost(line);
+            }else if (line.find("location") != std::string::npos){
+                _configParser.processLocation(line);
+            }
+        }
+        //método para os casos da ausencia de diretivas e aplicação da configuração default
+        _configParser.applyDefaultValues();
+        fileToParse.close();
                 
-                size_t posIniIP = line.find_first_of("0123456789.:", posListen, + 6); // 6 para pular a palavra listen
+    }else
+        std::cout << "[Error] : file cannot be opened" << std::endl;       
+}               
+
+
+void WebServ::mainLoop(){
+
+    std::cout << "chegamos na mainloop parsa!" << std::endl;
+}
+
+
+/*
+
+ g++ -std=c++98 src/main.cpp src/WebServ.cpp src/SocketS.cpp -I inc/ -o executavel
+ ./executavel ./cfgs/default.config 
+
+
+*/        
+        
+/
+                    size_t posIniIP = line.find_first_of("0123456789.:", posListen, + 6); // 6 para pular a palavra listen
                 if(posIniIP != std::string::npos){
                     size_t posFinIP = line.find_first_of(" \t\n\r\f\v;", posIniIP);
                     std::string ipAddress = line.substr(posIniIP, posFinIP - posIniIP); // Extrai o endereço IP
@@ -40,8 +70,7 @@ WebServ::WebServ(std::string filename){
                     if(!foundDefaultServer){
                         _serverSocket.setAddress(ipAddress);
                         std::cout << "[TESTE]Endereço IP: " << ipAddress << std::endl;
-                        foundDefaultServer = true;
-                        // e se o listen for http://localhost? 
+                        //foundDefaultServer = true;
                     }
                 }
                     
@@ -53,7 +82,7 @@ WebServ::WebServ(std::string filename){
                     std::cout << "[TESTE]Porta: " << eighty << std::endl;
                     std::cout << " --------------------------------- " << std::endl;
                     _serverSocket.setPort(intPort);
-                    _serverSocket.setAddress("0.0.0.0");
+                    //_serverSocket.setAddress("0.0.0.0");
                 }else
                     _serverSocket.setPort(80);
             }
@@ -71,94 +100,6 @@ WebServ::WebServ(std::string filename){
         std::cout << "Erro ao abrir" << std::endl;
 }
 
-WebServ::WebServ(){}
-
-WebServ::~WebServ(){}
-
-void WebServ::mainLoop(){
-
-    std::cout << "chegamos na mainloop parsa!" << std::endl;
-}
-
-
-
-/*
-
-    if(posIP && posDelimiter){
-        if(posIP != std::string::npos || posDelimiter != std::string::npos){
-            std::string ipAddress = line.substr(posIP, (posDelimiter - 1) - posIP);
-            std::cout << "ipAddress" << ipAddress << std::endl;
-        }
-        else 
-            std::cout << "realmente" << std::endl;
-            
-                
-                // ou so tem a porta
-                // ou so tem o endereço
-                // ou tem a porta e o endereço
-            
-          
-                // found port
-                // found address
-
-        
-*/
-/*
-
- g++ -std=c++98 src/main.cpp src/WebServ.cpp src/SocketS.cpp -I inc/ -o executavel
- ./executavel ./cfgs/default.config 
-
-
-*/        
-        
-/*
-
-
-propriedade
-
-port se tiver : 
-
-string ipAddress . . . 
-int portNumber
-
-primeiro valida que é numero
-o que estiver depois passa atoi e armazena em portNumber
-o que está antes do dois numeros precisa validar a string de acordo com formato de endereço IP e dai armazena ipAddress que deverá ser mantido como string
-Se tiver apenas o IP então considero como porta 80 o default e armazeno o valor 80 +em portNumber
-Se tiver apenas a porta então considero como IP 0.0.0.0 e armazeno esse valor em ipAddress
-
-serverName[] vetor de strings
-
-Ao receber um resquest ele vai iterar pelo vetor e verificar o ipAddress e portNumber
-Ele deve escolher o server mais adequado para a requisicao ele vai compara o ip porta da requisicao com o ip e porta do vertor de servidores[sockets]
-é nele que vai aceitar a conexao do client
-
-Se contabilizar mais que 1 server adedaquado entao devera analisar da propriedade server_name.
-Voce compara o server_name com o host que é uma linha que virá da request
-Se encontrar um server então para e é ele que deverá aceitar a conexão.
-
-Se vários sockets tiverem listen e server_name iguais entoa esoclhe-se o primeiro listado.
-e os demais vetores deverão apresentar a mensagem "nginx: [warn] conflicting server name “.empresarepetida.com” on 0.0.0.0:80, ignored"
-na inicialização do nginx
-
-
-Caso de host desconhecido
-
-Se hostRequest for != serverName
-Verificar se algum socket tem a flag marcada como default_server
-(campo listen de um deles possuia "default_server") 
-no caso positivo deverá ir para o socket especificado como default 
-[pode criar uma flag para definir se foi marcado como defaultServer]
-a conexao devera ser aceita pelo primeiro Socket que contenha Ip e porta iguais 
-ao Ip e porta do campo host da Request
-
-o capo listen é do arquivo de configuracao e correpsonde aos atributos da classe Socket
-ipAddress e portNumber;
-
-arquivo de configuração
-
- arquivo deve preencher os atributos de Scket/Server
- e depois o conteudo da request deve ser ocmparado com as variaveis já preenchidas
 
 */
     

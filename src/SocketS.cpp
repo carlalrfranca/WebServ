@@ -6,18 +6,18 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/27 01:10:59 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/28 15:01:07 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/SocketS.hpp"
 
 SocketS::SocketS(){
-    _webServSocket = 0;
     _portNumber = 0;
     _ipAddress = "";
     _response = "";
     _cssContent = "";
+    _webServSocket = 0;
 }
 
 

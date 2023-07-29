@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/27 01:08:53 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/28 15:13:51 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,9 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+
+#include "ConfigParser.hpp"
+#include "WebServ.hpp"
 
 // criação do sockt, vinculação com o endereço e a escuta
 // tudo em relação ao socket do SocketS
@@ -51,8 +54,7 @@ class SocketS {
         std::string     _ipAddress;
         std::string     _response; //talvez na response class
         std::string     _cssContent;
-        //struct sockaddr_in _socketAddress;
-    
+        // struct sockaddr_in _socketAddress;
         // int bindSocketSListenConnections(); //vincula socket a um endereço e porta 
         
         
