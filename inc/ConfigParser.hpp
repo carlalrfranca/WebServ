@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/30 18:13:30 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/01 16:01:26 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,9 @@
 #include <unistd.h>
 #include <string>
 #include <cstdlib>
-#include "SocketS.hpp"
 #include "WebServ.hpp"
+
+class WebServ;
 
 class ConfigParser{
 
@@ -30,15 +31,14 @@ class ConfigParser{
         //ConfigParser(std::string line);
     
         void processListen(std::string& line, WebServ& webserv_manager);
-        void processServerName(std::string& line);
-        void processHost(std::string& line);
-        void processLocation(std::string& line);
-        void applyDefaultValues(void);
+        void processServerName(std::string &line, WebServ &wsManager);
+        //void processHost(std::string& line);
+        //void processLocation(std::string& line);
+        //void applyDefaultValues(void);
     
     private:
         
-        // SocketS     _serverSocket;
-        // WebServ     _webServer;
+        //SocketS     _serverSocket;
         
         //std::string _line; //talvez, mas acho que nao precisa mesmo
         std::string     _domain; //server_name
@@ -55,6 +55,7 @@ class ConfigParser{
         size_t          _posEnd;
         size_t          _http;
         size_t          _https;
+        size_t          _posSemicolon;
 
 };
 

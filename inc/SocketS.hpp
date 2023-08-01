@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/28 15:13:51 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/31 20:36:46 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,6 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-
-#include "ConfigParser.hpp"
-#include "WebServ.hpp"
 
 // criação do sockt, vinculação com o endereço e a escuta
 // tudo em relação ao socket do SocketS

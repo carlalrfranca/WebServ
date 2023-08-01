@@ -6,33 +6,62 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/27 01:11:11 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/01 14:52:44 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include <cstdlib>
-#include "../inc/SocketS.hpp"
 #include "../inc/WebServ.hpp"
 
-int main(int argc, char **argv){
 
-    std::string filename(argv[1]);
-    if(argc != 2){
-        std::cerr << "Error" << std::endl;
-        exit(EXIT_FAILURE);
+
+// ----------------------main teste-------------------------------------
+
+int main() {
+    WebServ wsManager;
+    ConfigParser parser;
+
+    std::ifstream configFile("src/config.txt");
+    if (!configFile) {
+        std::cerr << "Error: Unable to open the configuration file." << std::endl;
+        return 1;
     }
-    try
-    {
-        WebServ WebServ(filename);
+
+    std::string line;
+    while (std::getline(configFile, line)) {
+        if (line.find("listen") != std::string::npos) {
+            parser.processListen(line, wsManager);
+        } else if (line.find("server_name") != std::string::npos) {
+            parser.processServerName(line, wsManager);
+        }
     }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
-    }
-    
+
+    configFile.close();
     return 0;
 }
+// -----------------------fim teste -----------------------------------
+
+
+
+// int main(int argc, char **argv){
+
+//     std::string filename(argv[1]);
+//     if(argc != 2){
+//         std::cerr << "Error" << std::endl;
+//         exit(EXIT_FAILURE);
+//     }
+//     try
+//     {
+//         WebServ WebServ(filename);
+//     }
+//     catch(const std::exception& e)
+//     {
+//         std::cerr << e.what() << '\n';
+//     }
+    
+//     return 0;
+// }
 
 
 
@@ -203,3 +232,39 @@ int main(void){
 
 
 */
+
+
+
+// listen 127.0.0.1:80;
+// server_name example.com "";
+// 
+// listen 127.0.0.1:8080;
+// server_name */8080 "";
+// 
+// 
+// listen
+// listen 80;
+// listen 8080;
+// listen 80 default_server;
+// listen 443 ssl;
+// listen *:443 ssl;
+// listen 127.0.0.1;
+// listen yourdomain.com;
+// listen *:80;
+// listen 127.0.0.1:8080;
+// listen 192.168.1.100:80;
+// listen localhost:80;
+// listen yourdomain.com:80;
+// listen 192.168.1.100:443 ssl;
+// listen http://localhost.com;
+// listen http://localhost.com:80;
+// listen 443 ssl;
+// 
+// 
+// server_name example.com;
+// server_name example.com www.example.com;
+// server_name *.example.com;
+// server_name ~^www\.example\.(com|org)$;
+// server_name example.com/path;
+// server_name example.com "";
+// server_name "";

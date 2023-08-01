@@ -28,6 +28,8 @@
 #include "SocketS.hpp"
 #include "ConfigParser.hpp"
 
+class ConfigParser;
+
 class WebServ {
 
     public:
@@ -41,7 +43,7 @@ class WebServ {
     
         int             _clientSocket;
         std::string     _nameConfigFile;
-        ConfigParser    _configParser;
+        //ConfigParser    _configParser;
         socklen_t       _clientAddressLength;
 
         struct sockaddr_in clientAddress;    

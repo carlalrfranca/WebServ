@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/28 18:17:21 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/07/31 20:47:31 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,29 +19,29 @@ WebServ::~WebServ(){}
 
 WebServ::WebServ(std::string filename){
 
-    std::ifstream fileToParse;
-    fileToParse.open(filename.c_str());
-    if(fileToParse.is_open()){
-        std::string line;
-        while(getline(fileToParse, line)){
+    //std::ifstream fileToParse;
+    //fileToParse.open(filename.c_str());
+    //if(fileToParse.is_open()){
+    //    std::string line;
+    //    while(getline(fileToParse, line)){
             //verifica a presença de diretivas e chamar os métodos
-            if(line.find("listen") != std::string::npos){
-                _configParser.processListen(line, *this);
-            }else if (line.find("server_name") != std::string::npos){
-                _configParser.processServerName(line);
-            }else if (line.find("host") != std::string::npos){
-                _configParser.processHost(line);
-            }else if (line.find("location") != std::string::npos){
-                _configParser.processLocation(line);
-            }
+    //        if(line.find("listen") != std::string::npos){
+      //          _configParser.processListen(line, *this);
+        //    }else if (line.find("server_name") != std::string::npos)
+        //        _configParser.processServerName(line, *this);
+            //}else if (line.find("host") != std::string::npos){
+            //    _configParser.processHost(line);
+            //}else if (line.find("location") != std::string::npos){
+            //    _configParser.processLocation(line);
+            //}
         }
         //método para os casos da ausencia de diretivas e aplicação da configuração default
-        _configParser.applyDefaultValues();
-        fileToParse.close();
+        //_configParser.applyDefaultValues();
+        //fileToParse.close();
                 
-    }else
-        std::cout << "[Error] : file cannot be opened" << std::endl;       
-}               
+    //}else
+      //  std::cout << "[Error] : file cannot be opened" << std::endl;       
+//}               
 
 
 void WebServ::mainLoop(){
@@ -57,8 +57,7 @@ void WebServ::mainLoop(){
 
 
 */        
-        
-/
+/*
                     size_t posIniIP = line.find_first_of("0123456789.:", posListen, + 6); // 6 para pular a palavra listen
                 if(posIniIP != std::string::npos){
                     size_t posFinIP = line.find_first_of(" \t\n\r\f\v;", posIniIP);
