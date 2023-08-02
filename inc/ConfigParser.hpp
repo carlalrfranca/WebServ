@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/01 21:36:10 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/02 20:16:09 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 #include <string>
 #include <cstdlib>
 #include "WebServ.hpp"
+#include <map>
+#include <vector>
 
 class WebServ;
 
@@ -32,8 +34,9 @@ class ConfigParser{
     
         void processListen(std::string& line, WebServ& webserv_manager);
         void processServerName(std::string &line, WebServ &wsManager);
+        bool processRoot(std::string &line, WebServ &wsManager);
+        void processLocation(std::string& line);
         //void processHost(std::string& line);
-        //void processLocation(std::string& line);
         //void applyDefaultValues(void);
     
     private:
@@ -49,6 +52,7 @@ class ConfigParser{
         std::string     _httpAddress;
         std::string     _path;
         std::string     _port;
+        std::string     _root;
         size_t          _nPos;
         size_t          _directive;
         size_t          _posInit;
@@ -58,6 +62,11 @@ class ConfigParser{
         size_t          _posSemicolon;
         size_t          _semicolonIndex;
         size_t          _delimiter;
+        bool            _hasRoot;
+        
+        // abaixo: map e string do path location atual pra guardar os arquivos de locations no config file
+        std::map<std::string, std::vector<std::string> > _locationsMap;
+        std::string _currentLocationPathOnMap;
 
 };
 

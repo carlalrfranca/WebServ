@@ -6,12 +6,14 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/01 21:39:01 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/02 20:31:05 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/ConfigParser.hpp"
 #include <cctype> //Para usar a função std::isspace
+#include <vector>
+#include <map>
 
 ConfigParser::ConfigParser()
 {
@@ -31,26 +33,11 @@ ConfigParser::ConfigParser()
     _posSemicolon = 0;
     _semicolonIndex = 0;
     _delimiter = 0;
+    _root = "";
+    _hasRoot = true;
 }
 // g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
 
-
-/*
-
-    _directive = line.find("server_name");
-    if(_directive != _nPos){
-        _directive += 11;                              
-        _posInit = line.find_first_of("*", _directive); 
-        if(_posInit != _nPos){                                                             
-            _posSemicolon = line.find_first_of(";", _posInit);
-            if(_posSemicolon != _nPos){
-                _domain = line.substr(_posInit, _posSemicolon - (_posInit));
-                std::cout << "Domain: " << _domain << std::endl; 
-            }
-        }
-        else{
-
-*/
 
 ConfigParser::~ConfigParser() {}
 
@@ -60,11 +47,10 @@ void ConfigParser::processListen(std::string &line, WebServ &wsManager)
     if(line == "listen"){
         _ipAddress = "0.0.0.0";
         _port = "80";
-        std::cout << "\n-----[PRIMEIRO] TESTE DEFAULT-----\n";
+        std::cout << "\n-----[PRIMEIRO] TESTE DEFAULT-----";
         std::cout << "IP Address: " << _ipAddress << std::endl;
         std::cout << "Port: " << _port << std::endl;
-        std::cout << "-------------------------------------" << std::endl;
-        std::cout << std::endl;
+        //std::cout << std::endl;
         return ;
     }
     _semicolonIndex = line.find_first_of(";");
@@ -83,11 +69,10 @@ void ConfigParser::processListen(std::string &line, WebServ &wsManager)
                 _ipAddress = _ipAddress.substr(0, portIndex);
             }else
                 _port = "80";
-            std::cout << "\n-----[SEGUNDO] TESTE DE HTTP E HTTPS  COM E SEM PORTA-----\n";
+            std::cout << "\n-----[SEGUNDO] TESTE DE HTTP E HTTPS  COM E SEM PORTA-----" << std::endl;
             std::cout << "IP Address: " << _ipAddress << std::endl;
             std::cout << "Port: " << _port << std::endl;
-            std::cout << "------------------------------------------------------------" << std::endl;
-            std::cout << std::endl;
+            //std::cout << std::endl;
         }
         else{ // sem protocolo http ou https // trata primeiro com :
             _posInit = line.find(":", _directive);
@@ -106,9 +91,15 @@ void ConfigParser::processListen(std::string &line, WebServ &wsManager)
             std::cout << "\n-----[TERCEIRO] TESTE SEM HTTP E HTTPS -----\n";
             std::cout << "IP: " << _ipAddress << std::endl;
             std::cout << "Porta: " << _port << std::endl;
-            std::cout << "-----------------------------------------------" << std::endl;
-            std::cout << std::endl;
+            //std::cout << std::endl;
         }
+        // else{
+        // }
+        // else{
+        // }
+        // else{
+        // }
+        
     }
 }       
 
@@ -118,7 +109,7 @@ void ConfigParser::processServerName(std::string &line, WebServ &wsManager)
 {
     _directive = line.find("server_name");
     if(_directive != _nPos){
-        _directive += 11;                               // avança para além da palavra "server_name"
+        _directive += 12;                               // avança para além da palavra "server_name"
         _posInit = line.find_first_of("*", _directive); // busca para os casos de wildcard
         if(_posInit != _nPos){                                                             // se ele encontrou
             _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
@@ -159,19 +150,104 @@ void ConfigParser::processServerName(std::string &line, WebServ &wsManager)
     }
 }
 
+bool ConfigParser::processRoot(std::string &line, WebServ &wsManager)
+{
+    _directive = line.find("root");
+    if(_directive != _nPos){
+        _directive += 5;
+        _posInit = line.find_first_of("/", _directive);
+        if(_posInit != _nPos){
+            _posSemicolon = line.find_first_of(";", _posInit);
+            if(_posSemicolon != _nPos){
+                _root = line.substr(_posInit, _posSemicolon - (_posInit));
+                std::cout << "Root: " << _root << std::endl;
+            }
+        }
+        else{
+                //antes de dar o erro devera recorrer a outras diretivas e verificar se algum dado foi armazenado
+                std::cout << "Error 404 (Not Found)" << std::endl;
+                _hasRoot = false;
+                std::cout << "Flag não teve root: " << _hasRoot << std::endl;
+                return _hasRoot;
+        }
+    }
+    std::cout << "Flag teve root: " << _hasRoot << std::endl;
+    return _hasRoot;
+}
 
 
+void ConfigParser::processLocation(std::string &line)
+{
+    std::vector<std::string> filesForPath1;
+    
+    _directive = line.find("location");
+    if (_directive != _nPos)
+    {
+        // verificar o tipo de location ("/", "/[directorio], etc")
+        // pra isso, teremos que dividir a line em partes pra ver o que é apontado pela location
+        std::istringstream iss(line);
+        std::vector<std::string> parts;
+    
+        std::string part;
+        while (iss >> part) {
+            parts.push_back(part);
+            //std::cout << parts.back() << std::endl; //verificando a parte da line que foi colocada em parts
+        }
+        std::cout << std::endl; //só pra separar essas impressoes do resto no terminal
+        _currentLocationPathOnMap = parts[1];
+        std::cout << "Localização é " << _currentLocationPathOnMap << std::endl;
+        std::cout << std::endl;
+        _locationsMap[_currentLocationPathOnMap];
+    }
+    else
+    {
+        size_t indexDirectivePos = line.find("index");
+        if (indexDirectivePos != _nPos)
+        {
+            //std::string indexFileName = line.substr(indexDirectivePos + 5);
+            std::istringstream iss(line);
+            std::vector<std::string> files;
+        
+            std::string currentFile;
+            while (iss >> currentFile) {
+                files.push_back(currentFile);
+            }
+            // inseriu os arquivos dentro do vetor 'files', mas isso tambem inclui a diretiva 'index'
+            // precisamos remove-la do vetor com o método erase combinado com o método begin
+            files.erase(files.begin());
+            //pornto, agora só tem a lista de arquivos
+            // basta passarmos esse vetor para o map com o índice marcando o caminho/path atrelado a esses arquivos
+            _locationsMap[_currentLocationPathOnMap] = files;
+            
+            // agora imprimimos no terminal os itens (nomes dos arquivos) relacionados a esse path
+            for (std::map<std::string, std::vector<std::string> >::iterator it = _locationsMap.begin(); it != _locationsMap.end(); ++it) {
+                std::cout << "Chave: " << it->first << " | Valores: ";
+                const std::vector<std::string>& valores = it->second;
+                for (size_t i = 0; i < valores.size(); ++i) {
+                    std::cout << valores[i] << " ";
+                }
+                std::cout << std::endl;
+            }
+        }
+        else if (line.find("alias") != _nPos)
+        {
+            size_t aliasDirectivePos = line.find("alias");
+            std::string aliasFileName = line.substr(aliasDirectivePos + 5);
+            std::cout << "Nome do arquivo da location " << _currentLocationPathOnMap << " : " << aliasFileName << std::endl;
+            
+            //substitui pelo que tá no if acima e vê se funfa
+        }
+    }
+}
 
 
 
 /*
 void ConfigParser::processHost(std::string &line)
 {
+
 }
 
-void ConfigParser::processLocation(std::string &line)
-{
-}
 
 void ConfigParser::applyDefaultValues(void)
 {

@@ -1,184 +1,23 @@
 listen http://yourdomain.com;
 server_name example.com;
+root /fsdfsd/fdsfads/dsa;
 
 listen https://yourdomain.com;
 server_name example.com;
+root src/inc/map.txt;
 
 
 listen http://localhost.com;
 server_name example.com www.example.com;
+root
 
 listen http://localhost.com:500;
 server_name example.com;
 
-listen yourdomain.com;
-server_name example.com;
-
-listen yourdomain.com:5000;
-server_name example.com "";
-
-
-
-listen 127.0.0.1:443;
-server_name example.com "";
-
-listen 127.0.0.1:8080;
-server_name */8080 "";
-
-
-
-
-
-listen
-server_name example.com;
-
-listen 80;
-server_name example.com www.example.com;
-
-listen 8080;
-server_name *.example.com;
-
-listen 80 default_server;
-server_name ~^www\.example\.(com|org)$;
-
-listen 443 ssl;
-server_name example.com/path;
-
-listen *:443 ssl;
-server_name example.com "";
-
-listen 127.0.0.1;
-server_name "";
-
-
-listen 80 default_server;
-server_name ~^www\.example\.(com|org)$;
-
-listen 80 default_server;
-server_name ~^www\.example\.(com|org)$;
-
-listen *:80;
-server_name example.com www.example.com;
-
-listen 127.0.0.1:8080;
-server_name *.example.com;
-
-listen 192.168.1.100:80;
-server_name ~^www\.example\.(com|org)$;
-
-listen localhost:80;
-server_name example.com/path;
-
-
-listen 192.168.1.100:443 ssl;
-server_name "";
-
-listen 443 ssl;
-server_name *.example.com;
-
-
-listen 127.0.0.1:80;
-server_name example.com "";
-
-listen 127.0.0.1:8080;
-server_name */8080 "";
-
-listen
-server_name example.com;
-
-listen 80;
-server_name example.com www.example.com;
-
-listen 8080;
-server_name *.example.com;
-
-listen 80 default_server;
-server_name ~^www\.example\.(com|org)$;
-
-listen 443 ssl;
-server_name example.com/path;
-
-listen *:443 ssl;
-server_name example.com "";
-
-listen 127.0.0.1;
-server_name "";
-
-
-listen 80 default_server;
-server_name ~^www\.example\.(com|org)$;
-
-listen 80 default_server;
-server_name ~^www\.example\.(com|org)$;
-
-listen *:80;
-server_name example.com www.example.com;
-
-listen 127.0.0.1:8080;
-server_name *.example.com;
-
-listen 192.168.1.100:80;
-server_name ~^www\.example\.(com|org)$;
-
-listen localhost:80;
-server_name example.com/path;
-
-
-listen 192.168.1.100:443 ssl;
-server_name "";
-
-listen 443 ssl;
-server_name *.example.com;
-
-listen 127.0.0.1:80;
-server_name example.com "";
-
-listen 127.0.0.1:8080;
-server_name */8080 "";
-
-listen
-server_name example.com;
-
-listen 80;
-server_name example.com www.example.com;
-
-listen 8080;
-server_name *.example.com;
-
-listen 80 default_server;
-server_name ~^www\.example\.(com|org)$;
-
-listen 443 ssl;
-server_name example.com/path;
-
-listen *:443 ssl;
-server_name example.com "";
-
-listen 127.0.0.1;
-server_name "";
-
-
-listen 80 default_server;
-server_name ~^www\.example\.(com|org)$;
-
-listen 80 default_server;
-server_name ~^www\.example\.(com|org)$;
-
-listen *:80;
-server_name example.com www.example.com;
-
-listen 127.0.0.1:8080;
-server_name *.example.com;
-
-listen 192.168.1.100:80;
-server_name ~^www\.example\.(com|org)$;
-
-listen localhost:80;
-server_name example.com/path;
-
-
-listen 192.168.1.100:443 ssl;
-server_name "";
-
-listen 443 ssl;
-server_name *.example.com;
+location / {
+        index index.html index.php;
+    }
+
+location /images/ {
+       alias /var/www/example/images/;
+   }
