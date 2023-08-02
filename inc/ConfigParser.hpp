@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/01 16:01:26 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/01 21:36:10 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,8 @@ class ConfigParser{
         size_t          _http;
         size_t          _https;
         size_t          _posSemicolon;
+        size_t          _semicolonIndex;
+        size_t          _delimiter;
 
 };
 

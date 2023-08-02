@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/01 20:54:27 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/01 21:39:01 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ ConfigParser::ConfigParser()
     _posInit = 0;
     _posEnd = 0;
     _posSemicolon = 0;
+    _semicolonIndex = 0;
+    _delimiter = 0;
 }
 // g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
 
@@ -55,24 +57,24 @@ ConfigParser::~ConfigParser() {}
 void ConfigParser::processListen(std::string &line, WebServ &wsManager)
 {
     _directive = line.find("listen");
-    if (line == "listen")
-    {
-        std::cout << "--- ATENÇÃO: SÓ HÁ LISTEN, LOGO TUDO SERÁ DEFAULT" << std::endl;
+    if(line == "listen"){
         _ipAddress = "0.0.0.0";
         _port = "80";
+        std::cout << "\n-----[PRIMEIRO] TESTE DEFAULT-----\n";
         std::cout << "IP Address: " << _ipAddress << std::endl;
         std::cout << "Port: " << _port << std::endl;
+        std::cout << "-------------------------------------" << std::endl;
+        std::cout << std::endl;
         return ;
     }
-    size_t semicolonIndex = line.find_first_of(";");
-    
-    if (semicolonIndex != _nPos && semicolonIndex == (line.length() - 1)) {
+    _semicolonIndex = line.find_first_of(";");
+    if(_semicolonIndex != _nPos && _semicolonIndex == (line.length() - 1)){
         line = line.substr(0, (line.length() - 1));
     }
-    if (_directive != _nPos){
+    if(_directive != _nPos){
         _directive += 7;
         _posInit = line.find("://", _directive);
-        if (_posInit != _nPos){
+        if(_posInit != _nPos){
             _ipAddress = line.substr(_directive, (line.length() - (_directive)));
             size_t _delimiter = line.find_last_of(":");
             if(_delimiter != _posInit){
@@ -81,35 +83,31 @@ void ConfigParser::processListen(std::string &line, WebServ &wsManager)
                 _ipAddress = _ipAddress.substr(0, portIndex);
             }else
                 _port = "80";
-            std::cout << "\n----- [PRIMEIRO] TESTE DE HTTP E HTTPS  COM E SEM PORTA-----\n";
+            std::cout << "\n-----[SEGUNDO] TESTE DE HTTP E HTTPS  COM E SEM PORTA-----\n";
             std::cout << "IP Address: " << _ipAddress << std::endl;
             std::cout << "Port: " << _port << std::endl;
-            std::cout << "----------------------------------------------------------------" << std::endl;
+            std::cout << "------------------------------------------------------------" << std::endl;
             std::cout << std::endl;
         }
-        else{ //sem protocolo http ou https
-        // trata primeiro com :
+        else{ // sem protocolo http ou https // trata primeiro com :
             _posInit = line.find(":", _directive);
-            if (_posInit != _nPos){
-                // std::cout << "Posição dos ':' >> " << _posInit << std::endl;
+            if (_posInit != _nPos){// std::cout << "Posição dos ':' >> " << _posInit << std::endl;
                 _ipAddress = line.substr(_directive, _posInit - _directive);
                 _port = line.substr(_posInit + 1, line.length());
             }
-            else if (line.find(".", _directive) != _nPos){
-               // significa que tem ipAddress (port será default)
+            else if(line.find(".", _directive) != _nPos){// significa que tem ipAddress (port será default)
                _ipAddress = line.substr(_directive);
-               _port = "80";
-                
+               _port = "80";   
             }
             else{
                 _port = line.substr(_directive);
                 _ipAddress = "0.0.0.0";
             }
-                std::cout << "\n----- [SEGUNDO] TESTE SEM HTTP E HTTPS -----\n";
-                std::cout << "IP: " << _ipAddress << std::endl;
-                std::cout << "Porta: " << _port << std::endl;
-                std::cout << "----------------------------------------------" << std::endl;
-                std::cout << std::endl;
+            std::cout << "\n-----[TERCEIRO] TESTE SEM HTTP E HTTPS -----\n";
+            std::cout << "IP: " << _ipAddress << std::endl;
+            std::cout << "Porta: " << _port << std::endl;
+            std::cout << "-----------------------------------------------" << std::endl;
+            std::cout << std::endl;
         }
     }
 }       
@@ -147,8 +145,8 @@ void ConfigParser::processServerName(std::string &line, WebServ &wsManager)
                 } 
             }
             else if(line.find(".", _directive) != _nPos && line.find(" ", _directive) != _nPos && line.find_first_of(";", _directive) != _nPos){
-                size_t _posDot = line.find(".", _directive);                // busca para os casos de caminho vazio de dominio
-                size_t _posSpace = line.find(" ", _directive);              // busca para os casos de caminho vazio de dominio
+                size_t _posDot = line.find(".", _directive); // busca para os casos de caminho vazio de dominio
+                size_t _posSpace = line.find(" ", _directive); // busca para os casos de caminho vazio de dominio
                 _posSemicolon = line.find_first_of(";", _directive); // estrai do asterisco até antes do ;
                 _domain = line.substr(_posSpace + 1, _posSemicolon - (_posSpace + 1));
                 std::cout << "Domain: " << _domain << std::endl; // pra TESTE   
