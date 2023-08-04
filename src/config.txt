@@ -1,23 +1,37 @@
-listen http://yourdomain.com;
-server_name example.com;
-root /fsdfsd/fdsfads/dsa;
-
-listen https://yourdomain.com;
-server_name example.com;
-root src/inc/map.txt;
+server{    
+    listen http://yourdomain.com;
+    server_name example.com;
+    root /fsdfsd/fdsfads/dsa;
+}
 
 
-listen http://localhost.com;
-server_name example.com www.example.com;
-root
+server{  
+    listen https://yourdomain.com;
+    server_name example.com;
+    root src/inc/map.txt;
+}
 
-listen http://localhost.com:500;
-server_name example.com;
+server{  
+    listen https://yourdomain.com:80;
+    server_name example.com example2.co.uk name_example3.org.br google.com protonmail.co.uk yahoo.com.br;
+    root src/inc/map.txt;
+}
 
-location / {
-        index index.html index.php;
-    }
+server{  
+    listen http://localhost.com;
+    server_name example.com www.example.com;
+    root
+}
 
-location /images/ {
-       alias /var/www/example/images/;
-   }
+server{  
+    listen http://localhost.com:500;
+    server_name example.com;
+
+    location / {
+            index index.html index.php;
+        }
+    
+    location /images/ {
+           alias /var/www/example/images/ /var/www/exemple/src/;
+       }
+}

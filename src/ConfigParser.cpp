@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/02 20:31:05 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/03 21:20:12 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #include <cctype> //Para usar a função std::isspace
 #include <vector>
 #include <map>
+#include <string>
+#include <iostream>
 
 ConfigParser::ConfigParser()
 {
@@ -58,7 +60,7 @@ void ConfigParser::processListen(std::string &line, WebServ &wsManager)
         line = line.substr(0, (line.length() - 1));
     }
     if(_directive != _nPos){
-        _directive += 7;
+        _directive += std::string("listen ").length();
         _posInit = line.find("://", _directive);
         if(_posInit != _nPos){
             _ipAddress = line.substr(_directive, (line.length() - (_directive)));
@@ -104,18 +106,17 @@ void ConfigParser::processListen(std::string &line, WebServ &wsManager)
 }       
 
 
-
 void ConfigParser::processServerName(std::string &line, WebServ &wsManager)
 {
     _directive = line.find("server_name");
     if(_directive != _nPos){
-        _directive += 12;                               // avança para além da palavra "server_name"
+        _directive += std::string("server_name").length();                               // avança para além da palavra "server_name"
         _posInit = line.find_first_of("*", _directive); // busca para os casos de wildcard
-        if(_posInit != _nPos){                                                             // se ele encontrou
+        if(_posInit != _nPos){ // se ele encontrou
             _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
             if(_posSemicolon != _nPos){
                 _domain = line.substr(_posInit, _posSemicolon - (_posInit)); // se quiser extrair sem * _domain = line.substr(_posInit + 1, _posSemicolon - (_posInit + 1));
-                std::cout << "Domain: " << _domain << std::endl;             // pra TESTE
+                std::cout << "Domain: " << _domain << std::endl;     
             }
         }
         else{
@@ -140,7 +141,23 @@ void ConfigParser::processServerName(std::string &line, WebServ &wsManager)
                 size_t _posSpace = line.find(" ", _directive); // busca para os casos de caminho vazio de dominio
                 _posSemicolon = line.find_first_of(";", _directive); // estrai do asterisco até antes do ;
                 _domain = line.substr(_posSpace + 1, _posSemicolon - (_posSpace + 1));
-                std::cout << "Domain: " << _domain << std::endl; // pra TESTE   
+                // PRECISA ARMAZNAR NUM VETOR AQUI ENTÃO
+                //só copiar o trecho odo código da processLocation pra splitar a line e armazenar num vector
+                std::istringstream iss(line);
+                std::vector<std::string> multipleDomains;
+                
+                std::string currentFile;
+                while(iss >> currentFile){
+                    multipleDomains.push_back(currentFile);
+                }
+                multipleDomains.erase(multipleDomains.begin());
+                std::cout << "------Server names ------\n" ;
+                for (size_t i = 0; i < multipleDomains.size(); ++i) {
+                    std::cout << multipleDomains[i] << " " << std::endl;
+                }  
+                std::cout << "--------------------------" << std::endl;
+                
+                // std::cout << "Domain LISTA DE DOMINIOS: " << _domain << std::endl; // pra TESTE   
             }
             else{ // ou seja não encontrou nada e é defaut
                 _domain = "default";
@@ -150,11 +167,13 @@ void ConfigParser::processServerName(std::string &line, WebServ &wsManager)
     }
 }
 
+
+
 bool ConfigParser::processRoot(std::string &line, WebServ &wsManager)
 {
     _directive = line.find("root");
     if(_directive != _nPos){
-        _directive += 5;
+        _directive += std::string("root").length();;
         _posInit = line.find_first_of("/", _directive);
         if(_posInit != _nPos){
             _posSemicolon = line.find_first_of(";", _posInit);
@@ -193,10 +212,7 @@ void ConfigParser::processLocation(std::string &line)
             parts.push_back(part);
             //std::cout << parts.back() << std::endl; //verificando a parte da line que foi colocada em parts
         }
-        std::cout << std::endl; //só pra separar essas impressoes do resto no terminal
         _currentLocationPathOnMap = parts[1];
-        std::cout << "Localização é " << _currentLocationPathOnMap << std::endl;
-        std::cout << std::endl;
         _locationsMap[_currentLocationPathOnMap];
     }
     else
@@ -204,7 +220,8 @@ void ConfigParser::processLocation(std::string &line)
         size_t indexDirectivePos = line.find("index");
         if (indexDirectivePos != _nPos)
         {
-            //std::string indexFileName = line.substr(indexDirectivePos + 5);
+        ///////////////////////////////////////////////>>>>>>>>>>>>>>>>
+        // CODIGO DA SPLITAÇÃO E PUSHAR NO VETOR
             std::istringstream iss(line);
             std::vector<std::string> files;
         
@@ -215,13 +232,19 @@ void ConfigParser::processLocation(std::string &line)
             // inseriu os arquivos dentro do vetor 'files', mas isso tambem inclui a diretiva 'index'
             // precisamos remove-la do vetor com o método erase combinado com o método begin
             files.erase(files.begin());
+            
+            
+         ///////////////////////////////////////////////>>>>>>>>>>>>>>>>
+         ///////////////////////////////////////////////>>>>>>>>>>>>>>>>
+            
+            
             //pornto, agora só tem a lista de arquivos
             // basta passarmos esse vetor para o map com o índice marcando o caminho/path atrelado a esses arquivos
             _locationsMap[_currentLocationPathOnMap] = files;
             
             // agora imprimimos no terminal os itens (nomes dos arquivos) relacionados a esse path
             for (std::map<std::string, std::vector<std::string> >::iterator it = _locationsMap.begin(); it != _locationsMap.end(); ++it) {
-                std::cout << "Chave: " << it->first << " | Valores: ";
+                std::cout << "Chave Index: " << it->first << "\nValores: ";
                 const std::vector<std::string>& valores = it->second;
                 for (size_t i = 0; i < valores.size(); ++i) {
                     std::cout << valores[i] << " ";
@@ -232,13 +255,38 @@ void ConfigParser::processLocation(std::string &line)
         else if (line.find("alias") != _nPos)
         {
             size_t aliasDirectivePos = line.find("alias");
-            std::string aliasFileName = line.substr(aliasDirectivePos + 5);
-            std::cout << "Nome do arquivo da location " << _currentLocationPathOnMap << " : " << aliasFileName << std::endl;
+            // std::string aliasFileName = line.substr(aliasDirectivePos + 5);
+            // std::cout << "Nome do arquivo da location " << _currentLocationPathOnMap << " : " << aliasFileName << std::endl;
             
             //substitui pelo que tá no if acima e vê se funfa
+                    // CODIGO DA SPLITAÇÃO E PUSHAR NO VETOR
+            std::istringstream iss(line);
+            std::vector<std::string> files;
+        
+            std::string currentFile;
+            while (iss >> currentFile) {
+                files.push_back(currentFile);
+            }
+            // inseriu os arquivos dentro do vetor 'files', mas isso tambem inclui a diretiva 'index'
+            // precisamos remove-la do vetor com o método erase combinado com o método begin
+            files.erase(files.begin());
+            _locationsMap[_currentLocationPathOnMap] = files;
+            
+            // agora imprimimos no terminal os itens (nomes dos arquivos) relacionados a esse path
+            for (std::map<std::string, std::vector<std::string> >::iterator it = _locationsMap.begin(); it != _locationsMap.end(); ++it) {
+                std::cout << "Chave Alias: " << it->first << "\nValores: ";
+                const std::vector<std::string>& valores = it->second;
+                for (size_t i = 0; i < valores.size(); ++i) {
+                    std::cout << valores[i] << " ";
+                }
+                std::cout << std::endl;
+            }
+            
         }
     }
 }
+
+
 
 
 
@@ -254,7 +302,7 @@ void ConfigParser::applyDefaultValues(void)
 }
 */
 
-/*
+
 
 
 /*

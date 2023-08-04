@@ -55,8 +55,7 @@ class WebServ {
             }
         };
 };
-//esse aqui está mais para depuração e apresentação das informações
-std::ostream& operator<<(std::ostream& output, const WebServ &rhs);
+
 #endif
 
 

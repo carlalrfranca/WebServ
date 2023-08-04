@@ -34,16 +34,44 @@
 
 ## Sockets e Conexões
 
-Representa um ponto de comunicação (client-server) em uma rede entre o processo de origem e o de destino. Em geral o de origem é chamado de client, isso porque
+Representa um ponto de comunicação (client-server) em uma rede entre o processo de origem e o de destino. Em geral o de origem é chamado de client, isso porque e o de destino o server.
+
+## NGINX
+
+## Parseamento
+
+O arquivo de configuração
+
+As Requests : dividido entre header e body
+
+## Diretivas
+
+São instruções específicas escritas dentro de blocos de configuração utilizadas para ajustar o comportamento do servidor web. No contexto do Nginx elas são usadas para definir diversas opções tais como porta em que o servidor deve escutar, nomes de domínio que os servidores devem responder, regras para o roteamento das solicitações. Essas instruções são uma forma de personalizar e adaptar o comportamento do servidor web, permitindo definir regras para lidar com as solicitações dos clientes e gerenciar o funcionamento do servidor.
+Uma das propostas para o webserv é criar o próprio arquivo de configuração tendo como base os do Nginx. A seguir, algumas diretivas usadas no projeto:
+
+### Listen
+
+Utilizada para especificar em qual endereço IP e porta o servidor deve escutar as solicitações de cliente. Esta diretiva é fundamental para definir o local onde o servidor web estará disponível.
 
 
- e o de destino o server.
+### Server_name
+
+Usada para especificar os nomes de domínio ou endereço IP uqe o servidor deve responder. É necessário para configurar vários servidores virtuais e direcionar solicitações para o servidor correto.
+
+
+### Location
+
+Utilizada para configurar regras de correspondência de URL e determinar como o servidor deve tratar as solicitações para URLs específicas. Esta diretiva é importante para o roteamento de solicitações para diferentes recursos ou ações do servidor.
+
+
+### Root
+
+Especifica o diretório raiz usado para procurar um arquivo. É frequentemente usada em conjunto com a location para fornecer a localização dos arquivos disponibilizados pelo servidor.
 
 
 ## CGI
 
 
-## NGINX
 
 
 ## Chunk
@@ -70,11 +98,6 @@ Monitora vários descritores de arquivo para eventos de leitua, escrita ou exce�
 ## O Loop Principal
 
 
-## Parseamento
-
-O arquivo de configuração
-
-As Requests : dividido entre header e body
 
 
 
@@ -95,3 +118,4 @@ https://medium.com/operacionalti/https-medium-com-operacionalti-como-o-nginx-pro
 https://datatracker.ietf.org/doc/html/rfc2616/ <br>
 https://devarea.com/linux-io-multiplexing-select-vs-poll-vs-epoll/ <br>
 https://www.ibm.com/docs/en/i/7.1?topic=designs-using-poll-instead-select <br>
+https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/ <br>
