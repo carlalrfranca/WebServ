@@ -37,14 +37,17 @@ class WebServ {
         WebServ(std::string filename);
         ~WebServ();
         void mainLoop();
-        SocketS         _serverSocket;
+        void configSocket();
+        void printRequest(const std::string& request);
         
     private:
     
         int             _clientSocket;
         std::string     _nameConfigFile;
-        //ConfigParser    _configParser;
+        ConfigParser    _configParser; //sujeito comentado
+        SocketS         _serverSocket;
         socklen_t       _clientAddressLength;
+       // std::string     _request;
 
         struct sockaddr_in clientAddress;    
 
@@ -60,8 +63,7 @@ class WebServ {
 
 
 /*
-
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp -o executavel
-    ./executavel ./cfgs/default.config
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
+    ./executavel src/config.txt
 
 */

@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/03 20:33:25 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/06 20:29:35 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,6 @@
 #include <cstdlib>
 #include <map>
 #include <vector>
-#include "WebServ.hpp"
-
-class WebServ;
 
 class ConfigParser{
 
@@ -32,18 +29,21 @@ class ConfigParser{
         ~ConfigParser();
         //ConfigParser(std::string line);
     
-        void processListen(std::string &line, WebServ & wsManager);
-        void processServerName(std::string &line, WebServ &wsManager);
-        bool processRoot(std::string &line, WebServ &wsManager);
+        void processListen(std::string &line);
+        void processServerName(std::string &line);
+        bool processRoot(std::string &line);
         void processLocation(std::string& line);
         //void processHost(std::string& line);
         //void applyDefaultValues(void);
+        void setPort(int portNumber);
+        void setAddress(std::string ipAddress);
+        
+        const std::string& getPort(void)const;
+        const std::string& getAddress(void)const;
     
     private:
         
         //SocketS     _serverSocket;
-        
-        //std::string _line; //talvez, mas acho que nao precisa mesmo
         std::string     _domain; //server_name
         std::string     _ssl; //ssl_certificate
         std::string     _key; //ssl_certificate
@@ -51,7 +51,7 @@ class ConfigParser{
         std::string     _ipAddress;
         std::string     _httpAddress;
         std::string     _path;
-        std::string     _port;
+        std::string     _portNumber;
         std::string     _root;
         std::string     _currentLocationPathOnMap;
         size_t          _nPos;
@@ -73,3 +73,11 @@ class ConfigParser{
 };
 
 #endif
+
+
+
+/*
+g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
+./executavel src/config.txt
+
+*/

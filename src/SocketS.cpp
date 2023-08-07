@@ -6,14 +6,14 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/28 15:01:07 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/06 20:21:30 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/SocketS.hpp"
 
 SocketS::SocketS(){
-    _portNumber = 0;
+    _portNumber = "";
     _ipAddress = "";
     _response = "";
     _cssContent = "";
@@ -48,7 +48,7 @@ const int& SocketS::getFD()const{
 void SocketS::loadConfiguration(){}
 
 
-void SocketS::setPort(int portNumber){
+void SocketS::setPort(std::string portNumber){
     this->_portNumber = portNumber;
 }
 
@@ -56,13 +56,23 @@ void SocketS::setAddress(std::string ipAddress){
     this->_ipAddress = ipAddress;
 }
 
-const int& SocketS::getPort(void)const{
+void SocketS::setWebServSocket(int webServSocket){
+    this->_webServSocket = webServSocket;
+}
+
+const std::string& SocketS::getPort(void)const{
     return _portNumber;
 }
+
 const std::string& SocketS::getAddress(void)const{
     return _ipAddress;
 }
-       
+
+const int& SocketS::getWebServSocket(void)const{
+    return _webServSocket;
+}
+     
+     
 // int SocketS::bindSocketListenConnections(){
 // 
     // try{

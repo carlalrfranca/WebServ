@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/03 20:34:11 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/06 20:30:56 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,68 +16,28 @@
 
 
 
-// ----------------------main teste-------------------------------------
-
-
-int main() {
-    WebServ wsManager;
-    ConfigParser parser;
-
-    std::ifstream configFile("src/config.txt");
-    if (!configFile) {
-        std::cerr << "Error: Unable to open the configuration file." << std::endl;
-        return 1;
-    }
-
-    std::string line;
-    bool isLocationBlock = false;
-    while (std::getline(configFile, line)) {
-        if (line.find("listen") != std::string::npos) {
-            parser.processListen(line, wsManager);
-        } else if (line.find("server_name") != std::string::npos) {
-            parser.processServerName(line, wsManager);
-        } else if (line.find("root") != std::string::npos) {
-            parser.processRoot(line, wsManager);
-        } else if (line.find("location") != std::string::npos || isLocationBlock == true){
-            isLocationBlock = true;
-            parser.processLocation(line);
-            if (line.find("}") != std::string::npos)
-                isLocationBlock = false;
-        }
-    }
-    configFile.close();
-  
-    return 0;
-}
-// -----------------------fim teste -----------------------------------
-
-
-
-// int main(int argc, char **argv){
-
-//     std::string filename(argv[1]);
-//     if(argc != 2){
-//         std::cerr << "Error" << std::endl;
-//         exit(EXIT_FAILURE);
-//     }
-//     try
-//     {
-//         WebServ WebServ(filename);
-//     }
-//     catch(const std::exception& e)
-//     {
-//         std::cerr << e.what() << '\n';
-//     }
-    
-//     return 0;
-// }
+ int main(int argc, char **argv){
+     std::string filename(argv[1]);
+     if(argc != 2){
+         std::cerr << "Error" << std::endl;
+         exit(EXIT_FAILURE);
+     }
+     try
+     {
+         WebServ WebServ(filename);
+     }
+     catch(const std::exception& e)
+     {
+         std::cerr << e.what() << '\n';
+     }  
+     return 0;
+ }
 
 
 
 /*
-
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp -o executavel
-    ./executavel ./cfgs/default.config
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
+    ./executavel src/config.txt
 
 */
 

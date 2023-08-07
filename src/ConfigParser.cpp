@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/03 22:51:03 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/06 20:21:15 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 ConfigParser::ConfigParser()
 {
@@ -26,7 +27,7 @@ ConfigParser::ConfigParser()
     _rules = "";    // location
     _nPos = std::string::npos;
     _directive = 0;
-    _port = "";
+    _portNumber = "";
     _ipAddress = "";
     _httpAddress = "";
     _path = "";
@@ -39,19 +40,19 @@ ConfigParser::ConfigParser()
     _hasRoot = true;
 }
 // g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
-
+// ./executavel src/config.txt  
 
 ConfigParser::~ConfigParser() {}
 
-void ConfigParser::processListen(std::string &line, WebServ &wsManager)
+void ConfigParser::processListen(std::string &line)
 {
     _directive = line.find("listen");
     if(line == "listen"){
         _ipAddress = "0.0.0.0";
-        _port = "80";
+        _portNumber = "80";
         std::cout << "\n-----[PRIMEIRO] TESTE DEFAULT-----";
         std::cout << "IP Address: " << _ipAddress << std::endl;
-        std::cout << "Port: " << _port << std::endl;
+        std::cout << "Port: " << _portNumber << std::endl;
         //std::cout << std::endl;
         return ;
     }
@@ -66,33 +67,33 @@ void ConfigParser::processListen(std::string &line, WebServ &wsManager)
             _ipAddress = line.substr(_directive, (line.length() - (_directive)));
             size_t _delimiter = line.find_last_of(":");
             if(_delimiter != _posInit){
-                _port = line.substr(_delimiter + 1, line.length() - (_delimiter + 1));
+                _portNumber = line.substr(_delimiter + 1, line.length() - (_delimiter + 1));
                 size_t portIndex = _ipAddress.find_last_of(":");
                 _ipAddress = _ipAddress.substr(0, portIndex);
             }else
-                _port = "80";
+                _portNumber = "80";
             std::cout << "\n-----[SEGUNDO] TESTE DE HTTP E HTTPS  COM E SEM PORTA-----" << std::endl;
             std::cout << "IP Address: " << _ipAddress << std::endl;
-            std::cout << "Port: " << _port << std::endl;
+            std::cout << "Port: " << _portNumber << std::endl;
             //std::cout << std::endl;
         }
         else{ // sem protocolo http ou https // trata primeiro com :
             _posInit = line.find(":", _directive);
             if (_posInit != _nPos){// std::cout << "Posição dos ':' >> " << _posInit << std::endl;
                 _ipAddress = line.substr(_directive, _posInit - _directive);
-                _port = line.substr(_posInit + 1, line.length());
+                _portNumber = line.substr(_posInit + 1, line.length());
             }
             else if(line.find(".", _directive) != _nPos){// significa que tem ipAddress (port será default)
                _ipAddress = line.substr(_directive);
-               _port = "80";   
+               _portNumber = "80";   
             }
             else{
-                _port = line.substr(_directive);
+                _portNumber = line.substr(_directive);
                 _ipAddress = "0.0.0.0";
             }
             std::cout << "\n-----[TERCEIRO] TESTE SEM HTTP E HTTPS -----\n";
             std::cout << "IP: " << _ipAddress << std::endl;
-            std::cout << "Porta: " << _port << std::endl;
+            std::cout << "Porta: " << _portNumber << std::endl;
             //std::cout << std::endl;
         }
         // else{
@@ -106,7 +107,7 @@ void ConfigParser::processListen(std::string &line, WebServ &wsManager)
 }       
 
 
-void ConfigParser::processServerName(std::string &line, WebServ &wsManager)
+void ConfigParser::processServerName(std::string &line)
 {
     _directive = line.find("server_name");
     if(_directive != _nPos){
@@ -169,7 +170,7 @@ void ConfigParser::processServerName(std::string &line, WebServ &wsManager)
 
 
 
-bool ConfigParser::processRoot(std::string &line, WebServ &wsManager)
+bool ConfigParser::processRoot(std::string &line)
 {
     _directive = line.find("root");
     if(_directive != _nPos){
@@ -300,7 +301,27 @@ void ConfigParser::processHost(std::string &line)
 void ConfigParser::applyDefaultValues(void)
 {
 }
+
 */
+
+void ConfigParser::setPort(int portNumber){
+    this->_portNumber = portNumber;
+}
+
+void ConfigParser::setAddress(std::string ipAddress){
+    this->_ipAddress = ipAddress;
+}
+
+const std::string& ConfigParser::getPort(void)const{
+    return _portNumber;
+}
+
+const std::string& ConfigParser::getAddress(void)const{
+    return _ipAddress;
+}
+
+
+
 
 
 

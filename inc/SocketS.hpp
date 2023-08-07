@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/31 20:36:46 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/06 20:30:35 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,18 +36,21 @@ class SocketS {
         const int& getFD()const;
         void loadConfiguration();
         
-        void setPort(int portNumber);
+        void setPort(std::string portNumber);
         void setAddress(std::string ipAddress);
+        void setWebServSocket(int webServSocket);
         
-        const int& getPort(void)const;
+        const std::string& getPort(void)const;
         const std::string& getAddress(void)const;
+        const int& getWebServSocket(void)const;
+
         
         
          
     private:
         
         int             _webServSocket; //FD
-        int             _portNumber;
+        std::string     _portNumber;
         std::string     _ipAddress;
         std::string     _response; //talvez na response class
         std::string     _cssContent;
@@ -70,3 +73,10 @@ class SocketS {
 //esse aqui está mais para depuração e apresentação das informações
 std::ostream& operator<<(std::ostream& output, const SocketS& instance);
 #endif
+
+
+/*
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
+    ./executavel src/config.txt
+
+*/
