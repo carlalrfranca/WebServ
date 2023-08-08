@@ -147,7 +147,7 @@ Monitora vários descritores de arquivo para eventos de leitua, escrita ou exce�
 
 ## Linha de desenvolvimento
 
-A aplicação foipensada em quatro etapas.
+A aplicação foi pensada em quatro etapas.
 
 
 
