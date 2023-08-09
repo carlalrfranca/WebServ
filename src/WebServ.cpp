@@ -6,12 +6,13 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/08 15:37:43 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/08 16:48:22 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/WebServ.hpp"
 #include "../inc/ConfigParser.hpp"
+#include "../inc/RequestParser.hpp"
 
 WebServ::WebServ(){}
 

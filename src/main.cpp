@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/06 20:30:56 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/09 16:14:06 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,20 +17,20 @@
 
 
  int main(int argc, char **argv){
-     std::string filename(argv[1]);
-     if(argc != 2){
-         std::cerr << "Error" << std::endl;
-         exit(EXIT_FAILURE);
-     }
-     try
-     {
-         WebServ WebServ(filename);
-     }
-     catch(const std::exception& e)
-     {
-         std::cerr << e.what() << '\n';
-     }  
-     return 0;
+    std::string filename(argv[1]);
+    if(argc != 2){
+        std::cerr << "Error" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    try
+    {
+        WebServ WebServ(filename);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }  
+    return 0;
  }
 
 
