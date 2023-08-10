@@ -62,6 +62,40 @@ HTTPResponseBuilder: Responsável por construir objetos HTTPResponse com base na
 
 Nesta parte, ficarão as classes responsáveis por servir arquivos estáticos e executar scripts CGI.
 
+### CGI (Common Gateway Interface)  
+O CGI é uma parte muito importante uma vez que é através dele que conseguimos executar programas ou scripts externos e retornar seus  
+resultados ao server - o que, por conseguinte, é repassado ao client. Ou seja, com essa técnica, é possível criar paǵinas dinâmicas  
+e personalizadas.  
+Tome como exemplo uma página de formulário:  
+  
+```<!DOCTYPE html>
+<html>
+<head>
+    <title>Exemplo de Formulário CGI</title>
+</head>
+<body>
+    <h2>Preencha o Formulário</h2>
+    <form action="process_form.cgi" method="post">
+        Nome: <input type="text" name="nome"><br>
+        E-mail: <input type="text" name="email"><br>
+        <input type="submit" value="Enviar">
+    </form>
+</body>
+</html>
+```  
+  
+Através do atributo `action`, referenciamos o script CGI que irá receber e tratar as informações submetidas no formulário.  
+Entre essas duas pontas está o servidor, que fica responsável de identificar que a solicitação pede pelo recurso do script CGI,  
+abre um ambiente para essa execução (possivelmente com o uso de fork() e dup()), e trata de passar os valores inseridos pelo  
+usuário no formulário para o script - por meio de variáveis de ambiente, por exemplo (QUERY_STRING).  
+Uma vez que o script CGI receba esses valores e produza uma saída, a ideia é que isso seja redirecionado para o server, que  
+repassa esse conteúdo (geralmente, em formato de página de html) para o client.  
+Resumindo:  
+- Servidor recebe a solicitação que pede pelo recurso do CGI  
+- Configura as variáveis de ambiente necessárias antes de executar o script CGI  
+- O servidor executa o script CGI em um outro processo (fork?) passando os parâmetros da solicitação (e env QUERY_STRING?)  
+- Resposta do script CGI que é jogada para o servidor e este, por sua vez, devolve ao client  
+
 ### Classes
 StaticFileHandler: Responsável por lidar com a entrega de arquivos estáticos para os clientes. <br>
 CGIHandler: Responsável por executar scripts CGI e incluir a saída na resposta HTTP.
