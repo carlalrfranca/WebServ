@@ -93,9 +93,19 @@ repassa esse conteúdo (geralmente, em formato de página de html) para o client
 Resumindo:  
 - Servidor recebe a solicitação que pede pelo recurso do CGI  
 - Configura as variáveis de ambiente necessárias antes de executar o script CGI  
-- O servidor executa o script CGI em um outro processo (fork?) passando os parâmetros da solicitação (e env QUERY_STRING?)  
-- Resposta do script CGI que é jogada para o servidor e este, por sua vez, devolve ao client  
-
+- O servidor executa o script CGI em um outro processo (fork) passando os parâmetros da solicitação (e env QUERY_STRING?)  
+- Resposta do script CGI que é capturada pelo servidor e este, por sua vez, a repassa ao client  
+  
+Para fazer a chamada ao script CGI, seguimos os seguintes passos:  
+1. Criação de um processo filho por meio do fork()  
+2. Redirecionamento de file descriptors (saída e entrada padrão) usando a função dup2()  
+Isso pode incluir a redireção da entrada padrão (stdin) para um socket ou pipe de onde você lê os dados do corpo da solicitação (então o script usaria funções que leem por padrão do STDIN, mas como teremos "redirecionado" o STDIN para um pipe - ou socket? -, ele lerá o corpo da solicitação), e também a redireção da saída padrão (STDOUT) para um novo file descriptor em que capturamos a saída gerada pelo script CGI.  
+3. Execução do script CGI usando exec()  
+4. Leitura da saída do script CGI  
+Após o retorno ao processo pai, lemos a saída do script a partir do file descriptor para o qual redirecionamos a saída padrão (STDOUT)  
+5. Envio da resposta do script ao client  
+Envie a saída lida do script CGI de volta ao client como parte da resposta HTTP.  
+  
 ### Classes
 StaticFileHandler: Responsável por lidar com a entrega de arquivos estáticos para os clientes. <br>
 CGIHandler: Responsável por executar scripts CGI e incluir a saída na resposta HTTP.
