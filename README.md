@@ -106,6 +106,40 @@ Após o retorno ao processo pai, lemos a saída do script a partir do file descr
 5. Envio da resposta do script ao client  
 Envie a saída lida do script CGI de volta ao client como parte da resposta HTTP.  
   
+  
+#### Exemplo de script CGI em BASH (só ilustrativo)  
+```
+#!/bin/bash
+
+# Imprime o cabeçalho HTTP Content-Type para indicar que estamos enviando uma resposta em HTML
+echo "Content-Type: text/html"
+echo ""
+
+# Lê os parâmetros da query string da variável de ambiente QUERY_STRING
+read -r QUERY_STRING
+
+# Parseia os parâmetros da query string
+IFS="&"
+set -- $QUERY_STRING
+for param in "$@"; do
+  IFS="="
+  set -- $param
+  key=$1
+  value=$2
+  echo "Parâmetro: $key = $value<br>"
+done
+
+# Imprime o HTML de resposta
+echo "<html>"
+echo "<head><title>Resposta do Script CGI</title></head>"
+echo "<body>"
+echo "<h1>Parâmetros Recebidos:</h1>"
+echo "<p>Nome: $nome</p>"
+echo "<p>Idade: $idade</p>"
+echo "</body>"
+echo "</html>"
+```  
+  
 ### Classes
 StaticFileHandler: Responsável por lidar com a entrega de arquivos estáticos para os clientes. <br>
 CGIHandler: Responsável por executar scripts CGI e incluir a saída na resposta HTTP.
