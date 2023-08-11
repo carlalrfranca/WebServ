@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/08 16:48:22 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/10 22:26:59 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,10 @@
 #include "../inc/ConfigParser.hpp"
 #include "../inc/RequestParser.hpp"
 
-WebServ::WebServ(){}
+WebServ::WebServ()
+{
+    _nPos = std::string::npos;
+}
 
 WebServ::~WebServ(){}
                 
@@ -26,19 +29,19 @@ WebServ::WebServ(std::string filename){
         std::string line;
         bool isLocationBlock = false;
         while(getline(fileToParse, line)){
-            if (line.find("listen") != std::string::npos) {
+            if (line.find("listen") != std::string::npos){
                 _configParser.processListen(line);
-            } else if (line.find("server_name") != std::string::npos) {
+            }else if (line.find("server_name") != std::string::npos){
                 _configParser.processServerName(line);
-            } else if (line.find("root") != std::string::npos) {
+            }else if (line.find("root") != std::string::npos){
                 _configParser.processRoot(line);
-            } else if (line.find("location") != std::string::npos || isLocationBlock == true){
+            }else if (line.find("location") != std::string::npos || isLocationBlock == true){
                 isLocationBlock = true;
                 _configParser.processLocation(line);
                 if (line.find("}") != std::string::npos)
                     isLocationBlock = false;
             }
-        } 
+        }
     }else
         std::cout << "[Error] : file cannot be opened" << std::endl;
     fileToParse.close();
@@ -72,8 +75,7 @@ void WebServ::configSocket(){
     if(listen(_serverSocket.getWebServSocket(), 5) == -1){
         close(_serverSocket.getWebServSocket());
         throw WebServException();
-    }
-    
+    }   
 }
 
 void WebServ::printRequest(const std::string& request){
@@ -81,6 +83,51 @@ void WebServ::printRequest(const std::string& request){
     std::string line;
     while(std::getline(iss, line) && line != "\r"){
         std::cout << line << std::endl;
+    }
+}
+
+bool WebServ::isFirstLineValid(const std::string& request, std::string& _firstLine){
+
+    std::istringstream requestStream(request);
+    std::getline(requestStream, _firstLine);
+    
+    //valida http
+    if(_firstLine.find("GET") == _nPos && 
+        _firstLine.find("POST") == _nPos && 
+         _firstLine.find("DELETE") == _nPos)
+        return false;
+    
+    //verifica se tem espaço após o metodo
+    size_t spacePos = _firstLine.find(' ');
+    if(spacePos == _nPos || spacePos == _firstLine.size() - 1 )
+        return false;
+    
+    //valida HTTP após o metodo e espaço
+    std::string version = _firstLine.substr(spacePos + 1);
+    if(version.find("HTTP/1.1") == _nPos)
+        return false;
+    
+    //valida espaço apos a versão
+    spacePos = version.find(' ');
+    if(spacePos == _nPos || spacePos == version.size() - 1)
+        return false;
+    return true;
+}
+
+void WebServ::responseError(){
+    std::string response;
+    int errorCode = 400;
+    if(errorCode == 400)
+        response = "HTTP/1.1 400 Bad Request\r\n\r\n";
+    else if(errorCode == 404)
+        response = "HTTP/1.1 404 Not Found\r\n\r\n";
+    else if(errorCode == 500)
+        response = "HTTP/1.1 500 Internal Server\r\n\r\n";
+    else //erro não reconhecido
+        response = "HTTP/1.1 Error\r\n\r\n";
+    ssize_t bytesSent = send(_clientSocket, response.c_str(), response.size(), 0);
+    if(bytesSent < 0) {
+        std::cerr << "[Error] sending error response." << std::endl;
     }
 }
 
@@ -109,7 +156,49 @@ void WebServ::mainLoop(){
             continue;
         }
         std::string request(buffer, bytesRead); //buffer contém os dados recebidos do client
+        
         printRequest(request);
+        std::istringstream requestStream(request); //pega a 
+        std::string _firstLine;
+        std::getline(requestStream, _firstLine);
+        // ---------------------------------------------------------------------------------------------------
+        
+        bool hasError = false;
+        if(!isFirstLineValid(request, _firstLine)){
+            hasError = true;
+            close(_clientSocket);
+        }
+        
+        // rsposta de erro
+        if(hasError){
+            responseError();
+        }
+        // ---------------------------------------------------------------------------------------------------
+        std::istringstream firstLineStream(_firstLine);
+        std::vector<std::string> _tokens;
+        std::string _token;
+        while (std::getline(firstLineStream, _token, ' ')){
+            _tokens.push_back(_token);
+        }
+        for (size_t i = 0; i < _tokens.size(); ++i){
+            std::cout << "Token " << i << ": " << _tokens[i] << std::endl;
+        }
+        std::string _hostLine;
+        std::string _hostContent;
+
+        while (std::getline(requestStream, _hostLine)){
+            if (_hostLine.substr(0, 6) == "Host: ") {
+                _hostContent = _hostLine.substr(6);
+                std::cout << "Host content: " << _hostContent << std::endl;
+                break;
+            }
+        }
+
+        if(_hostContent.empty()){
+            std::cerr << "Linha 'Host:' não encontrada." << std::endl;
+        }
+
+        
         //parceamento da request
             // ver um tipo do metodos
             // ver o que ele ta querenso se [e um html, style, arquivo..
@@ -139,12 +228,15 @@ void WebServ::mainLoop(){
         
 		// Fecha o socket do client  >> se não fechar antes fica no loop
 		close(_clientSocket);
-        std::cout << "\n-----------------------------------------" << std::endl;
+        std::cout << "\n---------------------------------------" << std::endl;
 		std::cout << "----- FECHOU A CONEXÃO COM O CLIENTE ----" << std::endl;
         std::cout << "-----------------------------------------" << std::endl;
+        
+        
     }
     //fecha o socket do server
     close(_clientSocket);
+    close(_serverSocket.getWebServSocket());
     return;
 }
 
@@ -191,8 +283,6 @@ void WebServ::mainLoop(){
         std::cout << "Erro ao abrir" << std::endl;
 }
 
-
-*/
     
 
 /*

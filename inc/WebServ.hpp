@@ -15,13 +15,12 @@
 
 #include <iostream>
 #include <unistd.h>
-#include <string>
 #include <cstdlib>
 #include <netdb.h>
 #include <exception>
 #include <fstream>
 #include <string>
-//#include <vector>
+#include <vector>
 #include <sstream>
 #include <cstdlib>
 
@@ -33,18 +32,27 @@ class ConfigParser;
 class WebServ {
 
     public:
+    
         WebServ();
         WebServ(std::string filename);
         ~WebServ();
         void mainLoop();
         void configSocket();
+        void responseError();
+        bool isFirstLineValid(const std::string& request, std::string& _firstLine);
         void printRequest(const std::string& request);
         
     private:
     
+        size_t          _nPos;
         int             _clientSocket;
         std::string     _nameConfigFile;
         ConfigParser    _configParser; //sujeito comentado
+        
+        
+        // std::vector<SocketS> _serverSocket; // ----vetor criado
+        
+        
         SocketS         _serverSocket;
         socklen_t       _clientAddressLength;
        // std::string     _request;
