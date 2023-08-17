@@ -6,13 +6,14 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/10 22:26:59 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/17 11:12:25 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/WebServ.hpp"
 #include "../inc/ConfigParser.hpp"
 #include "../inc/RequestParser.hpp"
+#include <string.h>
 
 WebServ::WebServ()
 {
@@ -206,15 +207,15 @@ void WebServ::mainLoop(){
             // envia a response
         
         // ---- ESSA PARTE NAO ENTRA DESSA FORMA, AQUI CONTEM POSTAS PARA DAR CONTINUIDADE ---
-        // size_t found = request.find("/style.css"); //
-        // //se ele nao tiver /style.css na request entao sera npos, significa que ele não encontrou
-		// if (found == std::string::npos){
-		// 	const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";
-		// 	ssize_t bytesSent = send(_clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.
-		// 	if (bytesSent == -1){
-		// 		std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
-		// 	}
-		// }
+        size_t found = request.find("/style.css"); //
+        //se ele nao tiver /style.css na request entao sera npos, significa que ele não encontrou
+		if (found == std::string::npos){
+			const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Hello World</h1></body></html>";
+			ssize_t bytesSent = send(_clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.
+			if (bytesSent == -1){
+				std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
+			}
+		}
 		// else{ //esse bloco acontece quando encontrar o /style.css
 		// 	std::string cssContent = readCssFile("style.css");
 		// 	std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\r\n";

@@ -2,8 +2,3 @@ server{
     listen 8080;
     root /fsdfsd/fdsfads/dsa;
 }
-
-server{    
-    listen http://localhost.com:500;
-    server_name example.com;
-}
