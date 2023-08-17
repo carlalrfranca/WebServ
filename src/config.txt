@@ -1,4 +1,18 @@
-server{    
-    listen 8080;
-    root /fsdfsd/fdsfads/dsa;
+server{  
+    listen https://yourdomain.com:2002;
+    server_name example.com;
+    root src/inc/map.txt;
 }
+
+server{  
+    listen https://yourdomain.com:8080;
+    server_name example.com example2.co.uk name_example3.org.br google.com protonmail.co.uk yahoo.com.br;
+    root src/inc/map.txt;
+}
+
+server{  
+    listen https://localhost.com:5005;
+    server_name example.com www.example.com;
+    root
+}
+
