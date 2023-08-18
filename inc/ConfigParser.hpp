@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/10 20:06:55 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/17 21:02:08 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <map>
 #include <vector>
+#include "LocationDirective.hpp"
 
 class ConfigParser{
 
@@ -33,7 +34,13 @@ class ConfigParser{
         void processServerName(std::string &line);
         bool processRoot(std::string &line);
         void processLocation(std::string& line);
-        //void processHost(std::string& line);
+    
+		// expansao do processamento do location (divisao da funcao)
+		void storeCurrentLocationDirectives(std::string &line);
+
+		// ------------------------
+	
+	    //void processHost(std::string& line);
         //void applyDefaultValues(void);
         void setPort(int portNumber);
         void setAddress(std::string ipAddress);
@@ -41,6 +48,7 @@ class ConfigParser{
         const std::string& getPort(void)const;
         const std::string& getAddress(void)const;
     
+
     private:
         
         //SocketS     _serverSocket;
@@ -68,7 +76,8 @@ class ConfigParser{
         // abaixo: map e string do path location atual pra guardar os arquivos de locations no config file
         std::map<std::string, std::vector<std::string> > _locationsMap;
         //std::vector<std::string> _multipleDomains;
-        
+        //MAP DE OBJETOS DE LOCATION PRA INCORPORAR DEPOIS (tirar o _locationsMap acima):
+		std::map<std::string, LocationDirective> _locations; //vai ser -> "/" com seu objeto location respectivo, daí "cgi-bin" com seu objeto location respectivo (com suas respectivas diretivas)
 
 };
 

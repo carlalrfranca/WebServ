@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/06 20:21:15 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/17 23:38:13 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,6 +196,48 @@ bool ConfigParser::processRoot(std::string &line)
 }
 
 
+void ConfigParser::storeCurrentLocationDirectives(std::string &line)
+{
+	std::string directiveName = _currentLocationPathOnMap;
+
+	std::map<std::string, LocationDirective>::iterator it = _locations.find(directiveName);
+	if (it != _locations.end())
+	{
+		// acessa o método atraves do iterador second.método()
+		// mas antes tem que extrair o nome da diretiva e o valor (splitar e colocar num vetor?)
+		// tambem contar quantos itens resultam do split porque isso quer dizer que a diretiva tem mais de um valor...
+		
+		// primeiro, splitamos a linha da diretiva para poder separar o nome da diretiva de seus valores
+		std::istringstream iss(line);
+		std::vector<std::string> values;
+		std::string singleValue;
+
+		while (iss >> singleValue)
+		{
+			values.push_back(singleValue);
+		}
+		// if (values.size() < 2)
+		// 	throw exception porque diretivas tem que ter valores
+		// com os argumentos splitados e num vetor, vamos inserir a key no objeto
+		it->second.addDirective(values[0], values[1]);
+		std::cout << "Diretiva: " << values[0] << std::endl;
+		std::cout << "Valor: " << values[1] << std::endl;
+		// agora vamos verificar se tem mais valores a serem inseridos para essa
+		// diretiva (se há mais itens)
+		if (values.size() > 2)
+		{
+			size_t totalValues = values.size();
+			size_t currentIndex = 2;
+			while (currentIndex < totalValues)
+			{
+				it->second.addDirective(values[0], values[currentIndex]);
+				std::cout << "Valor: " << values[currentIndex] << std::endl;
+				currentIndex++;
+			}
+		}
+	}
+}
+
 void ConfigParser::processLocation(std::string &line)
 {
     std::vector<std::string> filesForPath1;
@@ -215,75 +257,15 @@ void ConfigParser::processLocation(std::string &line)
         }
         _currentLocationPathOnMap = parts[1];
         _locationsMap[_currentLocationPathOnMap];
+		_locations[_currentLocationPathOnMap];
     }
-    else
-    {
-        size_t indexDirectivePos = line.find("index");
-        if (indexDirectivePos != _nPos)
-        {
-        ///////////////////////////////////////////////>>>>>>>>>>>>>>>>
-        // CODIGO DA SPLITAÇÃO E PUSHAR NO VETOR
-            std::istringstream iss(line);
-            std::vector<std::string> files;
-        
-            std::string currentFile;
-            while (iss >> currentFile) {
-                files.push_back(currentFile);
-            }
-            // inseriu os arquivos dentro do vetor 'files', mas isso tambem inclui a diretiva 'index'
-            // precisamos remove-la do vetor com o método erase combinado com o método begin
-            files.erase(files.begin());
-            
-            
-         ///////////////////////////////////////////////>>>>>>>>>>>>>>>>
-         ///////////////////////////////////////////////>>>>>>>>>>>>>>>>
-            
-            
-            //pornto, agora só tem a lista de arquivos
-            // basta passarmos esse vetor para o map com o índice marcando o caminho/path atrelado a esses arquivos
-            _locationsMap[_currentLocationPathOnMap] = files;
-            
-            // agora imprimimos no terminal os itens (nomes dos arquivos) relacionados a esse path
-            for (std::map<std::string, std::vector<std::string> >::iterator it = _locationsMap.begin(); it != _locationsMap.end(); ++it) {
-                std::cout << "Chave Index: " << it->first << "\nValores: ";
-                const std::vector<std::string>& valores = it->second;
-                for (size_t i = 0; i < valores.size(); ++i) {
-                    std::cout << valores[i] << " ";
-                }
-                std::cout << std::endl;
-            }
-        }
-        else if (line.find("alias") != _nPos)
-        {
-            size_t aliasDirectivePos = line.find("alias");
-            // std::string aliasFileName = line.substr(aliasDirectivePos + 5);
-            // std::cout << "Nome do arquivo da location " << _currentLocationPathOnMap << " : " << aliasFileName << std::endl;
-            
-            //substitui pelo que tá no if acima e vê se funfa
-                    // CODIGO DA SPLITAÇÃO E PUSHAR NO VETOR
-            std::istringstream iss(line);
-            std::vector<std::string> files;
-        
-            std::string currentFile;
-            while (iss >> currentFile) {
-                files.push_back(currentFile);
-            }
-            // inseriu os arquivos dentro do vetor 'files', mas isso tambem inclui a diretiva 'index'
-            // precisamos remove-la do vetor com o método erase combinado com o método begin
-            files.erase(files.begin());
-            _locationsMap[_currentLocationPathOnMap] = files;
-            
-            // agora imprimimos no terminal os itens (nomes dos arquivos) relacionados a esse path
-            for (std::map<std::string, std::vector<std::string> >::iterator it = _locationsMap.begin(); it != _locationsMap.end(); ++it) {
-                std::cout << "Chave Alias: " << it->first << "\nValores: ";
-                const std::vector<std::string>& valores = it->second;
-                for (size_t i = 0; i < valores.size(); ++i) {
-                    std::cout << valores[i] << " ";
-                }
-                std::cout << std::endl;
-            }
-            
-        }
+    else //acho que esse "else" tambem pode ser identificando os caminhos do location (hardcoded) e, dependendo de qual for, encaminha
+    {	//pra um metodo correspondente (entao se for '/' é pra um, se for 'cgi-bin' é outro, se for regex é outro, etc)
+
+		// chama o metodo direto que ele adiciona
+		std::cout << std::endl;
+		std::cout << "Current location: " << _currentLocationPathOnMap << std::endl;
+		storeCurrentLocationDirectives(line);
     }
 }
 

@@ -5,7 +5,7 @@ server{
 }
 
 server{  
-    listen https://yourdomain.com:8080;
+    listen https://yourdomain.com:2005;
     server_name example.com example2.co.uk name_example3.org.br google.com protonmail.co.uk yahoo.com.br;
     root src/inc/map.txt;
 }
