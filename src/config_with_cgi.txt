@@ -1,0 +1,15 @@
+server{  
+    listen https://yourdomain.com:2002;
+    server_name example.com;
+    root src/inc/map.txt;
+
+	location / {
+		index index.html
+	}
+
+	 location cgi-bin {
+      root ./;
+      cgi_path /usr/bin/python3 /bin/bash;
+      cgi_ext .py .sh;
+  }
+}
