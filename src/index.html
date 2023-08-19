@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exemplo de Formulário CGI</title>
+</head>
+<body>
+    <h2>Preencha o Formulário</h2>
+    <form method="post" id="myForm" action="http://localhost:5005/process_data.cgi">
+        Nome: <input type="text" name="nome"><br>
+        E-mail: <input type="text" name="email"><br>
+        <input type="submit" value="Enviar">
+    </form>
+
+	<!-- <script>
+        // Evento de envio do formulário
+        document.getElementById("myForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Impede o envio do formulário normalmente
+			console.log("Clicou")
+            // Construir a URL do servidor
+            var url = "http://localhost:5003/process_data.cgi";
+
+            // Obter os valores dos campos "nome" e "email"
+            var nome = document.getElementsByName("nome")[0].value;
+            var email = document.getElementsByName("email")[0].value;
+
+			console.log(nome)
+			console.log(email)
+            // Construir os dados do corpo da solicitação
+            var formData;
+			var boundary = "boundary_" + new Date().getTime();
+            var formData = "--" + boundary + "\r\n";
+            formData += "Content-Disposition: form-data; name=\"nome\"\r\n\r\n" + nome + "\r\n";
+            formData += "--" + boundary + "\r\n";
+            formData += "Content-Disposition: form-data; name=\"email\"\r\n\r\n" + email + "\r\n";
+            formData += "--" + boundary + "--";
+            // Enviar a solicitação POST
+            fetch(url, {
+                method: "POST",
+                body: formData,
+				headers: {
+                    "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryLiwLY8mzq7S1ch42"
+                }
+            })
+            .then(function(response) {
+                return response.text();
+            })
+            .then(function(responseText) {
+                // Exibir a resposta do servidor
+                alert(responseText);
+            })
+            .catch(function(error) {
+                // Tratar erros
+                console.error("Erro na solicitação:", error);
+            });
+        });
+    </script> -->
+</body>
+</html>
+
