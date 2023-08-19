@@ -44,7 +44,7 @@ class WebServ {
         bool isFirstLineValid(const std::string& request, std::string& _firstLine);
         void printRequest(const std::string& request);
 		std::string handleCGIRequest(std::string& request);
-		std::map<std::string, std::string> parseFormData(const std::string& formData);
+		std::string executeScriptAndTakeItsOutPut(int *pipefd);
         
     private:
     

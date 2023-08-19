@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/19 19:43:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/19 20:55:21 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,25 +163,53 @@ void WebServ::responseError(){
     }
 }
 
-std::map<std::string, std::string> WebServ::parseFormData(const std::string& formData) {
-    std::map<std::string, std::string> data;
-    std::istringstream iss(formData);
-    std::string token;
-
-    while (std::getline(iss, token, '&')) {
-        std::size_t eqPos = token.find('=');
-        if (eqPos != std::string::npos) {
-            std::string key = token.substr(0, eqPos);
-            std::string value = token.substr(eqPos + 1);
-            data[key] = value;
-			// std::cout << "---- IMPRIMIÇÃO DOS VALORES -----" << std::endl;
-			// std::cout << key << " : " << value << std::endl;
-			// std::cout << data[key] << std::endl;
-			// std::cout << "----------------------------------" << std::endl;
-        }
-    }
-
-    return data;
+std::string WebServ::executeScriptAndTakeItsOutPut(int *pipefd)
+{
+	pid_t childPid = fork();
+	
+	if (childPid == -1)
+	{
+		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
+		return NULL;
+	}
+	else if (childPid == 0) //é processo filho
+	{
+		// por estarmos no processo filho nesse bloco, vamos então modificar o valor
+		// do STDOUT pra poder redirecionar a saída do script pra cá
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
+		
+		// Executamos agora o script de exemplo
+		execl("./process_form.sh", "./process_form.sh", static_cast<char*>(0));
+		// Se chegou aqui, houve um erro no execl
+		std::cerr << "ERROR executing SCRIPT" << std::endl;
+		return NULL;
+	}
+	else
+	{
+		// processo pai
+		close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
+		
+		// Ler a saída do script CGI do pipe e armazená-la numa string
+		std::string scriptOutPut;
+		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
+		
+		while (true)
+		{
+			ssize_t bytesRead = read(pipefd[0], buffer, sizeof(buffer)); //lê 1024 bytes do pipefd[0] pro buffer
+			if (bytesRead <= 0)
+				break;
+			scriptOutPut.append(buffer, bytesRead);
+		}
+		close(pipefd[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
+		
+		// É importante colocarmos esse processo (pai) pra aguardar o término do processo filho
+		int status;
+		waitpid(childPid, &status, 0);
+		// Agora a saída do script CGI está armazenada em 'scriptOutPut'
+		std::cout << "------ SAÍDA DO SCRIPT --------\n" << scriptOutPut << std::endl;
+		return scriptOutPut;
+	}
 }
 
 std::string WebServ::handleCGIRequest(std::string& request)
@@ -220,64 +248,15 @@ std::string WebServ::handleCGIRequest(std::string& request)
 				return NULL;
 			}
 			std::cout << "----------- CRIOU O PIPE! -----------" << std::endl;
-			pid_t childPid = fork();
-			if (childPid == -1)
+			std::string scriptOutPut;
+
+			scriptOutPut = executeScriptAndTakeItsOutPut(pipefd);
+			if (scriptOutPut.empty())
 			{
-				std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
 				return NULL;
 			}
-			else if (childPid == 0) //é processo filho
-			{
-				// por estarmos no processo filho nesse bloco, vamos então modificar o valor
-				// do STDOUT pra poder redirecionar a saída do script pra cá
-				dup2(pipefd[1], STDOUT_FILENO);
-				close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
-				
-				// Executamos agora o script de exemplo
-				execl("./process_form.sh", "./process_form.sh", static_cast<char*>(0));
-
-				// Se chegou aqui, houve um erro no execl
-				std::cerr << "ERROR executing SCRIPT" << std::endl;
-				return NULL;
-			}
-			else
-			{
-				// processo pai
-				close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
-				
-				// Ler a saída do script CGI do pipe e armazená-la numa string
-				std::string scriptOutPut;
-				char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
-				
-				while (true)
-				{
-					ssize_t bytesRead = read(pipefd[0], buffer, sizeof(buffer)); //lê 1024 bytes do pipefd[0] pro buffer
-					if (bytesRead <= 0)
-						break;
-					scriptOutPut.append(buffer, bytesRead);
-				}
-				close(pipefd[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
-				
-				// É importante colocarmos esse processo (pai) pra aguardar o término do processo filho
-				int status;
-				waitpid(childPid, &status, 0);
-
-				// Agora a saída do script CGI está armazenada em 'scriptOutPut'
-				std::cout << "------ SAÍDA DO SCRIPT --------\n" << scriptOutPut << std::endl;
-				response += scriptOutPut;
-				return response;
-			}
-			
-			// Constrói um HTML na resposta pra exibir os valores enviados no formulário nessa página de resposta
-			// response += "<html><body>";
-			// response += "<h1>Data sent through the form</h1>";
-
-			// // dividimos essa string de valores num map, pra poder enviar no html
-			// std::map<std::string, std::string> formData = parseFormData(inputData);
-			// for (std::map<std::string, std::string>::iterator it = formData.begin(); it != formData.end(); ++it) {
-            //     response += "<p>" + it->first + ": " + it->second + "</p>";
-            // }
-            // response += "</body></html>";
+			response += scriptOutPut;
+			return response;
 		}
 	}
 	else
