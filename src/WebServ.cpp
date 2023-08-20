@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/18 00:20:57 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/19 22:03:49 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,14 @@
 #include "../inc/ConfigParser.hpp"
 #include "../inc/RequestParser.hpp"
 #include <string.h>
-
+#include <string>
 // 
 #include <sys/epoll.h>
 #include <fcntl.h>
+// 
+
+// pro CGI
+#include <sys/wait.h>
 // 
 
 WebServ::WebServ()
@@ -31,18 +35,18 @@ WebServ::~WebServ(){}
 WebServ::WebServ(std::string filename){
 
     std::ifstream fileToParse;
-    size_t index = -1;
+	size_t index = 0;
     fileToParse.open(filename.c_str());
     if(fileToParse.is_open()){
         std::string line;
         bool isLocationBlock = false;
         while(getline(fileToParse, line)){
             if (line.find("server{") != std::string::npos){
-                index++;
                 std::cout << "Index: " << index << std::endl;
                 if (index > 0){
                     configSocket(index - 1);
                 }
+				index++;
             }
             else if (line.find("listen") != std::string::npos){
                 _configParser.processListen(line);
@@ -63,7 +67,7 @@ WebServ::WebServ(std::string filename){
     }else
         std::cout << "[Error] : file cannot be opened" << std::endl;
     if (index != 0)
-        configSocket(index);
+        configSocket(index - 1);
     fileToParse.close();
     mainLoop();
 }
@@ -159,6 +163,113 @@ void WebServ::responseError(){
     }
 }
 
+std::string WebServ::executeScriptAndTakeItsOutPut(int *pipefd)
+{
+	pid_t childPid = fork();
+	
+	if (childPid == -1)
+	{
+		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
+		return NULL;
+	}
+	else if (childPid == 0) //é processo filho
+	{
+		// por estarmos no processo filho nesse bloco, vamos então modificar o valor
+		// do STDOUT pra poder redirecionar a saída do script pra cá
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
+		
+		// Executamos agora o script de exemplo
+		execl("./process_form.sh", "./process_form.sh", static_cast<char*>(0));
+		// Se chegou aqui, houve um erro no execl
+		std::cerr << "ERROR executing SCRIPT" << std::endl;
+		return NULL;
+	}
+	else
+	{
+		// processo pai
+		close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
+		
+		// Ler a saída do script CGI do pipe e armazená-la numa string
+		std::string scriptOutPut;
+		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
+		
+		while (true)
+		{
+			ssize_t bytesRead = read(pipefd[0], buffer, sizeof(buffer)); //lê 1024 bytes do pipefd[0] pro buffer
+			if (bytesRead <= 0)
+				break;
+			scriptOutPut.append(buffer, bytesRead);
+		}
+		close(pipefd[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
+		
+		// É importante colocarmos esse processo (pai) pra aguardar o término do processo filho
+		int status;
+		waitpid(childPid, &status, 0);
+		// Agora a saída do script CGI está armazenada em 'scriptOutPut'
+		std::cout << "------ SAÍDA DO SCRIPT --------\n" << scriptOutPut << std::endl;
+		return scriptOutPut;
+	}
+}
+
+std::string WebServ::handleCGIRequest(std::string& request)
+{
+	// primeiro criamos a header da response:
+	std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+
+	/* 
+		aqui vamos:
+			- confirmar que o método é o POST (depois, transferir isso para um outro método, antes de
+			chamar essa função aqui)
+				> Se for, vamos resgatar o conteúdo enviado pelo formulário e passar para uma
+				  função que cuidará disso (parseFormData) -> irá criar um map com os valores dos inputs do formulario
+				> Vamos inserir esses valores na variavel de ambiente QUERY_STRING com setenv() - (para que o script possa acessar essas informações)
+				> vamos abrir um pipe_fd pra leitura e escrita - e poder manipular o STDIN e STDOUT pra poder
+				  "pegar" aqui no programa o que o script, por padrão, só pode escrever no terminal (STDOUT)
+				> vamos fazer um fork() - criar um processo filho que irá modificar o STDOUT com dup e executará o script
+				> vamos resgatar a saída do script e construir uma response pra retornar pra mainLoop()
+	*/
+
+	if (request.find("POST") != std::string::npos)
+	{
+		std::size_t data_init_pos = request.find("\r\n\r\n");
+		if (data_init_pos != std::string::npos)
+		{
+			std::string inputData = request.substr(data_init_pos + 4);
+			
+			// setamos a env QUERY_STRING com esses valores do form
+			setenv("QUERY_STRING", inputData.c_str(), 1);
+
+			// criar o pipe pra redirecionar a saída do script pra poder resgatar pra cá
+			int pipefd[2];
+			if (pipe(pipefd) == -1)
+			{
+				std::cerr << "ERROR creating PIPE" << std::endl;
+				return NULL;
+			}
+			std::cout << "----------- CRIOU O PIPE! -----------" << std::endl;
+			std::string scriptOutPut;
+
+			scriptOutPut = executeScriptAndTakeItsOutPut(pipefd);
+			if (scriptOutPut.empty())
+			{
+				return NULL;
+			}
+			response += scriptOutPut;
+			return response;
+		}
+	}
+	else
+	{
+		// ou seja, não foi um 'POST'
+		// retorna uma reponse só pra teste
+		response += "<html><body><h1>Simple Form</h1><form method=\"post\">";
+        response += "Name: <input type=\"text\" name=\"name\"><br>Email: <input type=\"text\" name=\"email\"><br>";
+        response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
+	}
+	return response;
+}
+
 void WebServ::mainLoop(){
 
     std::cout << "-----------------------------------------" << std::endl;
@@ -175,13 +286,16 @@ void WebServ::mainLoop(){
 	// 
 
     //Imprimir detalhes de cada servidor
+	std::cout << "Quantidade de servidores: " << _serverSocket.size() << std::endl;
+	struct epoll_event event;
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex){
         std::cout << "Detalhes do servidor " << serverIndex << ":" << std::endl;
         std::cout << "Porta: " << _serverSocket[serverIndex].getPort() << std::endl;
         std::cout << "Endereço: " << _serverSocket[serverIndex].getAddress() << std::endl;
+		std::cout << "WebServ SOCKET FD: " <<  _serverSocket[serverIndex].getWebServSocket() << std::endl;
         std::cout << "-----------------------------------------\n" << std::endl;
 		// try epoll
-		struct epoll_event event;
+		event.data.u64 = 0;
         event.data.fd = _serverSocket[serverIndex].getWebServSocket();
         event.events = EPOLLIN | EPOLLET;
         if (epoll_ctl(epollFd, EPOLL_CTL_ADD, event.data.fd, &event) == -1) {
@@ -226,6 +340,7 @@ void WebServ::mainLoop(){
 					int flags = fcntl(clientSocket, F_GETFL, 0);
 					fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
 					struct epoll_event event;
+					event.data.u64 = 0;
 					event.data.fd = clientSocket;
 					event.events = EPOLLIN | EPOLLET; // Listen for read events in edge-triggered mode
 					
@@ -283,12 +398,25 @@ void WebServ::mainLoop(){
             		        break;
             		    }
             		}
-	
-            		// response só pra satisfazer o client
-            		const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";
-					ssize_t bytesSent = send(clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.
-					if (bytesSent == -1){
-						std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
+
+					// para decidir que reponse vamos mandar, precisamos ver
+					// que recurso a solicitação/request está pedindo
+					size_t found = request.find("process_data.cgi");
+					if (found != std::string::npos)
+					{
+						// lida com o cgi
+						std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
+						std::string response = handleCGIRequest(request);
+						send(clientSocket, response.c_str(), response.length(), 0);
+					}
+					else
+					{
+	            		//por enquanto, um response GENERICO só pra satisfazer o client
+	            		const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";
+						ssize_t bytesSent = send(clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.
+						if (bytesSent == -1){
+							std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
+						}
 					}
 
 

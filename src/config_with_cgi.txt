@@ -1,5 +1,5 @@
 server{  
-    listen https://yourdomain.com:2002;
+    listen https://localhost.com:2001;
     server_name example.com;
     root src/inc/map.txt;
 

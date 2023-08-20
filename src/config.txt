@@ -1,11 +1,11 @@
 server{  
-    listen https://yourdomain.com:2002;
+    listen https://localhost.com:2002;
     server_name example.com;
     root src/inc/map.txt;
 }
 
 server{  
-    listen https://yourdomain.com:2005;
+    listen https://localhost.com:2005;
     server_name example.com example2.co.uk name_example3.org.br google.com protonmail.co.uk yahoo.com.br;
     root src/inc/map.txt;
 }

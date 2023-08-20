@@ -23,6 +23,8 @@
 #include <vector>
 #include <sstream>
 #include <cstdlib>
+#include <map>
+#include <string>
 
 #include "SocketS.hpp"
 #include "ConfigParser.hpp"
@@ -41,6 +43,8 @@ class WebServ {
         void responseError();
         bool isFirstLineValid(const std::string& request, std::string& _firstLine);
         void printRequest(const std::string& request);
+		std::string handleCGIRequest(std::string& request);
+		std::string executeScriptAndTakeItsOutPut(int *pipefd);
         
     private:
     
