@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/19 20:55:21 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/19 21:42:46 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -263,14 +263,9 @@ std::string WebServ::handleCGIRequest(std::string& request)
 	{
 		// ou seja, não foi um 'POST'
 		// retorna uma reponse só pra teste
-		response += "<html><body>";
-        response += "<h1>Simple Form</h1>";
-        response += "<form method=\"post\">";
-        response += "Name: <input type=\"text\" name=\"name\"><br>";
-        response += "Email: <input type=\"text\" name=\"email\"><br>";
-        response += "<input type=\"submit\" value=\"Submit\">";
-        response += "</form>";
-        response += "</body></html>";
+		response += "<html><body><h1>Simple Form</h1><form method=\"post\">";
+        response += "Name: <input type=\"text\" name=\"name\"><br>Email: <input type=\"text\" name=\"email\"><br>";
+        response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
 	}
 	return response;
 }
@@ -291,13 +286,15 @@ void WebServ::mainLoop(){
 	// 
 
     //Imprimir detalhes de cada servidor
+	struct epoll_event event;
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex){
         std::cout << "Detalhes do servidor " << serverIndex << ":" << std::endl;
         std::cout << "Porta: " << _serverSocket[serverIndex].getPort() << std::endl;
         std::cout << "Endereço: " << _serverSocket[serverIndex].getAddress() << std::endl;
+		std::cout << "WebServ SOCKET FD: " <<  _serverSocket[serverIndex].getWebServSocket() << std::endl;
         std::cout << "-----------------------------------------\n" << std::endl;
 		// try epoll
-		struct epoll_event event;
+		event.data.u64 = 0;
         event.data.fd = _serverSocket[serverIndex].getWebServSocket();
         event.events = EPOLLIN | EPOLLET;
         if (epoll_ctl(epollFd, EPOLL_CTL_ADD, event.data.fd, &event) == -1) {
@@ -342,6 +339,7 @@ void WebServ::mainLoop(){
 					int flags = fcntl(clientSocket, F_GETFL, 0);
 					fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
 					struct epoll_event event;
+					event.data.u64 = 0;
 					event.data.fd = clientSocket;
 					event.events = EPOLLIN | EPOLLET; // Listen for read events in edge-triggered mode
 					
