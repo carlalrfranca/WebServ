@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/19 21:42:46 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/19 22:03:49 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,18 +35,18 @@ WebServ::~WebServ(){}
 WebServ::WebServ(std::string filename){
 
     std::ifstream fileToParse;
-    size_t index = -1;
+	size_t index = 0;
     fileToParse.open(filename.c_str());
     if(fileToParse.is_open()){
         std::string line;
         bool isLocationBlock = false;
         while(getline(fileToParse, line)){
             if (line.find("server{") != std::string::npos){
-                index++;
                 std::cout << "Index: " << index << std::endl;
                 if (index > 0){
                     configSocket(index - 1);
                 }
+				index++;
             }
             else if (line.find("listen") != std::string::npos){
                 _configParser.processListen(line);
@@ -67,7 +67,7 @@ WebServ::WebServ(std::string filename){
     }else
         std::cout << "[Error] : file cannot be opened" << std::endl;
     if (index != 0)
-        configSocket(index);
+        configSocket(index - 1);
     fileToParse.close();
     mainLoop();
 }
@@ -286,6 +286,7 @@ void WebServ::mainLoop(){
 	// 
 
     //Imprimir detalhes de cada servidor
+	std::cout << "Quantidade de servidores: " << _serverSocket.size() << std::endl;
 	struct epoll_event event;
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex){
         std::cout << "Detalhes do servidor " << serverIndex << ":" << std::endl;
