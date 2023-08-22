@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/21 17:29:49 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/22 14:17:38 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -299,12 +299,21 @@ void ConfigParser::processErrorPage(std::string &line)
     }
 }
 
-void ConfigParser::processRewrite(std::string &line)
-{
+//void ConfigParser::processRewrite(std::string &line)
+//{
+//
+//}
 
+void ConfigParser::processSSL(std::string &line)
+{
+    if (line == "ssl on")
+           std::cout << "SSL enabled" << std::endl;
+    else if (line == "ssl off")
+           std::cout << "SSL disabled" << std::endl;
+    else
+           std::cout << "Unknown SSL configuration: " << line << std::endl;
 }
 
-// void ConfigParser::processSSL(std::string &line){}
 // void ConfigParser::processProxyPass(std::string &line){}
 // void ConfigParser::processGzip(std::string &line){}
 // void ConfigParser::processAccessLog(std::string &line){}
