@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/22 23:04:12 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/22 23:24:38 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -299,6 +299,32 @@ int WebServ::addServerToEpoll()
 	return epollFd;
 }
 
+int WebServ::addNewClientToEpoll(struct epoll_event *event_ptr, int i, int epollFd)
+{
+	struct sockaddr_in clientAddress = {0};
+	socklen_t clientAddressLength = sizeof(clientAddress);
+	int clientSocket = accept(event_ptr[i].data.fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
+	
+	if (clientSocket == -1) {
+	    perror("Error accepting client connection");
+	    return -3; // Move to the next event
+	}
+	
+	// Set the client socket to non-blocking mode
+	int flags = fcntl(clientSocket, F_GETFL, 0);
+	fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
+	struct epoll_event event;
+	event.data.u64 = 0;
+	event.data.fd = clientSocket;
+	event.events = EPOLLIN | EPOLLET; // Listen for read events in edge-triggered mode
+	
+	if (epoll_ctl(epollFd, EPOLL_CTL_ADD, clientSocket, &event) == -1) {
+	    perror("Error adding client socket to epoll");
+	    close(clientSocket); // Close the socket on error
+	}
+	return 0;
+}
+
 void WebServ::mainLoop(){
 
     std::cout << "-----------------------------------------" << std::endl;
@@ -334,27 +360,9 @@ void WebServ::mainLoop(){
 			}
 				if (monitor == true)
 				{
-					struct sockaddr_in clientAddress = {0};
-					socklen_t clientAddressLength = sizeof(clientAddress);
-					int clientSocket = accept(events[i].data.fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
-					
-					if (clientSocket == -1) {
-					    perror("Error accepting client connection");
-					    continue; // Move to the next event
-					}
-					
-					// Set the client socket to non-blocking mode
-					int flags = fcntl(clientSocket, F_GETFL, 0);
-					fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
-					struct epoll_event event;
-					event.data.u64 = 0;
-					event.data.fd = clientSocket;
-					event.events = EPOLLIN | EPOLLET; // Listen for read events in edge-triggered mode
-					
-					if (epoll_ctl(epollFd, EPOLL_CTL_ADD, clientSocket, &event) == -1) {
-					    perror("Error adding client socket to epoll");
-					    close(clientSocket); // Close the socket on error
-					}
+					int result = addNewClientToEpoll(events, i, epollFd);
+					if (result == -3)
+						continue;
 				}
 				else
 				{
