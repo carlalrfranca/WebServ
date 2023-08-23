@@ -3,9 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
+
 /*   Updated: 2023/08/23 20:34:01 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
@@ -24,10 +25,7 @@
 #include <sys/wait.h>
 // 
 
-WebServ::WebServ()
-{
-    //_nPos = std::string::npos;
-}
+WebServ::WebServ(){}
 
 WebServ::~WebServ(){}
                 
@@ -54,9 +52,12 @@ WebServ::WebServ(std::string filename){
                 _configParser.processServerName(line);
             }else if (line.find("root") != std::string::npos){
                 _configParser.processRoot(line);
-            }else if (line.find("location") != std::string::npos || isLocationBlock == true){
-                if (line.find("}") != std::string::npos)
-				{
+            }else if (line.find("index") != std::string::npos){
+                _configParser.processIndex(line);
+			}else if (line.find("ssl on") != std::string::npos){
+				_configParser.processSSL(line);
+			}else if (line.find("location") != std::string::npos || isLocationBlock == true){
+                if (line.find("}") != std::string::npos){
                     isLocationBlock = false;
 					continue;
 				}
@@ -279,7 +280,9 @@ int WebServ::addServerToEpoll()
 		perror("Error creating epoll");
 		return -1;
 	}
-	std::cout << "Quantidade de servidores: " << _serverSocket.size() << std::endl;
+	// 
+
+    //Imprimir detalhes de cada servidor
 	struct epoll_event event;
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex){
         std::cout << "Detalhes do servidor " << serverIndex << ":" << std::endl;
@@ -348,7 +351,9 @@ void WebServ::mainLoop(){
         }
 
         for (int i = 0; i < numEvents; ++i)
-		{
+        {
+	for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+	{
 			bool isServerFdTriggered = false;
 			for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
 			{
@@ -414,18 +419,18 @@ void WebServ::mainLoop(){
             		    }
             		}
 
-					// para decidir que reponse vamos mandar, precisamos ver
-					// que recurso a solicitação/request está pedindo
-					size_t found = request.find("process_data.cgi");
-					if (found != std::string::npos)
-					{
-						// lida com o cgi
-						std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
-						std::string response = handleCGIRequest(request);
-						send(clientSocket, response.c_str(), response.length(), 0);
-					}
-					else
-					{
+		// para decidir que reponse vamos mandar, precisamos ver
+		// que recurso a solicitação/request está pedindo
+		size_t found = request.find("process_data.cgi");
+		if (found != std::string::npos)
+		{
+			// lida com o cgi
+			std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
+			std::string response = handleCGIRequest(request);
+			send(clientSocket, response.c_str(), response.length(), 0);
+		}
+		else
+		{
 	            		//por enquanto, um response GENERICO só pra satisfazer o client
 	            		const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";
 						ssize_t bytesSent = send(clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.

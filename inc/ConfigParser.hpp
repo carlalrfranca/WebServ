@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/17 21:02:08 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/21 20:13:54 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,12 @@
 #include <iostream>
 #include <unistd.h>
 #include <string>
+
 #include <cstdlib>
 #include <map>
 #include <vector>
 #include "LocationDirective.hpp"
+
 
 class ConfigParser{
 
@@ -37,9 +39,21 @@ class ConfigParser{
     
 		// expansao do processamento do location (divisao da funcao)
 		void storeCurrentLocationDirectives(std::string &line);
-
+		
 		// ------------------------
-	
+		
+		
+		void processIndex(std::string &line);
+        void processErrorPage(std::string &line);
+		void processRewrite(std::string &line);
+		void processSSL(std::string &line);
+		//void processProxyPass(std::string &line);
+		//void processGzip(std::string &line);
+		//void processAccessLog(std::string &line);
+		//void processAuthBasic(std::string &line);
+        //void processAllowDeny(std::string &line);
+		
+		// ------------------------
 	    //void processHost(std::string& line);
         //void applyDefaultValues(void);
         void setPort(int portNumber);
@@ -47,11 +61,12 @@ class ConfigParser{
         
         const std::string& getPort(void)const;
         const std::string& getAddress(void)const;
-    
+        const std::vector<std::string>& getIndexFiles(void)const;
+        const std::string getErrorPage(int statusCode)const;
 
     private:
         
-        //SocketS     _serverSocket;
+        std::vector<std::string> _indexFiles;
         std::string     _domain; //server_name
         std::string     _ssl; //ssl_certificate
         std::string     _key; //ssl_certificate
@@ -62,7 +77,6 @@ class ConfigParser{
         std::string     _portNumber;
         std::string     _root;
         std::string     _currentLocationPathOnMap;
-        size_t          _nPos;
         size_t          _directive;
         size_t          _posInit;
         size_t          _posEnd;
@@ -78,9 +92,8 @@ class ConfigParser{
         //std::vector<std::string> _multipleDomains;
         //MAP DE OBJETOS DE LOCATION PRA INCORPORAR DEPOIS (tirar o _locationsMap acima):
 		std::map<std::string, LocationDirective> _locations; //vai ser -> "/" com seu objeto location respectivo, daí "cgi-bin" com seu objeto location respectivo (com suas respectivas diretivas)
-
+        std::map<int, std::string> _errorPages;
 };
-
 #endif
 
 

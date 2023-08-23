@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/17 23:38:13 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/22 14:17:38 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ ConfigParser::ConfigParser()
     //_ssl = "";    //ssl_certificate
     _key = "";      // ssl_certificate
     _rules = "";    // location
-    _nPos = std::string::npos;
     _directive = 0;
     _portNumber = "";
     _ipAddress = "";
@@ -39,8 +38,11 @@ ConfigParser::ConfigParser()
     _root = "";
     _hasRoot = true;
 }
-// g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
-// ./executavel src/config.txt  
+/*
+
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp -o executavel 
+    ./executavel src/config.txt  
+*/
 
 ConfigParser::~ConfigParser() {}
 
@@ -57,13 +59,13 @@ void ConfigParser::processListen(std::string &line)
         return ;
     }
     _semicolonIndex = line.find_first_of(";");
-    if(_semicolonIndex != _nPos && _semicolonIndex == (line.length() - 1)){
+    if(_semicolonIndex != std::string::npos && _semicolonIndex == (line.length() - 1)){
         line = line.substr(0, (line.length() - 1));
     }
-    if(_directive != _nPos){
+    if(_directive != std::string::npos){
         _directive += std::string("listen ").length();
         _posInit = line.find("://", _directive);
-        if(_posInit != _nPos){
+        if(_posInit != std::string::npos){
             _ipAddress = line.substr(_directive, (line.length() - (_directive)));
             size_t _delimiter = line.find_last_of(":");
             if(_delimiter != _posInit){
@@ -79,11 +81,11 @@ void ConfigParser::processListen(std::string &line)
         }
         else{ // sem protocolo http ou https // trata primeiro com :
             _posInit = line.find(":", _directive);
-            if (_posInit != _nPos){// std::cout << "Posição dos ':' >> " << _posInit << std::endl;
+            if (_posInit != std::string::npos){// std::cout << "Posição dos ':' >> " << _posInit << std::endl;
                 _ipAddress = line.substr(_directive, _posInit - _directive);
                 _portNumber = line.substr(_posInit + 1, line.length());
             }
-            else if(line.find(".", _directive) != _nPos){// significa que tem ipAddress (port será default)
+            else if(line.find(".", _directive) != std::string::npos){// significa que tem ipAddress (port será default)
                _ipAddress = line.substr(_directive);
                _portNumber = "80";   
             }
@@ -104,40 +106,40 @@ void ConfigParser::processListen(std::string &line)
         // }
         
     }
-}       
+}     
 
 
 void ConfigParser::processServerName(std::string &line)
 {
     _directive = line.find("server_name");
-    if(_directive != _nPos){
+    if(_directive != std::string::npos){
         _directive += std::string("server_name").length();                               // avança para além da palavra "server_name"
         _posInit = line.find_first_of("*", _directive); // busca para os casos de wildcard
-        if(_posInit != _nPos){ // se ele encontrou
+        if(_posInit != std::string::npos){ // se ele encontrou
             _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
-            if(_posSemicolon != _nPos){
+            if(_posSemicolon != std::string::npos){
                 _domain = line.substr(_posInit, _posSemicolon - (_posInit)); // se quiser extrair sem * _domain = line.substr(_posInit + 1, _posSemicolon - (_posInit + 1));
                 std::cout << "Domain: " << _domain << std::endl;     
             }
         }
         else{
-            if(line.find_first_of("~", _directive) != _nPos){ // busca para os casos de expressao regular
+            if(line.find_first_of("~", _directive) != std::string::npos){ // busca para os casos de expressao regular
                 _posInit = line.find_first_of("~", _directive);
                 _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
-                if(_posSemicolon != _nPos){
+                if(_posSemicolon != std::string::npos){
                     _domain = line.substr(_posInit, _posSemicolon - (_posInit)); // se quiser extrair sem ~ _domain = line.substr(_posInit + 1, _posSemicolon - (_posInit + 1));
                     std::cout << "Domain: " << _domain << std::endl;             // pra TESTE
                 }
             }
-            else if(line.find_first_of("/", _directive) != _nPos){
+            else if(line.find_first_of("/", _directive) != std::string::npos){
                 _posInit = line.find_first_of("/", _directive);
                 _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
-                if(_posSemicolon != _nPos){
+                if(_posSemicolon != std::string::npos){
                     _domain = line.substr(_posInit, _posSemicolon - (_posInit));
                     std::cout << "Domain: " << _domain << std::endl; // pra TESTE
                 } 
             }
-            else if(line.find(".", _directive) != _nPos && line.find(" ", _directive) != _nPos && line.find_first_of(";", _directive) != _nPos){
+            else if(line.find(".", _directive) != std::string::npos && line.find(" ", _directive) != std::string::npos && line.find_first_of(";", _directive) != std::string::npos){
                 size_t _posDot = line.find(".", _directive); // busca para os casos de caminho vazio de dominio
                 size_t _posSpace = line.find(" ", _directive); // busca para os casos de caminho vazio de dominio
                 _posSemicolon = line.find_first_of(";", _directive); // estrai do asterisco até antes do ;
@@ -168,17 +170,15 @@ void ConfigParser::processServerName(std::string &line)
     }
 }
 
-
-
 bool ConfigParser::processRoot(std::string &line)
 {
     _directive = line.find("root");
-    if(_directive != _nPos){
+    if(_directive != std::string::npos){
         _directive += std::string("root").length();;
         _posInit = line.find_first_of("/", _directive);
-        if(_posInit != _nPos){
+        if(_posInit != std::string::npos){
             _posSemicolon = line.find_first_of(";", _posInit);
-            if(_posSemicolon != _nPos){
+            if(_posSemicolon != std::string::npos){
                 _root = line.substr(_posInit, _posSemicolon - (_posInit));
                 std::cout << "Root: " << _root << std::endl;
             }
@@ -206,7 +206,6 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &line)
 		// acessa o método atraves do iterador second.método()
 		// mas antes tem que extrair o nome da diretiva e o valor (splitar e colocar num vetor?)
 		// tambem contar quantos itens resultam do split porque isso quer dizer que a diretiva tem mais de um valor...
-		
 		// primeiro, splitamos a linha da diretiva para poder separar o nome da diretiva de seus valores
 		std::istringstream iss(line);
 		std::vector<std::string> values;
@@ -243,7 +242,7 @@ void ConfigParser::processLocation(std::string &line)
     std::vector<std::string> filesForPath1;
     
     _directive = line.find("location");
-    if (_directive != _nPos)
+    if (_directive != std::string::npos)
     {
         // verificar o tipo de location ("/", "/[directorio], etc")
         // pra isso, teremos que dividir a line em partes pra ver o que é apontado pela location
@@ -269,7 +268,57 @@ void ConfigParser::processLocation(std::string &line)
     }
 }
 
+void ConfigParser::processIndex(std::string &line)
+{
+    if(line.find("index") != std::string::npos)
+    {
+        std::istringstream iss(line);
+        std::string directive, indices;
+        iss >> directive >> indices;
+        
+        std::istringstream indicesStream(indices);
+        std::string index;
+        while(indicesStream >> index)
+            _indexFiles.push_back(index);
+    }
+    //só para saber a posição mesmo
+    //for (size_t i = 0; i < _indexFiles.size(); ++i)
+    //std::cout << "Index file at position " << i << ": " << _indexFiles[i] << std::endl;
+}
 
+void ConfigParser::processErrorPage(std::string &line)
+{
+    if(line.find("error_page") != std::string::npos)
+    {
+        std::istringstream iss(line);
+        std::string directive, status, path;
+        iss >> directive >> status >> path;
+        int statusCode = std::atoi(status.c_str()); // Converte o status para um número inteiro
+        _errorPages[statusCode] = path; // Armazena a página de erro no mapa
+        std::cout << "Error page for status " << statusCode << ": " << path << std::endl;
+    }
+}
+
+//void ConfigParser::processRewrite(std::string &line)
+//{
+//
+//}
+
+void ConfigParser::processSSL(std::string &line)
+{
+    if (line == "ssl on")
+           std::cout << "SSL enabled" << std::endl;
+    else if (line == "ssl off")
+           std::cout << "SSL disabled" << std::endl;
+    else
+           std::cout << "Unknown SSL configuration: " << line << std::endl;
+}
+
+// void ConfigParser::processProxyPass(std::string &line){}
+// void ConfigParser::processGzip(std::string &line){}
+// void ConfigParser::processAccessLog(std::string &line){}
+// void ConfigParser::processAuthBasic(std::string &line){}
+// void ConfigParser::processAllowDeny(std::string &line){}
 
 
 
@@ -302,10 +351,16 @@ const std::string& ConfigParser::getAddress(void)const{
     return _ipAddress;
 }
 
+const std::vector<std::string>& ConfigParser::getIndexFiles(void) const{
+    return _indexFiles;
+}
 
-
-
-
+const std::string ConfigParser::getErrorPage(int statusCode)const{
+    std::map<int, std::string>::const_iterator it = _errorPages.find(statusCode);
+        if (it != _errorPages.end())
+            return it->second;
+        return ""; // Retorna uma string vazia se não houver página de erro definida
+}
 
 
 /*
