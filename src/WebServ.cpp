@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/19 22:03:49 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/22 23:04:12 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,22 +270,15 @@ std::string WebServ::handleCGIRequest(std::string& request)
 	return response;
 }
 
-void WebServ::mainLoop(){
-
-    std::cout << "-----------------------------------------" << std::endl;
-    std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
-    std::cout << "-----------------------------------------\n" << std::endl;
-    
-	// epolll try
+int WebServ::addServerToEpoll()
+{
 	int epollFd = epoll_create1(0);
+
 	if (epollFd == -1)
 	{
 		perror("Error creating epoll");
-		return;
+		return -1;
 	}
-	// 
-
-    //Imprimir detalhes de cada servidor
 	std::cout << "Quantidade de servidores: " << _serverSocket.size() << std::endl;
 	struct epoll_event event;
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex){
@@ -300,12 +293,26 @@ void WebServ::mainLoop(){
         event.events = EPOLLIN | EPOLLET;
         if (epoll_ctl(epollFd, EPOLL_CTL_ADD, event.data.fd, &event) == -1) {
             perror("Error adding socket to epoll");
-            return;
+            return -2;
         }
     }
+	return epollFd;
+}
+
+void WebServ::mainLoop(){
+
+    std::cout << "-----------------------------------------" << std::endl;
+    std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
+    std::cout << "-----------------------------------------\n" << std::endl;
+
+	int epollFd = addServerToEpoll();
+	if (epollFd == -1 || epollFd == -2)
+	{
+		return; //dar uma exceção de erro
+	}
 	const int maxEvents = 10;
     struct epoll_event events[maxEvents];
-    
+
 	while(true)
 	{
 		int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
