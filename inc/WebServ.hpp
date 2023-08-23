@@ -45,6 +45,8 @@ class WebServ {
         void printRequest(const std::string& request);
 		std::string handleCGIRequest(std::string& request);
 		std::string executeScriptAndTakeItsOutPut(int *pipefd);
+		int addServerToEpoll();
+		int addNewClientToEpoll(struct epoll_event *event_ptr, int i, int epollFd);
         
     private:
     
