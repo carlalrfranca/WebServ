@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/22 23:24:38 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/22 23:28:53 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -349,16 +349,16 @@ void WebServ::mainLoop(){
 
         for (int i = 0; i < numEvents; ++i)
 		{
-			bool monitor = false;
+			bool isServerFdTriggered = false;
 			for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
 			{
 				if (events[i].data.fd == _serverSocket[serverIndex].getWebServSocket())
 				{
-					monitor = true;
+					isServerFdTriggered = true;
 					break;
 				}
 			}
-				if (monitor == true)
+				if (isServerFdTriggered == true)
 				{
 					int result = addNewClientToEpoll(events, i, epollFd);
 					if (result == -3)
