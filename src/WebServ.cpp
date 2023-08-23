@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/19 22:03:49 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/21 20:16:23 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,7 @@
 #include <sys/wait.h>
 // 
 
-WebServ::WebServ()
-{
-    //_nPos = std::string::npos;
-}
+WebServ::WebServ(){}
 
 WebServ::~WebServ(){}
                 
@@ -54,9 +51,12 @@ WebServ::WebServ(std::string filename){
                 _configParser.processServerName(line);
             }else if (line.find("root") != std::string::npos){
                 _configParser.processRoot(line);
-            }else if (line.find("location") != std::string::npos || isLocationBlock == true){
-                if (line.find("}") != std::string::npos)
-				{
+            }else if (line.find("index") != std::string::npos){
+                _configParser.processIndex(line);
+			}else if (line.find("ssl on") != std::string::npos){
+				_configParser.processSSL(line);
+			}else if (line.find("location") != std::string::npos || isLocationBlock == true){
+                if (line.find("}") != std::string::npos){
                     isLocationBlock = false;
 					continue;
 				}
@@ -286,7 +286,7 @@ void WebServ::mainLoop(){
 	// 
 
     //Imprimir detalhes de cada servidor
-	std::cout << "Quantidade de servidores: " << _serverSocket.size() << std::endl;
+	//std::cout << "Quantidade de servidores: " << _serverSocket.size() << std::endl;
 	struct epoll_event event;
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex){
         std::cout << "Detalhes do servidor " << serverIndex << ":" << std::endl;
@@ -315,44 +315,44 @@ void WebServ::mainLoop(){
         }
 
         for (int i = 0; i < numEvents; ++i)
+        {
+            bool monitor = false;
+	for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+	{
+		if (events[i].data.fd == _serverSocket[serverIndex].getWebServSocket())
 		{
-			bool monitor = false;
-			for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
-			{
-				if (events[i].data.fd == _serverSocket[serverIndex].getWebServSocket())
-				{
-					monitor = true;
-					break;
-				}
+			monitor = true;
+			break;
+		}
+	}
+		if (monitor == true)
+		{
+			struct sockaddr_in clientAddress = {0};
+			socklen_t clientAddressLength = sizeof(clientAddress);
+			int clientSocket = accept(events[i].data.fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
+			
+			if (clientSocket == -1) {
+			    perror("Error accepting client connection");
+			    continue; // Move to the next event
 			}
-				if (monitor == true)
-				{
-					struct sockaddr_in clientAddress = {0};
-					socklen_t clientAddressLength = sizeof(clientAddress);
-					int clientSocket = accept(events[i].data.fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
-					
-					if (clientSocket == -1) {
-					    perror("Error accepting client connection");
-					    continue; // Move to the next event
-					}
-					
-					// Set the client socket to non-blocking mode
-					int flags = fcntl(clientSocket, F_GETFL, 0);
-					fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
-					struct epoll_event event;
-					event.data.u64 = 0;
-					event.data.fd = clientSocket;
-					event.events = EPOLLIN | EPOLLET; // Listen for read events in edge-triggered mode
-					
-					if (epoll_ctl(epollFd, EPOLL_CTL_ADD, clientSocket, &event) == -1) {
-					    perror("Error adding client socket to epoll");
-					    close(clientSocket); // Close the socket on error
-					}
-				}
-				else
-				{
-					int clientSocket = events[i].data.fd;
-					char buffer[1024];
+			
+			// Set the client socket to non-blocking mode
+			int flags = fcntl(clientSocket, F_GETFL, 0);
+			fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
+			struct epoll_event event;
+			event.data.u64 = 0;
+			event.data.fd = clientSocket;
+			event.events = EPOLLIN | EPOLLET; // Listen for read events in edge-triggered mode
+			
+			if (epoll_ctl(epollFd, EPOLL_CTL_ADD, clientSocket, &event) == -1) {
+			    perror("Error adding client socket to epoll");
+			    close(clientSocket); // Close the socket on error
+			}
+		}
+		else
+		{
+			int clientSocket = events[i].data.fd;
+			char buffer[1024];
             		ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0); //peguei a request
             		if(bytesRead <= 0){
             		    std::cerr << "Erro ao receber solicitação do client " << std::endl;
@@ -399,18 +399,18 @@ void WebServ::mainLoop(){
             		    }
             		}
 
-					// para decidir que reponse vamos mandar, precisamos ver
-					// que recurso a solicitação/request está pedindo
-					size_t found = request.find("process_data.cgi");
-					if (found != std::string::npos)
-					{
-						// lida com o cgi
-						std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
-						std::string response = handleCGIRequest(request);
-						send(clientSocket, response.c_str(), response.length(), 0);
-					}
-					else
-					{
+		// para decidir que reponse vamos mandar, precisamos ver
+		// que recurso a solicitação/request está pedindo
+		size_t found = request.find("process_data.cgi");
+		if (found != std::string::npos)
+		{
+			// lida com o cgi
+			std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
+			std::string response = handleCGIRequest(request);
+			send(clientSocket, response.c_str(), response.length(), 0);
+		}
+		else
+		{
 	            		//por enquanto, um response GENERICO só pra satisfazer o client
 	            		const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";
 						ssize_t bytesSent = send(clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.

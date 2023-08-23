@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/21 16:52:09 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/21 20:13:54 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <string>
+
 #include <cstdlib>
 #include <map>
 #include <vector>
@@ -45,7 +46,7 @@ class ConfigParser{
 		void processIndex(std::string &line);
         void processErrorPage(std::string &line);
 		void processRewrite(std::string &line);
-		//void processSSL(std::string &line);
+		void processSSL(std::string &line);
 		//void processProxyPass(std::string &line);
 		//void processGzip(std::string &line);
 		//void processAccessLog(std::string &line);
