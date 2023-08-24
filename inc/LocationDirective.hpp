@@ -3,22 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   LocationDirective.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 20:39:26 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/08/18 00:34:55 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/24 16:48:56 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _HPP_LOCATIONDIRECTIVE_
 #define _HPP_LOCATIONDIRECTIVE_
+#include "../inc/HeadersLibs.hpp"
 
-#include <iostream>
-#include <map>
-#include <vector>
-#include <string>
-
-class LocationDirective {
+class LocationDirective
+{
 
 	public:
 		
@@ -26,10 +23,8 @@ class LocationDirective {
 		~LocationDirective(void);
 		void addDirective(std::string& directiveName, std::string& value); //se houver mais de um valor pra diretiva, adiciona um por um, só passar o mesmo nome de diretiva
 
-		// getValueDirective
-		// getNameDirective
-
 	private:
+	
 		std::map<std::string, std::vector< std::string > > _directives;
 };
 

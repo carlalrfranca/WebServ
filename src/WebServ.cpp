@@ -6,18 +6,11 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 15:26:23 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 16:48:31 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/WebServ.hpp"
-#include "../inc/ConfigParser.hpp"
-#include "../inc/RequestParser.hpp"
-#include <string.h>
-#include <string>
-#include <sys/epoll.h>
-#include <fcntl.h>
-#include <sys/wait.h>
+#include "../inc/HeadersLibs.hpp"
 
 WebServ::WebServ(){}
 

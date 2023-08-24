@@ -6,26 +6,24 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/07/26 15:08:13 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 16:44:05 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _RESPONSE_HPP_
 #define _RESPONSE_HPP_
-
-#include <string>
-#include <iostream>
-#include <cstdlib>
+#include "../inc/HeadersLibs.hpp"
 
 //acho que ele puxa por chave e valor entao perguntar depois se vamos usar map mesmo
-
 
 class Server;
 class Request;
 
-class Response {
+class Response
+{
 
     public:
+    
         Response(void);
         ~Response(void);
         Response(Request *req, Server *_server); //precisa desses dois

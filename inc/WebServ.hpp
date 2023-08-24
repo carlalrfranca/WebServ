@@ -12,22 +12,7 @@
 
 #ifndef _WEBSERV_HPP_
 #define _WEBSERV_HPP_
-
-#include <iostream>
-#include <unistd.h>
-#include <cstdlib>
-#include <netdb.h>
-#include <exception>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <sstream>
-#include <cstdlib>
-#include <map>
-#include <string>
-
-#include "SocketS.hpp"
-#include "ConfigParser.hpp"
+#include "../inc/HeadersLibs.hpp"
 
 class ConfigParser;
 
