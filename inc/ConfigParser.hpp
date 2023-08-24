@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/21 20:13:54 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/23 22:37:11 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,11 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <dirent.h>
+#include <sstream>
 #include <string>
-
+#include <fstream>
+#include <string>
 #include <cstdlib>
 #include <map>
 #include <vector>
@@ -36,17 +39,19 @@ class ConfigParser{
         void processServerName(std::string &line);
         bool processRoot(std::string &line);
         void processLocation(std::string& line);
-    
+        
 		// expansao do processamento do location (divisao da funcao)
 		void storeCurrentLocationDirectives(std::string &line);
-		
-		// ------------------------
-		
-		
 		void processIndex(std::string &line);
         void processErrorPage(std::string &line);
 		void processRewrite(std::string &line);
 		void processSSL(std::string &line);
+		void processAllowMethods(std::string &line);
+		void processClientaxBodySize(std::string &line);
+        void processAutoIndex(std::string &line);
+        void processClientMaxBodySize(std::string &line);
+        void processReturn(std::string &line);
+        
 		//void processProxyPass(std::string &line);
 		//void processGzip(std::string &line);
 		//void processAccessLog(std::string &line);
@@ -99,7 +104,7 @@ class ConfigParser{
 
 
 /*
-g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
-./executavel src/config.txt
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp -o executavel
+    ./executavel src/config.txt
 
 */

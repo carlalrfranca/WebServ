@@ -6,8 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-
-/*   Updated: 2023/08/23 20:34:01 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/23 22:37:51 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +40,8 @@ WebServ::WebServ(std::string filename){
         while(getline(fileToParse, line)){
             if (line.find("server{") != std::string::npos){
                 std::cout << "Index: " << index << std::endl;
-                if (index > 0){
+                if (index > 0)
                     configSocket(index - 1);
-                }
 				index++;
             }
             else if (line.find("listen") != std::string::npos){
@@ -56,6 +54,10 @@ WebServ::WebServ(std::string filename){
                 _configParser.processIndex(line);
 			}else if (line.find("ssl on") != std::string::npos){
 				_configParser.processSSL(line);
+			}else if (line.find("allow_methods") != std::string::npos){
+				_configParser.processAllowMethods(line);
+			}else if (line.find("client_max_body_size") != std::string::npos){
+				_configParser.processClientMaxBodySize(line);
 			}else if (line.find("location") != std::string::npos || isLocationBlock == true){
                 if (line.find("}") != std::string::npos){
                     isLocationBlock = false;
@@ -74,8 +76,6 @@ WebServ::WebServ(std::string filename){
 }
 
 void WebServ::configSocket(size_t serverIndex){
-   
-    std::cout << "---------  CHEGA AQUI [2] -----------\n" << std::endl;
     SocketS temp_socket;
     //_serverSocket[serverIndex].setPort(_configParser.getPort());
     //_serverSocket[serverIndex].setAddress(_configParser.getAddress());
@@ -185,16 +185,13 @@ std::string WebServ::executeScriptAndTakeItsOutPut(int *pipefd)
 		// Se chegou aqui, houve um erro no execl
 		std::cerr << "ERROR executing SCRIPT" << std::endl;
 		return NULL;
-	}
-	else
-	{
+	} else {
 		// processo pai
 		close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
 		
 		// Ler a saída do script CGI do pipe e armazená-la numa string
 		std::string scriptOutPut;
 		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
-		
 		while (true)
 		{
 			ssize_t bytesRead = read(pipefd[0], buffer, sizeof(buffer)); //lê 1024 bytes do pipefd[0] pro buffer
@@ -377,25 +374,17 @@ void WebServ::mainLoop(){
             		    continue;
             		}
             		std::string request(buffer, bytesRead); //buffer contém os dados recebidos do client
-
-            		std::cout << "EITA -------" << std::endl;
             		printRequest(request);
-            		std::cout << "EITA -------" << std::endl;
             		std::istringstream requestStream(request); //pega a 
             		std::string _firstLine;
             		std::getline(requestStream, _firstLine);
-            		// ---------------------------------------------------------------------------------------------------
-
             		bool hasError = false;
             		if(!isFirstLineValid(request, _firstLine)){
             		    hasError = true;
             		    close(clientSocket);
             		}
-	
-            		// resposta de erro
-            		if(hasError){
+            		if(hasError)
             		    responseError();
-            		}
             		// ---------------------------------------------------------------------------------------------------
             		std::istringstream firstLineStream(_firstLine);
             		std::vector<std::string> _tokens;
@@ -555,7 +544,7 @@ void WebServ::mainLoop(){
 }*/
 
 /*
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp -o executavel
     ./executavel src/config.txt
 
 */

@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/22 14:17:38 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/23 22:37:17 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -299,10 +299,40 @@ void ConfigParser::processErrorPage(std::string &line)
     }
 }
 
-//void ConfigParser::processRewrite(std::string &line)
-//{
-//
-//}
+void ConfigParser::processAllowMethods(std::string &line)
+{
+    std::vector<std::string> methods;
+    std::istringstream iss(line);
+    std::string method;
+    while (iss >> method)
+        methods.push_back(method);
+    for (size_t i = 0; i < methods.size(); ++i) {
+        if (methods[i] == "GET") {
+            std::cout << "GET method is allowed." << std::endl;
+        } else if (methods[i] == "POST") {
+            std::cout << "POST method is allowed." << std::endl;
+        } else if (methods[i] == "DELETE") {
+            std::cout << "DELETE method is allowed." << std::endl;
+        }
+    }  
+}
+
+void ConfigParser::processClientMaxBodySize(std::string &line)
+{
+    std::string directive = "client_max_body_size";
+    std::size_t pos = line.find(directive);
+    if (pos != std::string::npos)
+    {
+        pos = line.find_first_of("0123456789", pos + directive.size());
+        if (pos != std::string::npos) {
+            std::size_t end_pos = line.find_first_not_of("0123456789KMG", pos);
+            if (end_pos != std::string::npos) {
+                std::string size_str = line.substr(pos, end_pos - pos);
+                std::cout << "client_max_body_size: " << size_str << std::endl;
+            }
+        }
+    }
+}
 
 void ConfigParser::processSSL(std::string &line)
 {
@@ -314,26 +344,64 @@ void ConfigParser::processSSL(std::string &line)
            std::cout << "Unknown SSL configuration: " << line << std::endl;
 }
 
-// void ConfigParser::processProxyPass(std::string &line){}
-// void ConfigParser::processGzip(std::string &line){}
-// void ConfigParser::processAccessLog(std::string &line){}
-// void ConfigParser::processAuthBasic(std::string &line){}
-// void ConfigParser::processAllowDeny(std::string &line){}
-
-
-
-/*
-void ConfigParser::processHost(std::string &line)
-{
-
+void ConfigParser::processAutoIndex(std::string &line) {
+    try
+    {
+        if (line == "on")
+        {
+            const char *directoryPath = ".";
+            DIR *directory = opendir(directoryPath);
+            if (directory)
+            {
+                struct dirent *entry;
+                std::vector<std::string> fileList;
+                while ((entry = readdir(directory)) != NULL)
+                    fileList.push_back(std::string(entry->d_name));
+                for (size_t i = 0; i < fileList.size(); ++i)
+                    std::cout << fileList[i] << std::endl;
+                closedir(directory);
+            } else {
+                throw std::runtime_error("Error when open directory.");
+            }
+        } else if (line == "off") {
+            std::cout << "Autoindex is on." << std::endl;
+        } else {
+            throw std::runtime_error("Invalid value to autoindex.");
+        }
+    } catch (const std::exception &e) {
+        std::cout << "Error: " << e.what() << std::endl;
+    }
 }
 
-
-void ConfigParser::applyDefaultValues(void)
+void ConfigParser::processReturn(std::string &line)
 {
+    std::string directive = "return";
+    std::size_t pos = line.find(directive);
+    if (pos != std::string::npos)
+    {
+        pos = line.find_first_of("0123456789", pos + directive.size());
+        if (pos != std::string::npos)
+        {
+            std::size_t status_pos = pos;
+            std::size_t end_status_pos = line.find_first_not_of("0123456789", pos);
+            if (end_status_pos != std::string::npos)
+            {
+                std::string status_str = line.substr(status_pos, end_status_pos - status_pos);
+                int status_code = atoi(status_str.c_str());
+                std::size_t message_pos = line.find_first_of('"', end_status_pos);
+                if (message_pos != std::string::npos)
+                {
+                    std::size_t end_message_pos = line.find('"', message_pos + 1);
+                    if (end_message_pos != std::string::npos)
+                    {
+                        std::string message = line.substr(message_pos + 1, end_message_pos - message_pos - 1);
+                        std::cout << "return status code: " << status_code << ", message: " << message << std::endl;
+                    }
+                }
+            }
+        }
+    }
 }
-
-*/
 
 void ConfigParser::setPort(int portNumber){
     this->_portNumber = portNumber;
@@ -359,31 +427,5 @@ const std::string ConfigParser::getErrorPage(int statusCode)const{
     std::map<int, std::string>::const_iterator it = _errorPages.find(statusCode);
         if (it != _errorPages.end())
             return it->second;
-        return ""; // Retorna uma string vazia se não houver página de erro definida
+        return "";
 }
-
-
-/*
-
-    server_name example.com; //nome de dominio
-    server_name example.com www.example.com;  // multiplos nomes de dominio
-    server_name *.example.com;  // Wildcard (Coringa) em subdomínio
-    server_name ~^www\.example\.(com|org)$;  //expressões regulares para dominio
-    server_name example.com/path;  //caminho específico de dominio
-    server_name example.com ""; // caminho vazio em um dominio
-    server_name ""; // vazio default
-
-     essa parte pode ter como delimitador:
-     
-        ""  espaço: casod default
-        "." && "": caso de caminho vazio de dominio
-        "*" asterisco: caso de wildcard sundominio
-        "~" caso de expressão regular
-        "/" casode caminhos
-        else 
-           caso de dominios
-    else
-        linha de configuração inválida
-     
-
-*/

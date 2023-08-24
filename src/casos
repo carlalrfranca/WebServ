@@ -3,18 +3,21 @@ server{
     listen https://localhost.com:2002;
     server_name example.com;
     root src/inc/map.txt;
+    allow_methods GET
 }
 
 server{  
     listen https://localhost.com:2005;
     server_name example.com example2.co.uk name_example3.org.br google.com protonmail.co.uk yahoo.com.br;
     root src/inc/map.txt;
+	allow_methods POST
 }
 
 server{  
     listen https://localhost.com:5005;
     server_name example.com www.example.com;
     root
+    	allow_methods DELETE
 }
 
 
@@ -253,3 +256,36 @@ server_name "";
 
 listen 443 ssl;
 server_name *.example.com;
+
+
+
+
+branch
+
+
+
+
+
+Certifique-se de estar na branch correta:
+Primeiro, verifique se você está na branch em que deseja fazer o commit. Use o comando git branch para verificar em qual branch você está.
+
+Copy code
+git branch
+Adicione as alterações para o commit:
+Use o comando git add para adicionar as alterações que você deseja incluir no próximo commit.
+
+csharp
+Copy code
+git add .
+Faça o commit das alterações:
+Use o comando git commit para fazer o commit das alterações adicionadas. Lembre-se de fornecer uma mensagem descritiva para o commit.
+
+sql
+Copy code
+git commit -m "Sua mensagem de commit aqui"
+Empurre o commit para o repositório remoto (opcional):
+Se você quiser sincronizar o commit com o repositório remoto, você pode usar o comando git push.
+
+perl
+Copy code
+git push origin nome-da-sua-branch
