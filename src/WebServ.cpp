@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/23 22:53:56 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 15:26:23 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,9 @@
 #include "../inc/RequestParser.hpp"
 #include <string.h>
 #include <string>
-// 
 #include <sys/epoll.h>
 #include <fcntl.h>
-// 
-
-// pro CGI
 #include <sys/wait.h>
-// 
 
 WebServ::WebServ(){}
 
@@ -92,37 +87,33 @@ void WebServ::configSocket(size_t serverIndex){
     if(_serverSocket[serverIndex].getWebServSocket() == -1){
         throw WebServException();
     }
-    
     //configura endereço do servidor e inicializa os campos da estrutura com 0
     struct sockaddr_in server_address = {0};
     server_address.sin_family = AF_INET; //socket usará os ends. IPv4
     server_address.sin_port = htons(std::atoi(_configParser.getPort().c_str())); //usa a função htons para converter8080 para a ordem de bytes da rede e atribui a sin_port
     server_address.sin_addr.s_addr = INADDR_ANY; //especifica o end.IP que o socket do server será vinculado
-
     //chamada para o bind - vincula o socket ao endereço e porta, 0 -1 tem haver com a falha na chamada do bind
     if(bind(_serverSocket[serverIndex].getWebServSocket(),(struct sockaddr*)&server_address, sizeof(server_address)) == -1){
         close(_serverSocket[serverIndex].getWebServSocket());
          WebServException();
     }
-    
     //habilitar o socket para aguardar conexões de entrada. ) 5 representa o tamanho máximo da fila de conexões pendentes.
     if(listen(_serverSocket[serverIndex].getWebServSocket(), 5) == -1){
         close(_serverSocket[serverIndex].getWebServSocket());
         throw WebServException();
-    }
-    std::cout << "--------- Socket atual colocado pra escutar..." << std::endl;
+    } //std::cout << "--------- Socket atual colocado pra escutar..." << std::endl;
 }
 
-void WebServ::printRequest(const std::string& request){
+void WebServ::printRequest(const std::string& request)
+{
     std::istringstream iss(request);//permite tratar a string request como um fluxo de entrada
     std::string line;
-    while(std::getline(iss, line) && line != "\r"){
+    while(std::getline(iss, line) && line != "\r")
         std::cout << line << std::endl;
-    }
 }
 
-bool WebServ::isFirstLineValid(const std::string& request, std::string& _firstLine){
-
+bool WebServ::isFirstLineValid(const std::string& request, std::string& _firstLine)
+{
     std::istringstream requestStream(request);
     std::getline(requestStream, _firstLine);
     
@@ -149,7 +140,8 @@ bool WebServ::isFirstLineValid(const std::string& request, std::string& _firstLi
     return true;
 }
 
-void WebServ::responseError(){
+void WebServ::responseError()
+{
     std::string response;
     int errorCode = 400;
     if(errorCode == 400)
