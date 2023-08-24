@@ -6,15 +6,11 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/09 16:14:06 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 16:33:46 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
-#include <cstdlib>
-#include "../inc/WebServ.hpp"
-
-
+#include "../inc/HeadersLibs.hpp"
 
  int main(int argc, char **argv){
     std::string filename(argv[1]);

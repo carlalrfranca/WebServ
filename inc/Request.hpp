@@ -6,19 +6,17 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/09 19:55:21 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 17:11:06 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _RESQUEST_HPP_
 #define _RESQUEST_HPP_
-
-#include <iostream>
-#include <vector>
-#include "Server.hpp"
+#include "../inc/HeadersLibs.hpp"
 
 //inserir macro buffer
-class Request {
+class Request
+{
 
     public:
     
@@ -26,6 +24,7 @@ class Request {
         ~Request(); 
         
     private:
+    
         char _buffer[1024];
         std::string _request; //talvez fique na request class
         size_t _foundRequest; //talvez fique na request class
@@ -45,6 +44,7 @@ std::ostream& operator<<(std::ostream& output, const Request& rhs);
 #endif
 
 
+// solicitacao da request as linhas
 
 
 /*
