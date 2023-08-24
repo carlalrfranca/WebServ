@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/23 22:37:11 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/23 22:52:03 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ class ConfigParser{
     
         ConfigParser();
         ~ConfigParser();
-        //ConfigParser(std::string line);
+        // ConfigParser(std::string line);
     
         void processListen(std::string &line);
         void processServerName(std::string &line);
@@ -47,7 +47,6 @@ class ConfigParser{
 		void processRewrite(std::string &line);
 		void processSSL(std::string &line);
 		void processAllowMethods(std::string &line);
-		void processClientaxBodySize(std::string &line);
         void processAutoIndex(std::string &line);
         void processClientMaxBodySize(std::string &line);
         void processReturn(std::string &line);

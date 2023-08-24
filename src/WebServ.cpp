@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/23 22:37:51 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/23 22:53:56 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ WebServ::WebServ(std::string filename){
 				_configParser.processAllowMethods(line);
 			}else if (line.find("client_max_body_size") != std::string::npos){
 				_configParser.processClientMaxBodySize(line);
+			}else if (line.find("return") != std::string::npos){
+				_configParser.processReturn(line);
 			}else if (line.find("location") != std::string::npos || isLocationBlock == true){
                 if (line.find("}") != std::string::npos){
                     isLocationBlock = false;
