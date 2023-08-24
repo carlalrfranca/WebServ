@@ -330,7 +330,7 @@ int WebServ::addNewClientToEpoll(struct epoll_event *event_ptr, int i, int epoll
 
 void WebServ::mainLoop(){
 
-    std::cout << "-----------------------------------------" << std::endl;
+        std::cout << "-----------------------------------------" << std::endl;
     std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
     std::cout << "-----------------------------------------\n" << std::endl;
 
@@ -351,9 +351,7 @@ void WebServ::mainLoop(){
         }
 
         for (int i = 0; i < numEvents; ++i)
-        {
-	for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
-	{
+		{
 			bool isServerFdTriggered = false;
 			for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
 			{
@@ -419,18 +417,18 @@ void WebServ::mainLoop(){
             		    }
             		}
 
-		// para decidir que reponse vamos mandar, precisamos ver
-		// que recurso a solicitação/request está pedindo
-		size_t found = request.find("process_data.cgi");
-		if (found != std::string::npos)
-		{
-			// lida com o cgi
-			std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
-			std::string response = handleCGIRequest(request);
-			send(clientSocket, response.c_str(), response.length(), 0);
-		}
-		else
-		{
+					// para decidir que reponse vamos mandar, precisamos ver
+					// que recurso a solicitação/request está pedindo
+					size_t found = request.find("process_data.cgi");
+					if (found != std::string::npos)
+					{
+						// lida com o cgi
+						std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
+						std::string response = handleCGIRequest(request);
+						send(clientSocket, response.c_str(), response.length(), 0);
+					}
+					else
+					{
 	            		//por enquanto, um response GENERICO só pra satisfazer o client
 	            		const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";
 						ssize_t bytesSent = send(clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.
