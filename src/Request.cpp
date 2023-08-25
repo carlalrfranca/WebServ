@@ -6,14 +6,18 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/25 19:40:22 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/25 19:45:02 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Request.hpp"
 
-Request::Request(const std::string& request) : _request(request), _hasError(false), _hostLine(""), _hostContent("")
+Request::Request(const std::string& request)
 {
+    _request = request;
+    _hasError = false;
+    _hostLine = "";
+    _hostContent = "";
     _requestStream.str(request);
     std::getline(_requestStream, _firstLine);
 }
