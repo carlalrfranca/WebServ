@@ -6,67 +6,118 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/09 19:55:21 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/25 19:34:01 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef _RESQUEST_HPP_
-#define _RESQUEST_HPP_
+#ifndef _REQUEST_HPP_
+#define _REQUEST_HPP_
+#include "HeadersLibs.hpp"
 
-#include <iostream>
-#include <vector>
-#include "Server.hpp"
-
-//inserir macro buffer
-class Request {
-
-    public:
+class Request
+{
     
-        Request();
-        ~Request(); 
-        
-    private:
-        char _buffer[1024];
-        std::string _request; //talvez fique na request class
-        size_t _foundRequest; //talvez fique na request class
-        ssize_t _bytesRead;
+    public:
 
-        void printRequestHeaders();    
-        class RequestException: public std::exception{
-            public:
-                virtual const char* what() const throw(){
-                return "\nError: Inserir uma mensagem no Request Exception\n";
-            }
-                
-        };        
+        Request(const std::string& request); //criar instancia
+        ~Request(void);
+        
+        void setRequest(const std::string& request);
+        void printRequest(void);
+        bool isFirstLineValid(void);
+        bool validateRequest(void);
+        
+        void setHasError(bool hasError);
+        bool getHasError(void)const;
+    
+    private:
+    
+        std::istringstream _requestStream;
+        std::string _request;
+        std::string _firstLine;
+        std::string _hostLine;
+        std::string _hostContent;
+        bool        _hasError;
+    
+        class RequestException: public std::exception {
+        public:
+        
+            virtual const char* what() const throw(){
+            return "\nError: Invalid request detected.\n";
+        }
+            
+    }; 
+    
 };
-//esse aqui está mais para depuração e apresentação das informações
+
 std::ostream& operator<<(std::ostream& output, const Request& rhs);
 #endif
 
-
-
-
 /*
+void WebServ::printRequest(const std::string& request)
+{
+    std::istringstream iss(request);//permite tratar a string request como um fluxo de entrada
+    std::string line;
+    while(std::getline(iss, line) && line != "\r")
+        std::cout << line << std::endl;
+}
 
-    tenho que pegar a string da request
-    extrair o conteudo ate a primeira quebra de linha
-    armazeno esse conteudo em um atributo
-    depois pego o atributo
-    splitar a linha com base em espáço
-    armazeno em um verto de string
-    depois valido o que for get separo
-    deixo 
+bool WebServ::isFirstLineValid(const std::string& request, std::string& _firstLine)
+{
+    std::istringstream requestStream(request);
+    std::getline(requestStream, _firstLine);
     
+    //valida http
+    if(_firstLine.find("GET") == std::string::npos && 
+        _firstLine.find("POST") == std::string::npos && 
+         _firstLine.find("DELETE") == std::string::npos)
+        return false;
     
-    metodo
-    caminho
-    valido o protocolo e salvo em atributo o protocolo
+    //verifica se tem espaço após o metodo
+    size_t spacePos = _firstLine.find(' ');
+    if(spacePos == std::string::npos || spacePos == _firstLine.size() - 1 )
+        return false;
     
+    //valida HTTP após o metodo e espaço
+    std::string version = _firstLine.substr(spacePos + 1);
+    if(version.find("HTTP/1.1") == std::string::npos)
+        return false;
     
-    
-    a segunda linha eu nao salvo o host
-    só identifica e salva o valor que vier neste caso o localhost:8080
+    //valida espaço apos a versão
+    spacePos = version.find(' ');
+    if(spacePos == std::string::npos || spacePos == version.size() - 1)
+        return false;
+    return true;
+}
 
 
+
+
+
+
+
+            		if(!isFirstLineValid(request, _firstLine)){
+            		    hasError = true;
+            		    close(clientSocket);
+            		}
+            		if(hasError)
+            		    responseError();
+            		// ---------------------------------------------------------------------------------------------------
+            		std::istringstream firstLineStream(_firstLine);
+            		std::vector<std::string> _tokens;
+            		std::string _token;
+            		while (std::getline(firstLineStream, _token, ' ')){
+            		    _tokens.push_back(_token);
+            		}
+            		for (size_t i = 0; i < _tokens.size(); ++i){
+            		    std::cout << "Token " << i << ": " << _tokens[i] << std::endl;
+            		}
+            		std::string _hostLine;
+            		std::string _hostContent;
+
+            		while (std::getline(requestStream, _hostLine)){
+            		    if (_hostLine.substr(0, 6) == "Host: ") {
+            		        _hostContent = _hostLine.substr(6);
+            		        std::cout << "Host content: " << _hostContent << std::endl;
+            		        break;
 */

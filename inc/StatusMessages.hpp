@@ -1,24 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   LocationDirective.cpp                              :+:      :+:    :+:   */
+/*   StatusMessages.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/17 21:13:30 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/08/24 18:26:10 by cleticia         ###   ########.fr       */
+/*   Created: 2023/08/24 18:31:43 by cleticia          #+#    #+#             */
+/*   Updated: 2023/08/24 20:45:36 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/HeadersLibs.hpp"
+#ifndef _STRUCTSTATUS_HPP_
+#define _STRUCTSTATUS_HPP_
 
-LocationDirective::LocationDirective(void)
-{ }
+#include "HeadersLibs.hpp"
 
-LocationDirective::~LocationDirective(void)
-{ }
-
-void LocationDirective::addDirective(std::string& directiveName, std::string& value)
+struct StatusMessages
 {
-	_directives[directiveName].push_back(value);
-}
+    std::map<int, std::string> statusMessages;
+    StatusMessages();
+    std::string getMessage(int statusCode);
+};
+
+#endif
