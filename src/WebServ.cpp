@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 16:48:31 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 22:04:28 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
+#include "../inc/WebServ.hpp"
 
 WebServ::WebServ(){}
 
@@ -314,40 +315,49 @@ int WebServ::addNewClientToEpoll(struct epoll_event *event_ptr, int i, int epoll
 
 void WebServ::mainLoop(){
 
-        std::cout << "-----------------------------------------" << std::endl;
+    std::cout << "-----------------------------------------" << std::endl;
     std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
     std::cout << "-----------------------------------------\n" << std::endl;
 
-	int epollFd = addServerToEpoll();
+	Epoll epoll_S;
+
+	// int epollFd = addServerToEpoll();
+	epoll_S.addServersToEpoll(_serverSocket);
+	int epollFd = epoll_S.getEpollFd();
+	std::cout << "Epoll FD ------> " << epollFd << std::endl;
 	if (epollFd == -1 || epollFd == -2)
 	{
 		return; //dar uma exceção de erro
 	}
-	const int maxEvents = 10;
+	// const int maxEvents = 10;
+	const int maxEvents = epoll_S.getMaxEvents();
     struct epoll_event events[maxEvents];
 
 	while(true)
 	{
-		int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
-        if (numEvents == -1) {
+		// int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
+		epoll_S.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
+        if (epoll_S.getNumberEvents() == -1) {
             perror("Error in epoll_wait");
             return;
-        }
+        } ////-------------------------------
 
-        for (int i = 0; i < numEvents; ++i)
+        for (int i = 0; i < epoll_S.getNumberEvents(); ++i)
 		{
-			bool isServerFdTriggered = false;
+			// bool isServerFdTriggered = false;
+			epoll_S.setIsServerFdTriggered(false);
 			for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
 			{
 				if (events[i].data.fd == _serverSocket[serverIndex].getWebServSocket())
 				{
-					isServerFdTriggered = true;
+					epoll_S.setIsServerFdTriggered(true);
 					break;
 				}
 			}
-				if (isServerFdTriggered == true)
+				if (epoll_S.getIsServerFdTriggered() == true)
 				{
-					int result = addNewClientToEpoll(events, i, epollFd);
+					// int result = addNewClientToEpoll(events, i, epollFd);
+					int result = epoll_S.addNewClientToEpoll(events, i);
 					if (result == -3)
 						continue;
 				}
