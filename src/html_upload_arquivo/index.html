@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Upload de um arquivo</title>
+</head>
+<style>
+	*, *::before, *::after {
+		box-sizing: border-box;
+	}
+
+	html {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	body {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 2rem 5rem;
+		background: linear-gradient(rgb(22, 21, 39), rgb(68, 78, 129));
+		color: #c9d9de;
+		font-family: 'Arial';
+	}
+
+	section {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		/* padding: 5rem; */
+		gap: 3rem;
+	}
+
+	#about-CGI {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-start;
+		text-align: center;
+	}
+
+	h1 {
+		font-size: 1.5rem;
+		text-transform: uppercase;
+		font-weight: 900;
+		font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+	}
+
+	.uppercased {
+		text-transform: uppercase;
+	}
+
+	form {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-start;
+		gap: 1rem;
+	}
+
+	input {
+		color: white;
+		background-color: black;
+	}
+
+	#image {
+		border: 1px solid yellow;
+		width: 300px;
+		height: 300px;
+	}
+
+	#choose-image {
+		display: flex;
+		justify-content: space-around;
+	}
+
+	.colored {
+		color: rgb(245, 186, 38);
+	}
+
+	.custom-file {
+		background-color: black;
+	}
+
+	.warnings {
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+	}
+
+	h2 {
+		font-size: 1rem;
+	}
+
+</style>
+<body>
+	<section>
+		<div id="about-CGI">
+			<h1>Olá! Vamos treinar um pouco com o CGI?</h1>
+				<p>Esse projeto exige que seja feito alguns scripts CGI.</p>
+				Nesse caso, Vamos
+				mexer um pouco com a funcionalidade de postar um arquivo de imagem
+				no nosso servidor, e exibir essa imagem aqui.
+				Isso mesmo.
+				<span class="uppercased">Nessa página!</span>
+		</div>
+		<div>
+			<h2>LEMBRE-SE</h3>
+			<p>Tudo tem limite</p>
+			<span>A imagem submetida precisa ter até - megas. Mais do que isso e o servidor não irá aceitar!</span>
+		</div>
+		<div id="choose-image">
+			<div>
+				<p>Vamos lá? A imagem aparecerá nesse <span class="colored">espaço destacado</span></p>
+				<form action="/upload" method="post" enctype="multipart/form-data">
+					<label for="fileUpload" class="custom-file">Selecione um arquivo:</label>
+					<input type="file" name="fileUpload" id="fileUpload">
+					<input type="submit" value="Enviar Arquivo" id="submit">
+				</form>
+			</div>
+			<div id="image">
+				
+			</div>
+		</div>
+	</section>
+</body>
+</html>
