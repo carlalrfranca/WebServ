@@ -10,21 +10,21 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #ifndef _HPP_CONFIG_PARSER_
 #define _HPP_CONFIG_PARSER_
+#include "../inc/HeadersLibs.hpp"
 
-#include <iostream>
-#include <unistd.h>
-#include <dirent.h>
-#include <sstream>
-#include <string>
-#include <fstream>
-#include <string>
-#include <cstdlib>
-#include <map>
-#include <vector>
-#include "LocationDirective.hpp"
+// #include <iostream>
+// #include <unistd.h>
+// #include <dirent.h>
+// #include <sstream>
+// #include <string>
+// #include <fstream>
+// #include <string>
+// #include <cstdlib>
+// #include <map>
+// #include <vector>
+// #include "LocationDirective.hpp"
 
 
 class ConfigParser{
@@ -51,15 +51,6 @@ class ConfigParser{
         void processClientMaxBodySize(std::string &line);
         void processReturn(std::string &line);
         
-		//void processProxyPass(std::string &line);
-		//void processGzip(std::string &line);
-		//void processAccessLog(std::string &line);
-		//void processAuthBasic(std::string &line);
-        //void processAllowDeny(std::string &line);
-		
-		// ------------------------
-	    //void processHost(std::string& line);
-        //void applyDefaultValues(void);
         void setPort(int portNumber);
         void setAddress(std::string ipAddress);
         

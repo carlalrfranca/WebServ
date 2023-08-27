@@ -14,26 +14,18 @@
 #define _HEADERS_LIBS_HPP_
 
 // C++ LIBRARIES
+
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <sys/epoll.h>
 #include <sys/wait.h>
-#include <unistd.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <sys/epoll.h>
 
-// LOCAL
-#include "../inc/RequestParser.hpp"
-#include "../inc/ConfigParser.hpp"
-#include "../inc/StatusMessages.hpp"
-#include "LocationDirective.hpp"
-#include "../inc/WebServ.hpp"
-#include "ConfigParser.hpp"
-#include "SocketS.hpp"
 
 // DEFINES
 #include <stdexcept>
@@ -45,7 +37,8 @@
 #include <cctype>
 #include <vector>
 #include <string>
-#include <map>
+#include <cctype> //Para usar a função std::isspace
+
 
 // COLORS DEFINES
 #define YELLOW  "\033[0;33m"

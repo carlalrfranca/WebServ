@@ -12,20 +12,18 @@
 
 #ifndef _RESPONSE_HPP_
 #define _RESPONSE_HPP_
-
-#include <string>
-#include <iostream>
-#include <cstdlib>
+#include "../inc/HeadersLibs.hpp"
 
 //acho que ele puxa por chave e valor entao perguntar depois se vamos usar map mesmo
-
 
 class Server;
 class Request;
 
-class Response {
+class Response
+{
 
     public:
+    
         Response(void);
         ~Response(void);
         Response(Request *req, Server *_server); //precisa desses dois

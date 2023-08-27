@@ -6,28 +6,19 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/06 20:30:35 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 16:48:05 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _SOCKETS_HPP_
 #define _SOCKETS_HPP_
-
-#include <string>
-#include <cstdlib>
-#include <netdb.h>
-#include <unistd.h>
-#include <iostream>
-#include <stdexcept>
-#include <stdexcept>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
+#include "../inc/HeadersLibs.hpp"
 
 // criação do sockt, vinculação com o endereço e a escuta
 // tudo em relação ao socket do SocketS
 
-class SocketS {
+class SocketS
+{
 
     public:
         
@@ -44,9 +35,6 @@ class SocketS {
         const std::string& getAddress(void)const;
         const int& getWebServSocket(void)const;
 
-        
-        
-         
     private:
         
         int             _webServSocket; //FD

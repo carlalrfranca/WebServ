@@ -6,18 +6,16 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/08 16:45:29 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/09 21:18:14 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 17:02:25 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _REQUESTPARSER_HPP_
 #define _REQUESTPARSER_HPP_
+#include "../inc/HeadersLibs.hpp"
 
-#include <iostream>
-#include <unistd.h>
-#include <vector>
-
-class RequestParser {
+class RequestParser
+{
 
     public:
     

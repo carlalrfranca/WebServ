@@ -73,7 +73,8 @@ void ConfigParser::processListen(std::string &line)
             std::cout << "Port: " << _portNumber << std::endl;
             //std::cout << std::endl;
         }
-        else{ // sem protocolo http ou https // trata primeiro com :
+        else
+        { // sem protocolo http ou https // trata primeiro com :
             _posInit = line.find(":", _directive);
             if (_posInit != std::string::npos){// std::cout << "Posição dos ':' >> " << _posInit << std::endl;
                 _ipAddress = line.substr(_directive, _posInit - _directive);
@@ -170,7 +171,8 @@ bool ConfigParser::processRoot(std::string &line)
                 std::cout << "Root: " << _root << std::endl;
             }
         }
-        else{
+        else
+        {
                 //antes de dar o erro devera recorrer a outras diretivas e verificar se algum dado foi armazenado
                 std::cout << "Error 404 (Not Found)" << std::endl;
                 _hasRoot = false;
@@ -237,21 +239,17 @@ void ConfigParser::processLocation(std::string &line)
         std::vector<std::string> parts;
     
         std::string part;
-        while (iss >> part) {
+        while (iss >> part)
             parts.push_back(part);
-            //std::cout << parts.back() << std::endl; //verificando a parte da line que foi colocada em parts
-        }
         _currentLocationPathOnMap = parts[1];
         _locationsMap[_currentLocationPathOnMap];
 		_locations[_currentLocationPathOnMap];
     }
     else //acho que esse "else" tambem pode ser identificando os caminhos do location (hardcoded) e, dependendo de qual for, encaminha
     {	//pra um metodo correspondente (entao se for '/' é pra um, se for 'cgi-bin' é outro, se for regex é outro, etc)
-
-		// chama o metodo direto que ele adiciona
-		std::cout << std::endl;
-		std::cout << "Current location: " << _currentLocationPathOnMap << std::endl;
-		storeCurrentLocationDirectives(line);
+	std::cout << std::endl;
+	std::cout << "Current location: " << _currentLocationPathOnMap << std::endl;
+	storeCurrentLocationDirectives(line);
     }
 }
 
