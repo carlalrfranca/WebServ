@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 16:48:05 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:51:12 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _SOCKETS_HPP_
 #define _SOCKETS_HPP_
-#include "../inc/HeadersLibs.hpp"
+#include "HeadersLibs.hpp"
 
 // criação do sockt, vinculação com o endereço e a escuta
 // tudo em relação ao socket do SocketS

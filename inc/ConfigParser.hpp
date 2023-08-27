@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 18:04:02 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:52:37 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _HPP_CONFIG_PARSER_
 #define _HPP_CONFIG_PARSER_
-#include "../inc/HeadersLibs.hpp"
+#include "HeadersLibs.hpp"
 
 // #include <iostream>
 // #include <unistd.h>
@@ -24,7 +24,7 @@
 // #include <cstdlib>
 // #include <map>
 // #include <vector>
-// #include "LocationDirective.hpp"
+#include "LocationDirective.hpp"
 
 
 class ConfigParser{

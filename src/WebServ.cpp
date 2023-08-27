@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
 /*   Updated: 2023/08/25 19:38:37 by cleticia         ###   ########.fr       */
@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
+#include "../inc/WebServ.hpp"
 #include "../inc/Request.hpp"
 
 WebServ::WebServ(){}
@@ -256,99 +257,47 @@ std::string WebServ::handleCGIRequest(std::string& request)
 	return response;
 }
 
-int WebServ::addServerToEpoll()
-{
-	int epollFd = epoll_create1(0);
-
-	if (epollFd == -1)
-	{
-		perror("Error creating epoll");
-		return -1;
-	}
-	// 
-
-    //Imprimir detalhes de cada servidor
-	struct epoll_event event;
-    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex){
-        std::cout << "Detalhes do servidor " << serverIndex << ":" << std::endl;
-        std::cout << "Porta: " << _serverSocket[serverIndex].getPort() << std::endl;
-        std::cout << "Endereço: " << _serverSocket[serverIndex].getAddress() << std::endl;
-		std::cout << "WebServ SOCKET FD: " <<  _serverSocket[serverIndex].getWebServSocket() << std::endl;
-        std::cout << "-----------------------------------------\n" << std::endl;
-		// try epoll
-		event.data.u64 = 0;
-        event.data.fd = _serverSocket[serverIndex].getWebServSocket();
-        event.events = EPOLLIN | EPOLLET;
-        if (epoll_ctl(epollFd, EPOLL_CTL_ADD, event.data.fd, &event) == -1) {
-            perror("Error adding socket to epoll");
-            return -2;
-        }
-    }
-	return epollFd;
-}
-
-int WebServ::addNewClientToEpoll(struct epoll_event *event_ptr, int i, int epollFd)
-{
-	struct sockaddr_in clientAddress = {0};
-	socklen_t clientAddressLength = sizeof(clientAddress);
-	int clientSocket = accept(event_ptr[i].data.fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
-	
-	if (clientSocket == -1) {
-	    perror("Error accepting client connection");
-	    return -3; // Move to the next event
-	}
-	
-	// Set the client socket to non-blocking mode
-	int flags = fcntl(clientSocket, F_GETFL, 0);
-	fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
-	struct epoll_event event;
-	event.data.u64 = 0;
-	event.data.fd = clientSocket;
-	event.events = EPOLLIN | EPOLLET; // Listen for read events in edge-triggered mode
-	
-	if (epoll_ctl(epollFd, EPOLL_CTL_ADD, clientSocket, &event) == -1) {
-	    perror("Error adding client socket to epoll");
-	    close(clientSocket); // Close the socket on error
-	}
-	return 0;
-}
-
 void WebServ::mainLoop(){
 
-        std::cout << "-----------------------------------------" << std::endl;
+    std::cout << "-----------------------------------------" << std::endl;
     std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
     std::cout << "-----------------------------------------\n" << std::endl;
 
-	int epollFd = addServerToEpoll();
+	Epoll epoll_S;
+
+	epoll_S.addServersToEpoll(_serverSocket);
+	int epollFd = epoll_S.getEpollFd();
+	std::cout << "Epoll FD ------> " << epollFd << std::endl;
 	if (epollFd == -1 || epollFd == -2)
 	{
 		return; //dar uma exceção de erro
 	}
-	const int maxEvents = 10;
+
+	const int maxEvents = epoll_S.getMaxEvents();
     struct epoll_event events[maxEvents];
 
 	while(true)
 	{
-		int numEvents = epoll_wait(epollFd, events, maxEvents, -1);
-        if (numEvents == -1) {
+		epoll_S.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
+        if (epoll_S.getNumberEvents() == -1) {
             perror("Error in epoll_wait");
             return;
         }
 
-        for (int i = 0; i < numEvents; ++i)
+        for (int i = 0; i < epoll_S.getNumberEvents(); ++i)
 		{
-			bool isServerFdTriggered = false;
+			epoll_S.setIsServerFdTriggered(false);
 			for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
 			{
 				if (events[i].data.fd == _serverSocket[serverIndex].getWebServSocket())
 				{
-					isServerFdTriggered = true;
+					epoll_S.setIsServerFdTriggered(true);
 					break;
 				}
 			}
-				if (isServerFdTriggered == true)
+				if (epoll_S.getIsServerFdTriggered() == true)
 				{
-					int result = addNewClientToEpoll(events, i, epollFd);
+					int result = epoll_S.addNewClientToEpoll(events, i);
 					if (result == -3)
 						continue;
 				}

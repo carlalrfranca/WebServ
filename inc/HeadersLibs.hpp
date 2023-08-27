@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HeadersLibs.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 20:52:52 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:55:08 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <sys/epoll.h>
-
 
 // DEFINES
 #include <stdexcept>

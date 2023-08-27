@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
 /*   Updated: 2023/08/25 19:34:01 by cleticia         ###   ########.fr       */
@@ -12,6 +12,7 @@
 
 #ifndef _REQUEST_HPP_
 #define _REQUEST_HPP_
+
 #include "HeadersLibs.hpp"
 
 class Request
