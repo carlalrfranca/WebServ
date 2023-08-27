@@ -6,19 +6,11 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 16:30:56 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 21:11:16 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
-
-// #include "../inc/ConfigParser.hpp"
-// #include <cctype> //Para usar a função std::isspace
-// #include <vector>
-// #include <map>
-// #include <string>
-// #include <iostream>
-// #include <sstream>
 
 ConfigParser::ConfigParser()
 {
@@ -101,7 +93,6 @@ void ConfigParser::processListen(std::string &line)
             std::cout << "Porta: " << _portNumber << std::endl;
             //std::cout << std::endl;
         }
-        
     }
 }     
 

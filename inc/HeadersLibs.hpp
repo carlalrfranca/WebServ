@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 16:52:25 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 20:52:52 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,40 +14,30 @@
 #define _HEADERS_LIBS_HPP_
 
 // C++ LIBRARIES
-#include <sys/epoll.h>
+
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-
-
-// LOCAL
-#include "LocationDirective.hpp"
-#include "../inc/ConfigParser.hpp"
-#include "../inc/RequestParser.hpp"
-#include "../inc/WebServ.hpp"
-#include "ConfigParser.hpp"
-#include "SocketS.hpp"
+#include <sys/epoll.h>
 
 
 // DEFINES
+#include <stdexcept>
 #include <exception>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <cstdlib>
-#include <cctype> //Para usar a função std::isspace
+#include <cctype>
 #include <vector>
 #include <string>
-#include <map>
-#include <stdexcept>
-
+#include <cctype> //Para usar a função std::isspace
 
 
 // COLORS DEFINES

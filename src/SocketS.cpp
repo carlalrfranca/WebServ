@@ -6,11 +6,11 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/06 20:21:30 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:28:12 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/SocketS.hpp"
+#include "../inc/HeadersLibs.hpp"
 
 SocketS::SocketS(){
     _portNumber = "";
