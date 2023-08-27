@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/SocketS.hpp"
+#include "../inc/HeadersLibs.hpp"
 
 SocketS::SocketS(){
     _portNumber = "";

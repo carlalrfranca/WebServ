@@ -6,12 +6,13 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 22:18:39 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/25 19:38:37 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/WebServ.hpp"
+#include "../inc/Request.hpp"
 
 WebServ::WebServ(){}
 
@@ -309,38 +310,20 @@ void WebServ::mainLoop(){
             		    std::cerr << "Erro ao receber solicitação do client " << std::endl;
             		    continue;
             		}
-            		std::string request(buffer, bytesRead); //buffer contém os dados recebidos do client
-            		printRequest(request);
-            		std::istringstream requestStream(request); //pega a 
-            		std::string _firstLine;
-            		std::getline(requestStream, _firstLine);
-            		bool hasError = false;
-            		if(!isFirstLineValid(request, _firstLine)){
-            		    hasError = true;
+            		std::string requestString(buffer, bytesRead); //buffer contém os dados recebidos do client
+            		
+            		Request request(requestString);
+            		
+            		printRequest(requestString);
+		if(!request.isFirstLineValid()){
+            		    request.setHasError(true);
             		    close(clientSocket);
             		}
-            		if(hasError)
+            		if(request.getHasError())
             		    responseError();
-            		// ---------------------------------------------------------------------------------------------------
-            		std::istringstream firstLineStream(_firstLine);
-            		std::vector<std::string> _tokens;
-            		std::string _token;
-            		while (std::getline(firstLineStream, _token, ' ')){
-            		    _tokens.push_back(_token);
-            		}
-            		for (size_t i = 0; i < _tokens.size(); ++i){
-            		    std::cout << "Token " << i << ": " << _tokens[i] << std::endl;
-            		}
-            		std::string _hostLine;
-            		std::string _hostContent;
-
-            		while (std::getline(requestStream, _hostLine)){
-            		    if (_hostLine.substr(0, 6) == "Host: ") {
-            		        _hostContent = _hostLine.substr(6);
-            		        std::cout << "Host content: " << _hostContent << std::endl;
-            		        break;
-            		    }
-            		}
+            		request.validateRequest();
+            		
+//////////////////////////////------------- daqui pra baixo é response
 
 					// para decidir que reponse vamos mandar, precisamos ver
 					// que recurso a solicitação/request está pedindo

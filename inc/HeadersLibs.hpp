@@ -14,39 +14,29 @@
 #define _HEADERS_LIBS_HPP_
 
 // C++ LIBRARIES
-#include <sys/epoll.h>
+
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-
-// LOCAL
-// #include "LocationDirective.hpp"
-// #include "ConfigParser.hpp"
-// #include "RequestParser.hpp"
-// #include "WebServ.hpp"
-// #include "ConfigParser.hpp"
-// #include "SocketS.hpp"
-
+#include <sys/epoll.h>
 
 // DEFINES
+#include <stdexcept>
 #include <exception>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <cstdlib>
-#include <cctype> //Para usar a função std::isspace
+#include <cctype>
 #include <vector>
 #include <string>
-#include <map>
-#include <stdexcept>
-
+#include <cctype> //Para usar a função std::isspace
 
 
 // COLORS DEFINES

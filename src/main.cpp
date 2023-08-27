@@ -13,7 +13,7 @@
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/WebServ.hpp"
 
- int main(int argc, char **argv){
+int main(int argc, char **argv){
     std::string filename(argv[1]);
     if(argc != 2){
         std::cerr << "Error" << std::endl;
