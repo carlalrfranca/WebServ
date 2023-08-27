@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 16:30:56 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:56:48 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
+#include "../inc/ConfigParser.hpp"
 
 // #include "../inc/ConfigParser.hpp"
 // #include <cctype> //Para usar a função std::isspace

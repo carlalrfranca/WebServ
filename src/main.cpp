@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 16:33:46 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:57:41 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
+#include "../inc/WebServ.hpp"
 
  int main(int argc, char **argv){
     std::string filename(argv[1]);
