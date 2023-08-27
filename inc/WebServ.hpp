@@ -12,7 +12,10 @@
 
 #ifndef _WEBSERV_HPP_
 #define _WEBSERV_HPP_
-#include "../inc/HeadersLibs.hpp"
+#include "HeadersLibs.hpp"
+#include "SocketS.hpp"
+#include "Epoll.hpp"
+#include "ConfigParser.hpp"
 
 class ConfigParser;
 
@@ -30,8 +33,6 @@ class WebServ {
         void printRequest(const std::string& request);
 		std::string handleCGIRequest(std::string& request);
 		std::string executeScriptAndTakeItsOutPut(int *pipefd);
-		int addServerToEpoll();
-		int addNewClientToEpoll(struct epoll_event *event_ptr, int i, int epollFd);
         
     private:
     

@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 16:44:05 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:48:04 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _RESPONSE_HPP_
 #define _RESPONSE_HPP_
-#include "../inc/HeadersLibs.hpp"
+#include "HeadersLibs.hpp"
 
 //acho que ele puxa por chave e valor entao perguntar depois se vamos usar map mesmo
 

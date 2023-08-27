@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 17:11:06 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:47:26 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _RESQUEST_HPP_
 #define _RESQUEST_HPP_
-#include "../inc/HeadersLibs.hpp"
+#include "HeadersLibs.hpp"
 
 //inserir macro buffer
 class Request

@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/08 16:45:29 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 17:02:25 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:47:32 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _REQUESTPARSER_HPP_
 #define _REQUESTPARSER_HPP_
-#include "../inc/HeadersLibs.hpp"
+#include "HeadersLibs.hpp"
 
 class RequestParser
 {

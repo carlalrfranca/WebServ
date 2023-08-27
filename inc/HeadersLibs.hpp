@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HeadersLibs.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 16:52:25 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:55:08 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,13 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-
 // LOCAL
-#include "LocationDirective.hpp"
-#include "../inc/ConfigParser.hpp"
-#include "../inc/RequestParser.hpp"
-#include "../inc/WebServ.hpp"
-#include "ConfigParser.hpp"
-#include "SocketS.hpp"
+// #include "LocationDirective.hpp"
+// #include "ConfigParser.hpp"
+// #include "RequestParser.hpp"
+// #include "WebServ.hpp"
+// #include "ConfigParser.hpp"
+// #include "SocketS.hpp"
 
 
 // DEFINES

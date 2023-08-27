@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   LocationDirective.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 20:39:26 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/08/24 16:48:56 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/24 18:52:30 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _HPP_LOCATIONDIRECTIVE_
 #define _HPP_LOCATIONDIRECTIVE_
-#include "../inc/HeadersLibs.hpp"
+#include "HeadersLibs.hpp"
 
 class LocationDirective
 {
