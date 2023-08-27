@@ -6,13 +6,12 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/25 19:38:37 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/27 19:26:11 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/WebServ.hpp"
-#include "../inc/Request.hpp"
 
 WebServ::WebServ(){}
 
@@ -315,7 +314,7 @@ void WebServ::mainLoop(){
             		Request request(requestString);
             		
             		printRequest(requestString);
-		if(!request.isFirstLineValid()){
+					if(!request.isFirstLineValid()){
             		    request.setHasError(true);
             		    close(clientSocket);
             		}
@@ -327,12 +326,12 @@ void WebServ::mainLoop(){
 
 					// para decidir que reponse vamos mandar, precisamos ver
 					// que recurso a solicitação/request está pedindo
-					size_t found = request.find("process_data.cgi");
+					size_t found = requestString.find("process_data.cgi");
 					if (found != std::string::npos)
 					{
 						// lida com o cgi
 						std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
-						std::string response = handleCGIRequest(request);
+						std::string response = handleCGIRequest(requestString);
 						send(clientSocket, response.c_str(), response.length(), 0);
 					}
 					else
@@ -463,7 +462,7 @@ void WebServ::mainLoop(){
 }*/
 
 /*
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp -o executavel
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp -o executavel
     ./executavel src/config.txt
 
 */

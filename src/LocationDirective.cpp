@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   LocationDirective.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 21:13:30 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/08/24 18:57:03 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/27 19:21:39 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
+#include "../inc/LocationDirective.hpp"
 
 LocationDirective::LocationDirective(void)
 { }

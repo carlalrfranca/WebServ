@@ -6,11 +6,12 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 18:57:16 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/27 19:21:16 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
+#include "../inc/SocketS.hpp"
 
 SocketS::SocketS(){
     _portNumber = "";

@@ -15,6 +15,7 @@
 #include "HeadersLibs.hpp"
 #include "SocketS.hpp"
 #include "Epoll.hpp"
+#include "Request.hpp"
 #include "ConfigParser.hpp"
 
 class ConfigParser;

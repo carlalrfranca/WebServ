@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/25 19:45:02 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/27 19:25:43 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,9 +78,9 @@ bool Request::validateRequest()
     std::istringstream firstLineStream(_firstLine);
     std::vector<std::string> _tokens;
     std::string _token;
-    while (std::getline(firstLineStream, _token, ' ')){
+    while (std::getline(firstLineStream, _token, ' '))
         _tokens.push_back(_token);
-    for (size_t i = 0; i < _tokens.size(); ++i){
+    for (size_t i = 0; i < _tokens.size(); ++i)
         std::cout << "Token " << i << ": " << _tokens[i] << std::endl;
     while (std::getline(_requestStream, _hostLine)){
         if (_hostLine.substr(0, 6) == "Host: "){
