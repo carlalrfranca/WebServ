@@ -21,17 +21,6 @@ server{
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 server{  
     listen https://yourdomain.com;
     server_name example.com;

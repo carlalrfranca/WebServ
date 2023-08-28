@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 18:48:04 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/27 19:37:42 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 //acho que ele puxa por chave e valor entao perguntar depois se vamos usar map mesmo
 
-class Server;
+class SocketS;
 class Request;
 
 class Response
@@ -26,7 +26,7 @@ class Response
     
         Response(void);
         ~Response(void);
-        Response(Request *req, Server *_server); //precisa desses dois
+        Response(Request *req, SocketS *_server); //precisa desses dois
         
         //getters and setters
         size_t getIdClient()const;
