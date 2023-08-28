@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/27 19:26:11 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/28 13:04:40 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,15 @@ WebServ::WebServ(std::string filename){
                     configSocket(index - 1);
 				index++;
             }
+			else if (line.find("location") != std::string::npos || isLocationBlock == true){
+                if (line.find("}") != std::string::npos){
+                    isLocationBlock = false;
+					continue;
+				}
+                isLocationBlock = true;
+				std::cout << "LINHA: " << line << std::endl;
+                _configParser.processLocation(line);
+            } // configSocket(index);
             else if (line.find("listen") != std::string::npos){
                 _configParser.processListen(line);
             }else if (line.find("server_name") != std::string::npos){
@@ -49,14 +58,7 @@ WebServ::WebServ(std::string filename){
 				_configParser.processClientMaxBodySize(line);
 			}else if (line.find("return") != std::string::npos){
 				_configParser.processReturn(line);
-			}else if (line.find("location") != std::string::npos || isLocationBlock == true){
-                if (line.find("}") != std::string::npos){
-                    isLocationBlock = false;
-					continue;
-				}
-                isLocationBlock = true;
-                _configParser.processLocation(line);
-            } // configSocket(index);
+			}
         }
     }else
         std::cout << "[Error] : file cannot be opened" << std::endl;
@@ -72,10 +74,24 @@ void WebServ::configSocket(size_t serverIndex){
     //_serverSocket[serverIndex].setAddress(_configParser.getAddress());
     temp_socket.setPort(_configParser.getPort());
     temp_socket.setAddress(_configParser.getAddress());
-    
+	//adicionar o _locations do ConfigParser ao _locations do temp_socket
+	temp_socket.setLocations(_configParser.getLocations());
+
     _serverSocket.push_back(temp_socket);
     std::cout << "Port: " << _serverSocket.back().getPort() << std::endl;
     std::cout << "Address: " << _serverSocket.back().getAddress() << std::endl;
+
+	// iterar o map do Locations pra verificar os valores
+	std::map<std::string, LocationDirective>::iterator it = _serverSocket.back().getLocations().begin();
+	int size_locations =  _serverSocket.back().getLocations().size();
+	std::cout << "---- Locations desse server ----" << std::endl;
+	std::cout << "Size Locations: " << _serverSocket.back().getLocations().size() << std::endl;
+	for ( int monitor_locations = 0; monitor_locations < size_locations; ++monitor_locations) {
+        std::cout << "Chave: " << it->first << std::endl;
+		++it;
+    }
+	std::cout << "--------------------------------" << std::endl;
+	
     //cria socket
     _serverSocket[serverIndex].setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));//int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(_serverSocket[serverIndex].getWebServSocket() == -1){

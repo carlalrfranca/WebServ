@@ -6,13 +6,14 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 18:51:12 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/27 20:46:00 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _SOCKETS_HPP_
 #define _SOCKETS_HPP_
 #include "HeadersLibs.hpp"
+#include "LocationDirective.hpp"
 
 // criação do sockt, vinculação com o endereço e a escuta
 // tudo em relação ao socket do SocketS
@@ -34,6 +35,8 @@ class SocketS
         const std::string& getPort(void)const;
         const std::string& getAddress(void)const;
         const int& getWebServSocket(void)const;
+		std::map<std::string, LocationDirective> getLocations(void) const;
+		void setLocations(std::map<std::string, LocationDirective> locations);
 
     private:
         
@@ -44,7 +47,7 @@ class SocketS
         std::string     _cssContent;
         // struct sockaddr_in _socketAddress;
         // int bindSocketSListenConnections(); //vincula socket a um endereço e porta 
-        
+        std::map<std::string, LocationDirective> _locations;
         
         class SocketSException: public std::exception{
         public:

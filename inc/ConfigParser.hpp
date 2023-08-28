@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/24 18:52:37 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/27 20:38:07 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ class ConfigParser{
         const std::string& getAddress(void)const;
         const std::vector<std::string>& getIndexFiles(void)const;
         const std::string getErrorPage(int statusCode)const;
+		std::map<std::string, LocationDirective> getLocations(void) const;
+		void setLocations(std::map<std::string, LocationDirective>& locations);
 
     private:
         

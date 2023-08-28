@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/27 19:21:16 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/27 20:46:05 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,20 @@ SocketS::SocketS(){
     */
 
 SocketS::~SocketS(){}
+
+// getter e setter do locations
+
+std::map<std::string, LocationDirective> SocketS::getLocations(void) const
+{
+	return _locations;
+}
+
+void SocketS::setLocations(std::map<std::string, LocationDirective> locations)
+{
+	_locations = locations;
+}
+
+// 
 
 const int& SocketS::getFD()const{
 
