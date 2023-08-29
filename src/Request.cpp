@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/27 19:25:43 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/28 21:30:52 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ Request::Request(const std::string& request)
     _hasError = false;
     _hostLine = "";
     _hostContent = "";
+    _domainContent = "";
+    _portRequest = "";
     _requestStream.str(request);
     std::getline(_requestStream, _firstLine);
 }
@@ -73,6 +75,16 @@ bool Request::getHasError() const
     return _hasError;
 }
 
+std::string Request::getDomainRequest(void)const
+{
+    return _domainContent;
+}
+
+std::string Request::getPortRequest(void)const
+{
+    return _portRequest;
+}
+
 bool Request::validateRequest()
 {
     std::istringstream firstLineStream(_firstLine);
@@ -89,6 +101,23 @@ bool Request::validateRequest()
             break;
         }
     }
+    size_t posDiv = _hostContent.find(":");
+    if(posDiv != std::string::npos) //127.0.0.1:5005  ou localhost:2005
+    {
+        _domainContent = _hostContent.substr(0, posDiv);
+        _portRequest = _hostContent.substr(posDiv+1);
+        std::cout << "este é domainContent" << _domainContent << std::endl;
+        std::cout << "este é o  portRequest" << _portRequest << std::endl;
+        
+    }
+    else
+    {
+        _domainContent = _hostContent;
+        _portRequest = "80";
+        std::cout << "este é o domainContent sem a porta " << _domainContent << std::endl;
+        std::cout << "este é o portRequest DEFAULT " << _portRequest << std::endl;
+    }
+        
     return true;
 }
 

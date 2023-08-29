@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/25 19:34:01 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/28 21:30:59 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@ class Request
         
         void setHasError(bool hasError);
         bool getHasError(void)const;
+        
+        std::string getDomainRequest(void)const;
+        std::string getPortRequest(void)const;
     
     private:
     
@@ -38,7 +41,10 @@ class Request
         std::string _firstLine;
         std::string _hostLine;
         std::string _hostContent;
+        std::string _domainContent;
+        std::string _portRequest;
         bool        _hasError;
+        
     
         class RequestException: public std::exception {
         public:

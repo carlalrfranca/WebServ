@@ -26,3 +26,5 @@ server{
     	allow_methods DELETE
 }
 
+
+

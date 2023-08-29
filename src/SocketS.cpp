@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/27 20:46:05 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/28 21:59:55 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,16 @@ const std::string& SocketS::getAddress(void)const{
 
 const int& SocketS::getWebServSocket(void)const{
     return _webServSocket;
+}
+
+void SocketS::setServerName(std::vector<std::string> serverName)
+{
+     this->_serverName = serverName;
+}
+
+std::vector<std::string> SocketS::getServerName(void)const
+{
+    return _serverName;
 }
      
      
