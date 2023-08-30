@@ -6,12 +6,13 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/28 13:04:40 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/29 22:02:05 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/WebServ.hpp"
+#include "../inc/CGI.hpp"
 
 WebServ::WebServ(){}
 
@@ -347,7 +348,11 @@ void WebServ::mainLoop(){
 					{
 						// lida com o cgi
 						std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
-						std::string response = handleCGIRequest(requestString);
+						// std::string response = handleCGIRequest(requestString);
+						CGI cgiExec;
+
+						cgiExec.handleCGIRequest(requestString);
+						std::string response = cgiExec.getResponse();
 						send(clientSocket, response.c_str(), response.length(), 0);
 					}
 					else
