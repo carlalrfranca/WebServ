@@ -6,12 +6,13 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/28 22:37:35 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/30 20:49:07 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/WebServ.hpp"
+#include "../inc/Response.hpp"
 
 WebServ::WebServ(){}
 
@@ -76,6 +77,7 @@ void WebServ::configSocket(size_t serverIndex){
     temp_socket.setAddress(_configParser.getAddress());
 	//adicionar o _locations do ConfigParser ao _locations do temp_socket
 	temp_socket.setLocations(_configParser.getLocations());
+    temp_socket.setMethods(_configParser.getMethods());
 
     _serverSocket.push_back(temp_socket);
     std::cout << "Port: " << _serverSocket.back().getPort() << std::endl;
@@ -357,61 +359,77 @@ void WebServ::mainLoop(){
                 SE NAO TIVER PORTA É DEFAULT ENTAO PRECISA VERFICAR SE ESTÁ HABILITADA
                 SE DER ALGO ERRADO ENTAO CONSTROI UMA RESPNSE DE ERRO COM O STATUS DE ERRO E RETORNA ISSO PRA MAIN LOOP E A MAIN LOOP FAZ UMA SEND PARA O CLIENT
                 SE DER CERTO DAI VOCE PROSSEGUE, MANDA O OBJETO REQUEST E ESSE SOCKET QUE ENCONTREI. NESSA FUNCAO QUE TEM */
-                for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
-                {
-                    if(request.getDomainRequest().find(".") != std::string::npos) //ip
-                    {
-                        if(request.getDomainRequest() == _serverSocket[serverIndex].getAddress())
-                        {
-                            std::cout << "é igual a ipaddress" << std::endl;
-                            if (request.getPortRequest().size() > 0)
-                            {
-                                // teve port, daí tem que comparar isso e ver se está configurado no server tambem
-                                if(request.getPortRequest() == _serverSocket[serverIndex].getPort())
-                                {
-                                    std::cout << "tem port e é o mesmo";
-                                    // daí sim prossegue pra construir uma response que pode ser bem sucedida
-                                    //ou seja: chama um objeto Response e passa essa request e esse _serverSocket[...] como parametro
-                                    //......
-                                    
-                                    break;
-                                }
-                                else
-                                {
-                                    std::cout << "Não é o mesmo port. Então NÃO ROLA" << std::endl;
-                                    //construir uma response de erro (ver qual é o statusCode condizente e 
-                                    //como ficará o resto do cabeçalho)
-                                    // response de erro é STRING               
-                                }
-                            }
-                        }    
-                    }
-                    else if(contains(_serverSocket[serverIndex].getServerName(), request.getDomainRequest()))
-                    {
-                          std::cout << "tá no server name" << std::endl;
-                          if (request.getPortRequest().size() > 0)
-                            {
-                                // teve port, daí tem que comparar isso e ver se está configurado no server tambem
-                                if(request.getPortRequest() == _serverSocket[serverIndex].getPort())
-                                {
-                                    std::cout << "tem port e é o mesmo";
-                                    // daí sim prossegue pra construir uma response que pode ser bem sucedida
-                                    //ou seja: chama um objeto Response e passa essa request e esse _serverSocket[...] como parametro
-                                    //.....
-                                    break;
-                                }
-                                else
-                                {
-                                    std::cout << "Não é o mesmo port. Então NÃO ROLA" << std::endl;
-                                    //construir uma response de erro (ver qual é o statusCode condizente e 
-                                    //como ficará o resto do cabeçalho)
-                                    // response de erro é STRING
-                                }
-                            }
-                    }
-                }
+                // for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+                // {
+                //     if(request.getDomainRequest().find(".") != std::string::npos) //ip
+                //     {
+                //         if(request.getDomainRequest() == _serverSocket[serverIndex].getAddress())
+                //         {
+                //             std::cout << "é igual a ipaddress" << std::endl;
+                //             if (request.getPortRequest().size() > 0)
+                //             {
+                //                 // teve port, daí tem que comparar isso e ver se está configurado no server tambem
+                //                 if(request.getPortRequest() == _serverSocket[serverIndex].getPort())
+                //                 {
+                //                     std::cout << "tem port e é o mesmo";
+                //                     // daí sim prossegue pra construir uma response que pode ser bem sucedida
+                //                     //ou seja: chama um objeto Response e passa essa request e esse _serverSocket[...] como parametro
+                //                     //......
+                //                     
+                //                     break;
+                //                 }
+                //                 else
+                //                 {
+                //                     std::cout << "Não é o mesmo port. Então NÃO ROLA" << std::endl;
+                //                     //construir uma response de erro (ver qual é o statusCode condizente e 
+                //                     //como ficará o resto do cabeçalho)
+                //                     // response de erro é STRING               
+                //                 }
+                //             }
+                //         }    
+                //     }
+                //     else if(contains(_serverSocket[serverIndex].getServerName(), request.getDomainRequest()))
+                //     {
+                //           std::cout << "tá no server name" << std::endl;
+                //           if (request.getPortRequest().size() > 0)
+                //             {
+                //                 // teve port, daí tem que comparar isso e ver se está configurado no server tambem
+                //                 if(request.getPortRequest() == _serverSocket[serverIndex].getPort())
+                //                 {
+                //                     std::cout << "tem port e é o mesmo";
+                //                     // daí sim prossegue pra construir uma response que pode ser bem sucedida
+                //                     //ou seja: chama um objeto Response e passa essa request e esse _serverSocket[...] como parametro
+                //                     //.....
+                //                     break;
+                //                 }
+                //                 else
+                //                 {
+                //                     std::cout << "Não é o mesmo port. Então NÃO ROLA" << std::endl;
+                //                     //construir uma response de erro (ver qual é o statusCode condizente e 
+                //                     //como ficará o resto do cabeçalho)
+                //                     // response de erro é STRING
+                //                 }
+                //             }
+                //     }
+                // }
 		
 		
+		Response currentResponse;
+		
+		int selectedServer = currentResponse.selectServer(request, _serverSocket);
+		if (selectedServer != -1)
+		{
+		    std::cout << "Server que recebeu a solicitação: " << _serverSocket[selectedServer].getAddress() << std::endl;
+		    currentResponse.buildResponse(request, _serverSocket[selectedServer]);
+		    std::string response = currentResponse.getResponse();
+		    ssize_t bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
+		    if (bytesSent == -1)
+		        std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
+		}
+		else
+		    std::cout << "Server não encontrado!" << std::endl;
+		
+		//////////
 		size_t found = requestString.find("process_data.cgi");
 		if (found != std::string::npos)
 		{
@@ -420,14 +438,14 @@ void WebServ::mainLoop(){
 			std::string response = handleCGIRequest(requestString);
 			send(clientSocket, response.c_str(), response.length(), 0);
 		}
-		else
-		{
-	            		//por enquanto, um response GENERICO só pra satisfazer o client
-	            		const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";
-			ssize_t bytesSent = send(clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.
-			if (bytesSent == -1)
-				std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
-		}
+		//else //////////////
+		//{
+	    //        		//por enquanto, um response GENERICO só pra satisfazer o client
+	    //        		const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";
+		//	ssize_t bytesSent = send(clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.
+		//	if (bytesSent == -1)
+		//		std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
+		//} //////////
 
 	// if(_hostContent.empty()){
 	//     std::cerr << "Linha 'Host:' não encontrada." << std::endl;
@@ -546,7 +564,7 @@ void WebServ::mainLoop(){
 }*/
 
 /*
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp -o executavel
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response
     ./executavel src/config.txt
 
 */

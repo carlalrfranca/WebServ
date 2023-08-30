@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationDirective.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 21:13:30 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/08/28 12:56:10 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/30 20:19:26 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,4 +24,22 @@ void LocationDirective::addDirective(std::string& directiveName, std::string& va
 	std::cout << "Diretivas: " << directiveName << std::endl;
 	std::cout << "Valor: " << value << std::endl;
 	_directives[directiveName].push_back(value);
+}
+
+std::map<std::string, std::vector<std::string > > LocationDirective::getDirectives(void) const
+{
+	return _directives;
+}
+
+
+std::vector<std::string> LocationDirective::getSpecificDirective(std::string directiveName) const
+{
+	std::map<std::string, std::vector<std::string> >::const_iterator it = _directives.find(directiveName);
+
+    if (it != _directives.end()) {
+        std::cout << "Key found! Value: " << it->second[0] << std::endl;
+        return it->second;
+    } else {
+        std::cout << "Key not found!" << std::endl;
+    }
 }

@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/28 21:59:55 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/30 19:30:12 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,17 @@ std::vector<std::string> SocketS::getServerName(void)const
 {
     return _serverName;
 }
-     
+ 
+void SocketS::setMethods(std::vector<std::string> methods)
+{
+    _methods = methods;
+}
+
+std::vector<std::string> SocketS::getMethods(void) const
+{
+    return _methods;
+}
+ 
      
 // int SocketS::bindSocketListenConnections(){
 // 

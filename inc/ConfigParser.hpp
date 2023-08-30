@@ -3,37 +3,27 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/27 20:38:07 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/30 19:22:05 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _HPP_CONFIG_PARSER_
 #define _HPP_CONFIG_PARSER_
-#include "HeadersLibs.hpp"
 
-// #include <iostream>
-// #include <unistd.h>
-// #include <dirent.h>
-// #include <sstream>
-// #include <string>
-// #include <fstream>
-// #include <string>
-// #include <cstdlib>
-// #include <map>
-// #include <vector>
+#include "HeadersLibs.hpp"
 #include "LocationDirective.hpp"
 
 
-class ConfigParser{
+class ConfigParser
+{
 
     public:
     
         ConfigParser();
         ~ConfigParser();
-        // ConfigParser(std::string line);
     
         void processListen(std::string &line);
         void processServerName(std::string &line);
@@ -53,6 +43,8 @@ class ConfigParser{
         
         void setPort(int portNumber);
         void setAddress(std::string ipAddress);
+        
+        const std::vector<std::string>& getMethods(void)const;
         
         const std::string& getPort(void)const;
         const std::string& getAddress(void)const;
@@ -84,6 +76,7 @@ class ConfigParser{
         size_t          _delimiter;
         bool            _hasRoot;
         
+        std::vector<std::string> _methods;
         // abaixo: map e string do path location atual pra guardar os arquivos de locations no config file
         std::map<std::string, std::vector<std::string> > _locationsMap;
         //std::vector<std::string> _multipleDomains;

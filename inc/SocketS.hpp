@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/28 21:56:08 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/30 19:29:31 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,8 @@ class SocketS
         const int& getWebServSocket(void)const;
 		std::map<std::string, LocationDirective> getLocations(void) const;
 		void setLocations(std::map<std::string, LocationDirective> locations);
+        void setMethods(std::vector<std::string>methods);
+        std::vector<std::string> getMethods(void) const;
 
     private:
         
@@ -49,6 +51,7 @@ class SocketS
         std::string     _response; //talvez na response class
         std::string     _cssContent;
         std::vector<std::string> _serverName;
+        std::vector<std::string> _methods;
         // struct sockaddr_in _socketAddress;
         // int bindSocketSListenConnections(); //vincula socket a um endereço e porta 
         std::map<std::string, LocationDirective> _locations;

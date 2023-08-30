@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HeadersLibs.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/27 19:19:55 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/30 20:20:22 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <sys/epoll.h>
-#include <map>
+#include <time.h>
 
 // DEFINES
 #include <stdexcept>
@@ -38,6 +38,7 @@
 #include <vector>
 #include <string>
 #include <cctype> //Para usar a função std::isspace
+#include <map>
 
 
 // COLORS DEFINES

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/28 12:58:51 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/30 19:22:38 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -303,6 +303,11 @@ void ConfigParser::processErrorPage(std::string &line)
     }
 }
 
+const std::vector<std::string>& ConfigParser::getMethods()const
+{
+    return _methods;
+}
+
 void ConfigParser::processAllowMethods(std::string &line)
 {
     std::vector<std::string> methods;
@@ -318,7 +323,9 @@ void ConfigParser::processAllowMethods(std::string &line)
         } else if (methods[i] == "DELETE") {
             std::cout << "DELETE method is allowed." << std::endl;
         }
-    }  
+    }
+    _methods = methods;
+   
 }
 
 void ConfigParser::processClientMaxBodySize(std::string &line)
