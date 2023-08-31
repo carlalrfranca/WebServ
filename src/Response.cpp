@@ -173,27 +173,6 @@ int Response::selectServer(Request& stringDomain, std::vector<SocketS> serverSoc
     return indexChosenSocket;
     // construir resposta de erro... (se sair do loop é que deu merda)
 
-    
-
-    // Verificação da combinação de porta e endereço IP
-    //SE (portNumber == 8034 OU portNumber == 8033) E (ipAddress == "localhost" OU ipAddress == "142.0.0.1") ENTAO
-    //    // ACESSA A PORTA E ENDEREÇO IP
-    //    SE portNumber == 8034 E ipAddress == "localhost" ENTAO
-    //        // DIRECIONA PARA O PRIMEIRO SERVIDOR VIRTUAL
-    //    SENAO SE portNumber == 8033 E ipAddress == "142.0.0.1" ENTAO
-    //        // TEM SEGUNDO SERVIDOR VIRTUAL?
-    //        SE TEM SEGUNDO SERVIDOR VIRTUAL ENTAO
-    //            // DIRECIONA PARA O SEGUNDO SERVIDOR VIRTUAL
-    //
-    //            // Verificação do campo "Host" (nome do servidor)
-    //            SE (host == "exemplo.net" OU host == "www.exemplo.net") ENTAO
-    //                // DIRECIONA PARA O PRIMEIRO SERVIDOR VIRTUAL
-    //            FIM SE
-    //
-    //        FIM SE
-    //    FIM SE
-    //FIM SE
-
 /*
     for (size_t serverIndex = 0; serverIndex < serverSocket.size(); ++serverIndex)
     {
@@ -388,18 +367,6 @@ void Response::httpError(std::string errorCode, const std::string &errorMessage)
  pra que ela possa fazer send() dessa response pro clientSocket
 
 */
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

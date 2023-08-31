@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/31 15:46:46 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/31 17:33:34 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,6 +283,41 @@ bool contains(const std::vector<std::string>& vec, const std::string& content) {
     return false;
 }
 
+// divisao da mainLoop em 31.08.2023
+
+void WebServ::startServer()
+{
+    std::cout << "-----------------------------------------" << std::endl;
+    std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
+    std::cout << "-----------------------------------------\n" << std::endl;
+
+    initializeEpoll();
+    runMainLoop();
+    
+    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+        close(_serverSocket[serverIndex].getWebServSocket());
+}
+
+
+void WebServ::initializeEpoll()
+{}
+
+void WebServ::runMainLoop()
+{}
+
+void WebServ::handleEvents(struct epoll_event* events)
+{}
+
+void WebServ::handleClientEvent(struct epoll_event& event)
+{}
+
+void WebServ::handleRequest(const std::string& requestString, int clientSocket)
+{}
+
+        
+// fim da divisao da mainLoop em 31.08.2023        
+
+/*
 void WebServ::mainLoop(){
     std::cout << "-----------------------------------------" << std::endl;
     std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
@@ -379,7 +414,14 @@ void WebServ::mainLoop(){
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
         close(_serverSocket[serverIndex].getWebServSocket());
 }
+*/
 
+
+
+
+
+//---------------------------------------------------------------
+//---------------------------------------------------------------
 
 // void WebServ::mainLoop(){
 // 
