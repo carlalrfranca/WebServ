@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/27 20:46:00 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/30 19:29:31 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,16 @@ class SocketS
         void setAddress(std::string ipAddress);
         void setWebServSocket(int webServSocket);
         
+        void setServerName(std::vector<std::string> serverName);
+        std::vector<std::string> getServerName(void)const;
+        
         const std::string& getPort(void)const;
         const std::string& getAddress(void)const;
         const int& getWebServSocket(void)const;
 		std::map<std::string, LocationDirective> getLocations(void) const;
 		void setLocations(std::map<std::string, LocationDirective> locations);
+        void setMethods(std::vector<std::string>methods);
+        std::vector<std::string> getMethods(void) const;
 
     private:
         
@@ -45,6 +50,8 @@ class SocketS
         std::string     _ipAddress;
         std::string     _response; //talvez na response class
         std::string     _cssContent;
+        std::vector<std::string> _serverName;
+        std::vector<std::string> _methods;
         // struct sockaddr_in _socketAddress;
         // int bindSocketSListenConnections(); //vincula socket a um endereço e porta 
         std::map<std::string, LocationDirective> _locations;

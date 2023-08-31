@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/28 12:58:51 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/31 15:23:12 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,6 @@ ConfigParser::ConfigParser()
     _root = "";
     _hasRoot = true;
 }
-/*
-
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp -o executavel 
-    ./executavel src/config.txt  
-*/
 
 ConfigParser::~ConfigParser() {}
 
@@ -52,8 +47,6 @@ void ConfigParser::setLocations(std::map<std::string, LocationDirective>& locati
 {
 	_locations = locations;
 }
-
-// 
 
 void ConfigParser::processListen(std::string &line)
 {
@@ -303,6 +296,11 @@ void ConfigParser::processErrorPage(std::string &line)
     }
 }
 
+const std::vector<std::string>& ConfigParser::getMethods()const
+{
+    return _methods;
+}
+
 void ConfigParser::processAllowMethods(std::string &line)
 {
     std::vector<std::string> methods;
@@ -318,7 +316,9 @@ void ConfigParser::processAllowMethods(std::string &line)
         } else if (methods[i] == "DELETE") {
             std::cout << "DELETE method is allowed." << std::endl;
         }
-    }  
+    }
+    _methods = methods;
+   
 }
 
 void ConfigParser::processClientMaxBodySize(std::string &line)

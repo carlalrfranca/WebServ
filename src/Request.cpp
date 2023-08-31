@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/27 19:25:43 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/30 20:16:36 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ Request::Request(const std::string& request)
     _hasError = false;
     _hostLine = "";
     _hostContent = "";
+    _domainContent = "";
+    _portRequest = "";
     _requestStream.str(request);
     std::getline(_requestStream, _firstLine);
 }
@@ -73,6 +75,33 @@ bool Request::getHasError() const
     return _hasError;
 }
 
+std::string Request::getDomainRequest(void)const
+{
+    return _domainContent;
+}
+
+std::string Request::getPortRequest(void)const
+{
+    return _portRequest;
+}
+
+void Request::trimSpaces(std::string &s) {
+    // Encontra o primeiro caractere não espaço
+    std::string::size_type start = s.find_first_not_of(" \t\n\r");
+
+    // Se não encontrar nenhum caractere não espaço, a string está vazia ou só contém espaços
+    if (start == std::string::npos) {
+        s.clear();
+        return;
+    }
+
+    // Encontra o último caractere não espaço
+    std::string::size_type end = s.find_last_not_of(" \t\n\r");
+
+    // Remove os espaços no início e no final
+    s = s.substr(start, end - start + 1);
+}
+
 bool Request::validateRequest()
 {
     std::istringstream firstLineStream(_firstLine);
@@ -89,11 +118,46 @@ bool Request::validateRequest()
             break;
         }
     }
+    _method = _tokens[0];
+    _uri = _tokens[1];
+    _version = _tokens[2];
+    size_t posDiv = _hostContent.find(":");
+    if(posDiv != std::string::npos) //127.0.0.1:5005  ou localhost:2005
+    {
+        _domainContent = _hostContent.substr(0, posDiv);
+        _portRequest = _hostContent.substr(posDiv+1, (_hostContent.size() - 1));
+        trimSpaces(_portRequest);
+        std::cout << "este é domainContent " << _domainContent << std::endl;
+        std::cout << "este é o  portRequest " << _portRequest << "a" << std::endl;
+        std::cout << "TAMANHO DO PORT REQUEST: " << _portRequest.size() << std::endl;
+        
+    }
+    else
+    {
+        _domainContent = _hostContent;
+        _portRequest = "80";
+        std::cout << "este é o domainContent sem a porta " << _domainContent << std::endl;
+        std::cout << "este é o portRequest DEFAULT " << _portRequest << std::endl;
+    }
+        
     return true;
 }
 
 
+const std::string& Request::getMethod(void) const
+{
+    return _method;
+}
 
+const std::string& Request::getURI(void) const
+{
+    return _uri;
+}
+
+const std::string& Request::getVersion(void) const
+{
+    return _version;
+}
 
 
 

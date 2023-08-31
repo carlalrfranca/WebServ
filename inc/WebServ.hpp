@@ -19,6 +19,7 @@
 #include "ConfigParser.hpp"
 
 class ConfigParser;
+class SocketS;
 
 class WebServ {
 
@@ -34,7 +35,16 @@ class WebServ {
         void printRequest(const std::string& request);
 		std::string handleCGIRequest(std::string& request);
 		std::string executeScriptAndTakeItsOutPut(int *pipefd);
-        
+		
+		
+		//divisao da mainLoop() em 31.08.2023
+        void initializeEpoll();
+        void runMainLoop();
+        void handleEvents(struct epoll_event* events);
+        void handleClientEvent(struct epoll_event& event);
+        void handleRequest(const std::string& requestString, int clientSocket);
+        //fim da divisao da mainLoop() em 31.08.2023
+	
     private:
     
         int             _clientSocket;

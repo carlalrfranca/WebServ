@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/29 22:02:05 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/31 17:33:34 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/WebServ.hpp"
+#include "../inc/Response.hpp"
 #include "../inc/CGI.hpp"
 
 WebServ::WebServ(){}
@@ -77,6 +78,7 @@ void WebServ::configSocket(size_t serverIndex){
     temp_socket.setAddress(_configParser.getAddress());
 	//adicionar o _locations do ConfigParser ao _locations do temp_socket
 	temp_socket.setLocations(_configParser.getLocations());
+    temp_socket.setMethods(_configParser.getMethods());
 
     _serverSocket.push_back(temp_socket);
     std::cout << "Port: " << _serverSocket.back().getPort() << std::endl;
@@ -273,115 +275,339 @@ std::string WebServ::handleCGIRequest(std::string& request)
 	return response;
 }
 
-void WebServ::mainLoop(){
+bool contains(const std::vector<std::string>& vec, const std::string& content) {
+    for (size_t i = 0; i < vec.size(); ++i) {
+        if (vec[i] == content) {
+            return true;
+        }
+    }
+    return false;
+}
 
+// divisao da mainLoop em 31.08.2023
+
+void WebServ::startServer()
+{
     std::cout << "-----------------------------------------" << std::endl;
     std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
     std::cout << "-----------------------------------------\n" << std::endl;
 
-	Epoll epoll_S;
+    initializeEpoll();
+    runMainLoop();
+    
+    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+        close(_serverSocket[serverIndex].getWebServSocket());
+}
 
-	epoll_S.addServersToEpoll(_serverSocket);
-	int epollFd = epoll_S.getEpollFd();
-	std::cout << "Epoll FD ------> " << epollFd << std::endl;
-	if (epollFd == -1 || epollFd == -2)
-	{
-		return; //dar uma exceção de erro
-	}
 
-	const int maxEvents = epoll_S.getMaxEvents();
+void WebServ::initializeEpoll()
+{}
+
+void WebServ::runMainLoop()
+{}
+
+void WebServ::handleEvents(struct epoll_event* events)
+{}
+
+void WebServ::handleClientEvent(struct epoll_event& event)
+{}
+
+void WebServ::handleRequest(const std::string& requestString, int clientSocket)
+{}
+
+        
+// fim da divisao da mainLoop em 31.08.2023        
+
+/*
+void WebServ::mainLoop(){
+    std::cout << "-----------------------------------------" << std::endl;
+    std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
+    std::cout << "-----------------------------------------\n" << std::endl;
+
+    Epoll epoll_S;
+
+    epoll_S.addServersToEpoll(_serverSocket);
+    int epollFd = epoll_S.getEpollFd();
+    if (epollFd == -1 || epollFd == -2)
+    {
+        return;
+    }
+
+    const int maxEvents = epoll_S.getMaxEvents();
     struct epoll_event events[maxEvents];
 
-	while(true)
-	{
-		epoll_S.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
+    while(true)
+    {
+        epoll_S.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
         if (epoll_S.getNumberEvents() == -1) {
             perror("Error in epoll_wait");
             return;
         }
 
         for (int i = 0; i < epoll_S.getNumberEvents(); ++i)
-		{
-			epoll_S.setIsServerFdTriggered(false);
-			for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
-			{
-				if (events[i].data.fd == _serverSocket[serverIndex].getWebServSocket())
-				{
-					epoll_S.setIsServerFdTriggered(true);
-					break;
-				}
-			}
-				if (epoll_S.getIsServerFdTriggered() == true)
-				{
-					int result = epoll_S.addNewClientToEpoll(events, i);
-					if (result == -3)
-						continue;
-				}
-				else
-				{
-					int clientSocket = events[i].data.fd;
-					char buffer[1024];
-            		ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0); //peguei a request
-            		if(bytesRead <= 0){
-            		    std::cerr << "Erro ao receber solicitação do client " << std::endl;
-            		    continue;
-            		}
-            		std::string requestString(buffer, bytesRead); //buffer contém os dados recebidos do client
-            		
-            		Request request(requestString);
-            		
-            		printRequest(requestString);
-					if(!request.isFirstLineValid()){
-            		    request.setHasError(true);
-            		    close(clientSocket);
-            		}
-            		if(request.getHasError())
-            		    responseError();
-            		request.validateRequest();
-            		
-//////////////////////////////------------- daqui pra baixo é response
+        {
+            epoll_S.setIsServerFdTriggered(false);
+            for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+            {
+                if (events[i].data.fd == _serverSocket[serverIndex].getWebServSocket())
+                {
+                    epoll_S.setIsServerFdTriggered(true);
+                    break;
+                }
+            }
+            if (epoll_S.getIsServerFdTriggered() == true)
+            {
+                int result = epoll_S.addNewClientToEpoll(events, i);
+                if (result == -3)
+                    continue;
+            }
+            else
+            {
+                int clientSocket = events[i].data.fd;
+                char buffer[1024];
+                ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+                if(bytesRead <= 0)
+                {
+                    std::cerr << "Erro ao receber solicitação do client " << std::endl;
+                    continue;
+                }
+                std::string requestString(buffer, bytesRead);
+                Request request(requestString);
+                printRequest(requestString);
+                if(!request.isFirstLineValid())
+                {
+                    request.setHasError(true);
+                    close(clientSocket);
+                }
+                if(request.getHasError())
+                    responseError();
+                request.validateRequest();
+                
+                Response currentResponse;
+                
+                int selectedServer = currentResponse.selectServer(request, _serverSocket);
+                if (selectedServer != -1)
+                {
+                    currentResponse.buildResponse(request, _serverSocket[selectedServer]);
+                    std::string response = currentResponse.getResponse();
+                    ssize_t bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
+                    if (bytesSent == -1)
+                        std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
+                }
+                else
+                    std::cout << "Server não encontrado!" << std::endl;
+                
+                size_t found = requestString.find("process_data.cgi");
+                if (found != std::string::npos)
+                {
+                    // lida com o cgi
+                    std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
+                    CGI cgiExec;
 
-					// para decidir que reponse vamos mandar, precisamos ver
-					// que recurso a solicitação/request está pedindo
-					size_t found = requestString.find("process_data.cgi");
-					if (found != std::string::npos)
-					{
-						// lida com o cgi
-						std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
-						// std::string response = handleCGIRequest(requestString);
-						CGI cgiExec;
+                    cgiExec.handleCGIRequest(requestString);
+                    std::string response = cgiExec.getResponse();
+                    send(clientSocket, response.c_str(), response.length(), 0);
+                }
 
-						cgiExec.handleCGIRequest(requestString);
-						std::string response = cgiExec.getResponse();
-						send(clientSocket, response.c_str(), response.length(), 0);
-					}
-					else
-					{
-	            		//por enquanto, um response GENERICO só pra satisfazer o client
-	            		const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";
-						ssize_t bytesSent = send(clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.
-						if (bytesSent == -1){
-							std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
-						}
-					}
+                close(clientSocket);
+                std::cout << "\n---------------------------------------" << std::endl;
+                std::cout <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << std::endl;
+                std::cout << "-----------------------------------------" << std::endl;  
+            }
+        }
+    }
+    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
 
-
-            		// if(_hostContent.empty()){
-            		//     std::cerr << "Linha 'Host:' não encontrada." << std::endl;
-            		// }      
-	    			// Fecha o socket do client  >> se não fechar antes fica no loop
-	    			close(clientSocket);
-            		std::cout << "\n---------------------------------------" << std::endl;
-	    			std::cout << "----- FECHOU A CONEXÃO COM O CLIENTE ----" << std::endl;
-            		std::cout << "-----------------------------------------" << std::endl;  
-				}
-		}
-	}
-	for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
         close(_serverSocket[serverIndex].getWebServSocket());
 }
+*/
 
 
+
+
+
+//---------------------------------------------------------------
+//---------------------------------------------------------------
+
+// void WebServ::mainLoop(){
+// 
+//     std::cout << "-----------------------------------------" << std::endl;
+//     std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
+//     std::cout << "-----------------------------------------\n" << std::endl;
+// 
+// 	Epoll epoll_S;
+// 
+// 	epoll_S.addServersToEpoll(_serverSocket);
+// 	int epollFd = epoll_S.getEpollFd();
+// 	std::cout << "Epoll FD ------> " << epollFd << std::endl;
+// 	if (epollFd == -1 || epollFd == -2)
+// 	{
+// 		return; //dar uma exceção de erro
+// 	}
+// 
+// 	const int maxEvents = epoll_S.getMaxEvents();
+//     struct epoll_event events[maxEvents];
+// 
+// 	while(true)
+// 	{
+// 		epoll_S.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
+//         if (epoll_S.getNumberEvents() == -1) {
+//             perror("Error in epoll_wait");
+//             return;
+//         }
+// 
+//         for (int i = 0; i < epoll_S.getNumberEvents(); ++i)
+//         {
+//             epoll_S.setIsServerFdTriggered(false);
+//             for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+//             {
+//                 if (events[i].data.fd == _serverSocket[serverIndex].getWebServSocket())
+//                 {
+//                     epoll_S.setIsServerFdTriggered(true);
+//                     break;
+//                 }
+//             }
+//             if (epoll_S.getIsServerFdTriggered() == true)
+//             {
+//                 int result = epoll_S.addNewClientToEpoll(events, i);
+//                 if (result == -3)
+// 		continue;
+// 	}
+// 	else
+// 	{
+// 		int clientSocket = events[i].data.fd;
+// 		char buffer[1024];
+//             		ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0); //peguei a request
+//             		if(bytesRead <= 0)
+//             		{
+//             		    std::cerr << "Erro ao receber solicitação do client " << std::endl;
+//             		    continue;
+//             		}
+//             		std::string requestString(buffer, bytesRead); //buffer contém os dados recebidos do client
+//             		Request request(requestString);
+//             		printRequest(requestString);
+// 		if(!request.isFirstLineValid())
+// 		{
+//             		    request.setHasError(true);
+//             		    close(clientSocket);
+//             		}
+//             		if(request.getHasError())
+//             		    responseError();
+//             		request.validateRequest();
+//             		
+// //////////////////////////////------------- daqui pra baixo é response/ para decidir que reponse vamos mandar, precisamos ver
+// 		        // que recurso a solicitação/request está pedindo
+// 		        
+// 		        SE DOMAIN FOR NUMERO CONFERE O FORMATO E CONFERE SE É O MESMO QUE ESTA EM IP ADRESS BATE COM O DO LISTEM
+//                 SE DOMAIN FOR ESCRITO ENTAO PUXA NO SERVER_NAME
+//                 SE A REQUEST TIVER PORTA, SE ELA ESTA PREENCHIDA NA PORT DO SOCKETS
+//                 SE NAO TIVER PORTA É DEFAULT ENTAO PRECISA VERFICAR SE ESTÁ HABILITADA
+//                 SE DER ALGO ERRADO ENTAO CONSTROI UMA RESPNSE DE ERRO COM O STATUS DE ERRO E RETORNA ISSO PRA MAIN LOOP E A MAIN LOOP FAZ UMA SEND PARA O CLIENT
+//                 SE DER CERTO DAI VOCE PROSSEGUE, MANDA O OBJETO REQUEST E ESSE SOCKET QUE ENCONTREI. NESSA FUNCAO QUE TEM */
+//                 // for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+//                 // {
+//                 //     if(request.getDomainRequest().find(".") != std::string::npos) //ip
+//                 //     {
+//                 //         if(request.getDomainRequest() == _serverSocket[serverIndex].getAddress())
+//                 //         {
+//                 //             std::cout << "é igual a ipaddress" << std::endl;
+//                 //             if (request.getPortRequest().size() > 0)
+//                 //             {
+//                 //                 // teve port, daí tem que comparar isso e ver se está configurado no server tambem
+//                 //                 if(request.getPortRequest() == _serverSocket[serverIndex].getPort())
+//                 //                 {
+//                 //                     std::cout << "tem port e é o mesmo";
+//                 //                     // daí sim prossegue pra construir uma response que pode ser bem sucedida
+//                 //                     //ou seja: chama um objeto Response e passa essa request e esse _serverSocket[...] como parametro
+//                 //                     //......
+//                 //                     
+//                 //                     break;
+//                 //                 }
+//                 //                 else
+//                 //                 {
+//                 //                     std::cout << "Não é o mesmo port. Então NÃO ROLA" << std::endl;
+//                 //                     //construir uma response de erro (ver qual é o statusCode condizente e 
+//                 //                     //como ficará o resto do cabeçalho)
+//                 //                     // response de erro é STRING               
+//                 //                 }
+//                 //             }
+//                 //         }    
+//                 //     }
+//                 //     else if(contains(_serverSocket[serverIndex].getServerName(), request.getDomainRequest()))
+//                 //     {
+//                 //           std::cout << "tá no server name" << std::endl;
+//                 //           if (request.getPortRequest().size() > 0)
+//                 //             {
+//                 //                 // teve port, daí tem que comparar isso e ver se está configurado no server tambem
+//                 //                 if(request.getPortRequest() == _serverSocket[serverIndex].getPort())
+//                 //                 {
+//                 //                     std::cout << "tem port e é o mesmo";
+//                 //                     // daí sim prossegue pra construir uma response que pode ser bem sucedida
+//                 //                     //ou seja: chama um objeto Response e passa essa request e esse _serverSocket[...] como parametro
+//                 //                     //.....
+//                 //                     break;
+//                 //                 }
+//                 //                 else
+//                 //                 {
+//                 //                     std::cout << "Não é o mesmo port. Então NÃO ROLA" << std::endl;
+//                 //                     //construir uma response de erro (ver qual é o statusCode condizente e 
+//                 //                     //como ficará o resto do cabeçalho)
+//                 //                     // response de erro é STRING
+//                 //                 }
+//                 //             }
+//                 //     }
+//                 // }
+// 		
+// 		
+// 		Response currentResponse;
+// 		
+// 		int selectedServer = currentResponse.selectServer(request, _serverSocket);
+// 		if (selectedServer != -1)
+// 		{
+// 		    std::cout << "Server que recebeu a solicitação: " << _serverSocket[selectedServer].getAddress() << std::endl;
+// 		    currentResponse.buildResponse(request, _serverSocket[selectedServer]);
+// 		    std::string response = currentResponse.getResponse();
+// 		    ssize_t bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
+// 		    if (bytesSent == -1)
+// 		        std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
+// 		}
+// 		else
+// 		    std::cout << "Server não encontrado!" << std::endl;
+// 		
+// 		//////////
+// 		size_t found = requestString.find("process_data.cgi");
+// 		if (found != std::string::npos)
+// 		{
+// 			// lida com o cgi
+// 			std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
+// 			std::string response = handleCGIRequest(requestString);
+// 			send(clientSocket, response.c_str(), response.length(), 0);
+// 		}
+// 		//else //////////////
+// 		//{
+// 	    //        		//por enquanto, um response GENERICO só pra satisfazer o client
+// 	    //        		const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";
+// 		//	ssize_t bytesSent = send(clientSocket, response, strlen(response), 0); //começa sempre pelo metodo: envia a reponse para o clienteSocket e retorna a quantidade de bytes.
+// 		//	if (bytesSent == -1)
+// 		//		std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
+// 		//} //////////
+// 
+// 	// if(_hostContent.empty()){
+// 	//     std::cerr << "Linha 'Host:' não encontrada." << std::endl;
+// 	// }      
+// 	// Fecha o socket do client  >> se não fechar antes fica no loop
+// 		close(clientSocket);
+//             	    std::cout << "\n---------------------------------------" << std::endl;
+//             	    std::cout <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << std::endl;
+//             	    std::cout << "-----------------------------------------" << std::endl;  
+//                 }
+//         }
+//     }
+// 	for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+//     close(_serverSocket[serverIndex].getWebServSocket());
+// }
+// 
+// 
 
 
 
@@ -483,7 +709,7 @@ void WebServ::mainLoop(){
 }*/
 
 /*
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp -o executavel
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response
     ./executavel src/config.txt
 
 */

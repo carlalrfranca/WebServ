@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/27 20:46:05 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/08/31 15:27:32 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,27 @@ const std::string& SocketS::getAddress(void)const{
 const int& SocketS::getWebServSocket(void)const{
     return _webServSocket;
 }
-     
+
+void SocketS::setServerName(std::vector<std::string> serverName)
+{
+     this->_serverName = serverName;
+}
+
+std::vector<std::string> SocketS::getServerName(void)const
+{
+    return _serverName;
+}
+ 
+void SocketS::setMethods(std::vector<std::string> methods)
+{
+    _methods = methods;
+}
+
+std::vector<std::string> SocketS::getMethods(void) const
+{
+    return _methods;
+}
+ 
      
 // int SocketS::bindSocketListenConnections(){
 // 
@@ -132,10 +152,4 @@ const int& SocketS::getWebServSocket(void)const{
     
     
     
-    
-/*
-
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp -o executavel
-    ./executavel ./cfgs/default.config
-
-*/
+ 
