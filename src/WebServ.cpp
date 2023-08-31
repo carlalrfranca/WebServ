@@ -13,6 +13,7 @@
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/WebServ.hpp"
 #include "../inc/Response.hpp"
+#include "../inc/CGI.hpp"
 
 WebServ::WebServ(){}
 
@@ -400,7 +401,11 @@ void WebServ::mainLoop(){
                 if (found != std::string::npos)
                 {
                     // lida com o cgi
-                    std::string response = handleCGIRequest(requestString);
+                    std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
+                    CGI cgiExec;
+
+                    cgiExec.handleCGIRequest(requestString);
+                    std::string response = cgiExec.getResponse();
                     send(clientSocket, response.c_str(), response.length(), 0);
                 }
 
@@ -412,6 +417,7 @@ void WebServ::mainLoop(){
         }
     }
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+
         close(_serverSocket[serverIndex].getWebServSocket());
 }
 */
