@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 19:34:35 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/31 15:03:51 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ class Response
         std::string                         _body;
         std::string                         _response; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
         std::string                         _code;
-        SocketS                             *chosenSocket;
+        SocketS                             *_chosenSocket;
         /*
             ------------------------------------------- LETICIA DEIXOU ANOTADO ----------------------------------------------
             criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)

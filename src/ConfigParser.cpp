@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 19:22:38 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/31 15:23:12 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,6 @@ ConfigParser::ConfigParser()
     _root = "";
     _hasRoot = true;
 }
-/*
-
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp -o executavel 
-    ./executavel src/config.txt  
-*/
 
 ConfigParser::~ConfigParser() {}
 
@@ -52,8 +47,6 @@ void ConfigParser::setLocations(std::map<std::string, LocationDirective>& locati
 {
 	_locations = locations;
 }
-
-// 
 
 void ConfigParser::processListen(std::string &line)
 {

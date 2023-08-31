@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 19:30:12 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/31 15:27:32 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,10 +152,4 @@ std::vector<std::string> SocketS::getMethods(void) const
     
     
     
-    
-/*
-
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp -o executavel
-    ./executavel ./cfgs/default.config
-
-*/
+ 

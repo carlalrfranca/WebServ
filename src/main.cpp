@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/29 18:10:24 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/08/31 15:26:01 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,27 +31,13 @@ int main(int argc, char **argv){
  }
 
 
-
 /*
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
-    ./executavel src/config.txt
+    em 31.08.2023
+
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response
+    ./executavel_com_response src/config.txt
 
 */
-
-
-/*
-//entrar na configuração do nginx e ver o arquivo
-as validações não devem ser feitas aqui e sim dentro do programa:
-
-    verificar se 
-    
-    existe se tem arquivo
-    se tem conteudo
-    se o conteudo condiz com aquilo que é solicitado
-    
-
-*/
-
 
 
 

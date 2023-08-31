@@ -16,7 +16,7 @@ const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html>
 
 Response::Response()
 {
-    chosenSocket = NULL;
+    _chosenSocket = NULL;
 }
 
 Response::~Response()
@@ -32,7 +32,7 @@ Response::Response(Request request)
     //setContentType("text/html");
     //setDateAndTime();
     //setContentLength(_body.length());
-    chosenSocket = NULL;
+    _chosenSocket = NULL;
 }
 
 //metodo para ler o conteudo do html
