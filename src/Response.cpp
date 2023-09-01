@@ -314,6 +314,10 @@ std::string Response::buildResponse(Request &request, SocketS &server)
         //constrói resposta de erro porque esse método não é permitido
         // e retorna
         std::cout << "MÉTODO NÃO PERMITIDO!";
+        std::cout << "This server doesnt have this location!!" << std::endl;
+        std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
+        setResponse(response);
+        return response;    
     }
     //////////
 
