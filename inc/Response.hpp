@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/31 15:03:51 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/02 19:41:10 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,10 @@
 #include "HeadersLibs.hpp"
 #include "SocketS.hpp"
 
+
 class SocketS;
 class Request;
+typedef std::string (*Funcao)(Request &request, SocketS &server);
 
 class Response
 {
@@ -47,6 +49,11 @@ class Response
         std::string buildResponse(Request &request, SocketS &server);
         void reset(void); //implementa a redefinição de resposta, limpando cabeçalhos e corpo
         void httpError(std::string errorCode, const std::string &errorMessage);
+
+		// method for each method
+		static std::string deleteMethod(Request &request, SocketS &server);
+		static std::string postMethod(Request &request, SocketS &server);
+		static std::string getMethod(Request &request, SocketS &server);
     
     private:
     
@@ -55,6 +62,8 @@ class Response
         std::string                         _response; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
         std::string                         _code;
         SocketS                             *_chosenSocket;
+		std::map<std::string, Funcao>		methodsFunctions;
+
         /*
             ------------------------------------------- LETICIA DEIXOU ANOTADO ----------------------------------------------
             criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)

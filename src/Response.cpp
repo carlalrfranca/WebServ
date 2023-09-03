@@ -17,6 +17,9 @@ const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html>
 Response::Response()
 {
     _chosenSocket = NULL;
+	methodsFunctions["GET"] = &getMethod;
+	methodsFunctions["POST"] = &postMethod;
+	methodsFunctions["DELETE"] = &deleteMethod;
 }
 
 Response::~Response()
@@ -34,6 +37,129 @@ Response::Response(Request request)
     //setContentLength(_body.length());
     _chosenSocket = NULL;
 }
+
+// métodos pra lidar com cada função respectiva
+// Funções de exemplo
+std::string Response::getMethod(Request &request, SocketS &server) {
+    return "Resposta para GET";
+}
+
+/*
+If you don't have a specific location directive in your Nginx configuration and you try to POST an image or any other data to the server, Nginx will typically handle the request as follows:
+
+Nginx will receive the POST request with the image data from the client.
+
+It will process the request headers as usual.
+
+Since there is no specific location block defined to handle the POST request, Nginx will not perform any custom processing on the request data.
+
+Instead, it will look for a default behavior to handle the POST data, which often involves saving the POST data to a temporary file on the server's filesystem. The exact location and behavior may depend on your Nginx configuration, but Nginx will generally handle the data as a file upload.
+
+Nginx will not perform any image processing or special handling of the uploaded image by default. It won't display or process the image unless you have a separate process or script in your server's backend that handles uploaded files.
+
+In summary, without a specific location directive to handle POST requests, Nginx will treat the uploaded image as a file upload and save it to the server.
+*/
+
+std::string Response::postMethod(Request &request, SocketS &server) {
+    // return "Resposta para POST";
+
+	// se for "POST", ele chama essa função... daí???
+
+	// já terá escolhido o socket, é claro.. então...
+	// tem que VER O LOCATION DO CGI, CERTO?
+	// porque pra ter POST, vai ter que usar um script CGI
+	// se nao tiver essa location, o que acontece????
+	// ele envia uma resposta de erro????? 
+	// ----> Não, o ngnix vai apenas POSTAR NO SERVER (diretorio) o conteudo,
+	// ele só NÃO VAI FAZER NENHUM PROCESSAMENTO DESSE CONTEUDO
+
+	// TO DO:
+	// entao vemos se tem location pra decidir se: ---> é pra ser um location pro script CGI ( location /cgi-bin/)
+	// -- ao receber um POST, vamos usar um script
+	// -- ou, como nao tem location (logo, nao tem script pra chamar), APENAS SALVA O CONTEUDO
+
+	// --> tambem temos que ver se tem "root" (seja no bloco de server ou do location)
+	// --- pra saber em que diretorio buscar
+
+	// Sobre se nao houver root em nenhum lugar do bloco server doarquivo:
+	/*
+		 Se nenhum root for especificado em qualquer lugar, o Nginx usará o diretório
+		 raiz padrão do sistema como ponto de partida para atender as solicitações.
+		 Isso é geralmente definido durante a compilação ou instalação do Nginx e pode
+		 variar de acordo com o sistema operacional.
+	*/
+	std::string root_for_response; // essa é uma variavel temporaria daqui
+	if (server.getRoot().size() > 0)
+		root_for_response = server.getRoot();
+	// agora vamos ver se tem o location do CGI (se nao tiver, ir pro caminho "padrão" do server (vai ser apenas uma postagem no diretorio do server (faz um metodo pra isso?)))
+	// /cgi-bin/
+	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+	std::map<std::string, LocationDirective>::iterator it = serverLocations.find("/cgi-bin");
+	if (it != serverLocations.end())
+	{
+		// quer dizer que teve esse location
+		std::cout << "Há um LOCATION PRO CGI!" << std::endl;
+		// agora verificamos se há um "root" dentro desse location (um root mais "especifico", portanto)
+		std::map<std::string, std::vector< std::string > > locationDirectives;
+		locationDirectives = it->second.getDirectives();
+        std::map<std::string, std::vector< std::string > >::iterator itLocationRoot = locationDirectives.find("root");
+		if (itLocationRoot != locationDirectives.end())
+		{
+			// quer dizer que teve um root mais especifico no location... daí substituímos o root_for_response por essa..
+			root_for_response = itLocationRoot->second[0];
+			std::cout << "Root ESPECIFICO da location do CGI:::: " << root_for_response << std::endl;
+			// tem que pegar outras duas diretivas dentro do it (ponteiro pra esse location):
+			/*
+				cgi_path --> location of interpreters installed on the current system, mandatory parameter
+				cgi_ext --> extensions for executable files, mandatory parameter
+			*/
+			std::map<std::string, std::vector< std::string > >::iterator commandOfCGI = locationDirectives.find("cgi_path");
+			if (commandOfCGI != locationDirectives.end())
+			{
+				// encontrou CGI-path...
+				// tem que gravar isso numa variavel (pode ser um vetor, porque pode ter mais de um tipo de script CGI e, por
+				// consequencia, mais de um comando pra executar cada um)
+				std::vector<std::string> scriptsCommands = commandOfCGI->second;
+				for (int i = 0; i < scriptsCommands.size() ; i++)
+					std::cout << "Comandos para executar os scripts CGI ------> " << scriptsCommands[i] << std::endl;
+				std::cout << "------------------------------------------------------" << std::endl;
+				// bora encontrar a(s) extensão(ões)
+				std::map<std::string, std::vector< std::string > >::iterator CGIExtension = locationDirectives.find("cgi_ext");
+				if (CGIExtension != locationDirectives.end())
+				{
+					std::vector<std::string> scriptsExtensions = CGIExtension->second;
+					for (int j = 0; j < scriptsExtensions.size(); j++)
+						std::cout << "Extensões dods scripts CGI ------> " << scriptsExtensions[j] << std::endl;
+					std::cout << "------------------------------------------------------" << std::endl;
+					// podia já declarar um objeto CGI e inserir essas informações (extensão e comando) dentro dele, certo?
+					// e daí prosseguir a partir dele...
+					// chamando seus métodos aqui pra executar e criar a resposta...
+					// daí no final só armazenaria o que ele retorna na _response daqui....
+				}
+				else
+				{
+					// se nao encontrar a diretiva 'cgi-ext'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
+				}
+			}
+			else
+			{
+				// se nao encontrar a diretiva 'cgi-path'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
+			}
+		}
+	}
+	else
+	{
+		//quer dizer que nao teve o locatin do cgi-bin, então lidamos com a postagem da forma "padrão" (grava o conteudo num arquivo no diretorio raiz do projeto)
+		std::cout << "NÃO HÁ um location PRO CGI! Vai pro caminho padrão..." << std::endl;
+	}
+
+}
+
+std::string Response::deleteMethod(Request &request, SocketS &server) {
+    return "Resposta para DELETE";
+}
+
+
 
 //metodo para ler o conteudo do html
 std::string Response::readHtmlFile(const std::string& filePath)
@@ -277,9 +403,12 @@ std::string Response::buildResponse(Request &request, SocketS &server)
         }
     }
 
-    if (found) {    
+    if (found) {
         // método é permitido pra esse servidor. Continua...
-        
+		std::string respostaGet = methodsFunctions[requestMethod](request, server);
+	
+
+		// isso ficará na FUNÇÃO DE MÉTODO GET !!!! -------------------------------
         // temos que verificar se o servidor está apto a lidar com esse recurso (ver os
         // locations...)
         std::map<std::string, LocationDirective> serverLocations = server.getLocations();
