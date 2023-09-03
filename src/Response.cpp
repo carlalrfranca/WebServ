@@ -88,6 +88,15 @@ std::string Response::postMethod(Request &request, SocketS &server) {
 		 Isso é geralmente definido durante a compilação ou instalação do Nginx e pode
 		 variar de acordo com o sistema operacional.
 	*/
+
+	/*
+		ANTES DE TUDO:
+		-> verificar o TAMANHO DO CONTEUDO DO POST (vê se está dentro dos limites de max-content
+		determinado no arquivo de configuração. Se não estiver, corta na hora reornando uma
+		RESPONSE DE ERRO DE ACORDO COM A SITUAÇÃO)
+	*/
+
+
 	std::string root_for_response; // essa é uma variavel temporaria daqui
 	if (server.getRoot().size() > 0)
 		root_for_response = server.getRoot();
@@ -137,6 +146,7 @@ std::string Response::postMethod(Request &request, SocketS &server) {
 					// daí no final só armazenaria o que ele retorna na _response daqui....
 					
 					// NÃO SE ESQUEÇA DE IMPLEMENTAR O LOOP DE CHUNCKS TAMBEM
+					
 				}
 				else
 				{
@@ -153,6 +163,7 @@ std::string Response::postMethod(Request &request, SocketS &server) {
 	{
 		//quer dizer que nao teve o locatin do cgi-bin, então lidamos com a postagem da forma "padrão" (grava o conteudo num arquivo no diretorio raiz do projeto)
 		std::cout << "NÃO HÁ um location PRO CGI! Vai pro caminho padrão..." << std::endl;
+		// ou seja, só "posta" o que tiver que postar num arquivo no diretório
 	}
 
 }
