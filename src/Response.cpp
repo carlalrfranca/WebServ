@@ -106,6 +106,7 @@ std::string Response::postMethod(Request &request, SocketS &server) {
 	std::map<std::string, LocationDirective>::iterator it = serverLocations.find("/cgi-bin");
 	if (it != serverLocations.end())
 	{
+		CGI script;
 		// quer dizer que teve esse location
 		std::cout << "Há um LOCATION PRO CGI!" << std::endl;
 		// agora verificamos se há um "root" dentro desse location (um root mais "especifico", portanto)
@@ -140,6 +141,11 @@ std::string Response::postMethod(Request &request, SocketS &server) {
 					for (int j = 0; j < scriptsExtensions.size(); j++)
 						std::cout << "Extensões dods scripts CGI ------> " << scriptsExtensions[j] << std::endl;
 					std::cout << "------------------------------------------------------" << std::endl;
+					
+					// setando todas essas variaveis no objeto CGI pra processar o resto A PARTIR DELE
+					script.setRoot(root_for_response);
+					script.setCommands(scriptsCommands);
+					script.setExtensions(scriptsExtensions);
 					// podia já declarar um objeto CGI e inserir essas informações (extensão e comando) dentro dele, certo?
 					// e daí prosseguir a partir dele...
 					// chamando seus métodos aqui pra executar e criar a resposta...

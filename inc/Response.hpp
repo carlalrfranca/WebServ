@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/02 19:41:10 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/02 23:17:44 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #define _RESPONSE_HPP_
 #include "HeadersLibs.hpp"
 #include "SocketS.hpp"
-
+#include "CGI.hpp"
 
 class SocketS;
 class Request;

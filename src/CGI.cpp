@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/08/29 20:35:08 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/02 23:34:07 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,42 @@ CGI::CGI() : _response(""), _method(""), _inputFormData(""), _scriptOutput("")
 
 CGI::~CGI()
 { }
+
+// setters and getters
+
+void CGI::setRoot(const std::string& root)
+{
+	_rootToScripts = root;
+}
+
+const std::string& CGI::getRoot(void) const
+{
+	return _rootToScripts;
+}
+
+void CGI::setCommands(std::vector<std::string> commands)
+{
+	_scriptCommands = commands;
+}
+
+std::vector<std::string> CGI::getCommands(void) const
+{
+	return _scriptCommands;
+}
+
+void CGI::setExtensions(std::vector<std::string> extensions)
+{
+	_scriptExtensions = extensions;
+}
+
+std::vector<std::string> CGI::getExtensions(void) const
+{
+	return _scriptExtensions;
+}
+
+// ----------------------
+
+// Adaptar o método abaixo de acordo com a chamada vinda da Response
 
 void CGI::executeScript(int *pipefd)
 {
