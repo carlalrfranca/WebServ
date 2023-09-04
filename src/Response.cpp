@@ -123,6 +123,7 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 				cgi_path --> location of interpreters installed on the current system, mandatory parameter
 				cgi_ext --> extensions for executable files, mandatory parameter
 			*/
+			// passar aqui pra classe de ValidationsPost
 			std::map<std::string, std::vector< std::string > >::iterator commandOfCGI = locationDirectives.find("cgi_path");
 			if (commandOfCGI != locationDirectives.end())
 			{
