@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 19:29:31 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/02 20:20:06 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,10 +42,14 @@ class SocketS
 		void setLocations(std::map<std::string, LocationDirective> locations);
         void setMethods(std::vector<std::string>methods);
         std::vector<std::string> getMethods(void) const;
-
+        
+        void setRoot(std::string root);
+        const std::string& getRoot(void)const;
+        
     private:
         
         int             _webServSocket; //FD
+        std::string     _root;
         std::string     _portNumber;
         std::string     _ipAddress;
         std::string     _response; //talvez na response class

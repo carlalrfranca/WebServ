@@ -106,6 +106,10 @@ bool Response::contains(const std::vector<std::string>& vec , const std::string&
     return false;
 }
 
+void Response::setPath(const std::string& allPath){
+    _path = allPath;
+}
+
 
 // refazer esse metodo selectServer
 
@@ -231,9 +235,12 @@ int Response::selectServer(Request& stringDomain, std::vector<SocketS> serverSoc
 */
 }
 
-std::string Response::getResponse()
-{
+std::string Response::getResponse(){
     return _response; //Retorna o corpo da resposta
+}
+
+std::string Response::getPath(){
+    return _path;
 }
 
 std::string readFileToString(const std::string& filename) {
@@ -276,25 +283,32 @@ std::string Response::buildResponse(Request &request, SocketS &server)
             break;
         }
     }
-
-    if (found) {    
-        // método é permitido pra esse servidor. Continua...
-        
-        // temos que verificar se o servidor está apto a lidar com esse recurso (ver os
-        // locations...)
+    std::string hasRoot;
+    if (found){ 
+        if(server.getRoot().size() > 0)
+            hasRoot = server.getRoot();
+        else{
+            hasRoot = "./";
+        }
         std::map<std::string, LocationDirective> serverLocations = server.getLocations();
         std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI());
-
         std::map<std::string, std::vector< std::string > > locationDirectives;
-        if (it != serverLocations.end()) {
+        if (it != serverLocations.end()){
+            std::cout << "Directives from this Location found!" << std::endl;
+            locationDirectives = it->second.getDirectives();
+             std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root");
+            if (itRoot != locationDirectives.end())
+                hasRoot = itRoot->second[0]; 
             std::cout << "Directives from this Location found!" << std::endl;
             locationDirectives = it->second.getDirectives();
              std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-
-            if (itIndex != locationDirectives.end()) {
+            if (itIndex != locationDirectives.end()){
                 std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
                 // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
-                std::string bodyHTML = readFileToString(itIndex->second[0]);
+                setPath(hasRoot + itIndex->second[0]);
+                std::string bodyHTML = readFileToString(getPath());
+            
+                
                 //std::cout << "---- DEU PRA LER HTML ------";
                 //std::cout << bodyHTML << std::endl;
                 _body = bodyHTML;
@@ -308,9 +322,7 @@ std::string Response::buildResponse(Request &request, SocketS &server)
             setResponse(response);
             return response;    
         }                
-    }
-    else
-    {
+    } else {
         //constrói resposta de erro porque esse método não é permitido
         // e retorna
         std::cout << "MÉTODO NÃO PERMITIDO!";
@@ -330,6 +342,23 @@ std::string Response::buildResponse(Request &request, SocketS &server)
     setResponse(fullResponse);
     return fullResponse;
 }
+
+
+
+/*
+
+Agora preciso que seja criado um metodo  
+que avaliara se no atributo SocketS tem uma diretiva location , 
+se tiver a diretiva location verifica se tem uma root se tiver uma 
+root entao essa root sera usada para determinar o diretorio raiz. 
+Se não houver a diretiva location ou se nao tiver um root dentro da 
+location o servidor entao usa a diretiva root global definida fora. 
+Agora fica a questao , e se nao tiver uma root na global?
+
+
+
+*/
+
 
 void Response::reset()
 {

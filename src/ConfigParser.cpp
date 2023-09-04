@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/31 15:23:12 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/02 20:04:17 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -425,6 +425,14 @@ const std::string& ConfigParser::getAddress(void)const{
 
 const std::vector<std::string>& ConfigParser::getIndexFiles(void) const{
     return _indexFiles;
+}
+
+void ConfigParser::setRoot(std::string root){
+    _root = root;
+}
+
+const std::string& ConfigParser::getRoot(void)const{
+    return _root;
 }
 
 const std::string ConfigParser::getErrorPage(int statusCode)const{
