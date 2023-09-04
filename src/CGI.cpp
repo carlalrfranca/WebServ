@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/02 23:34:07 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/03 20:31:36 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void CGI::executeScript(int *pipefd)
 	}
 }
 
-void CGI::handleCGIRequest(std::string& request)
+void CGI::handleCGIRequest(Request &request)
 {
 	// primeiro criamos a header da response:
 	_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
@@ -117,14 +117,15 @@ void CGI::handleCGIRequest(std::string& request)
 				> vamos resgatar a saída do script e construir uma response pra retornar pra mainLoop()
 	*/
 
-	int indexMethod = request.find("POST");
-	if (indexMethod != std::string::npos)
-	{
-		_method = request.substr(indexMethod, indexMethod + 3);
-		std::size_t data_init_pos = request.find("\r\n\r\n");
+	// int indexMethod = request.find("POST");
+	// if (indexMethod != std::string::npos)
+	// {
+		// _method = request.substr(indexMethod, indexMethod + 3);
+		std::string request_content = request.getRequest();
+		std::size_t data_init_pos = request_content.find("\r\n\r\n");
 		if (data_init_pos != std::string::npos)
 		{
-			_inputFormData = request.substr(data_init_pos + 4);
+			_inputFormData = request_content.substr(data_init_pos + 4);
 			
 			// setamos a env QUERY_STRING com esses valores do form
 			setenv("QUERY_STRING", _inputFormData.c_str(), 1);
@@ -145,15 +146,14 @@ void CGI::handleCGIRequest(std::string& request)
 			}
 			_response += _scriptOutput;
 		}
-	}
-	else
-	{
+		else
+		{
 		// ou seja, não foi um 'POST'
 		// retorna uma reponse só pra teste
-		_response += "<html><body><h1>Simple Form</h1><form method=\"post\">";
-        _response += "Name: <input type=\"text\" name=\"name\"><br>Email: <input type=\"text\" name=\"email\"><br>";
-        _response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
-	}
+			_response += "<html><body><h1>Simple Form</h1><form method=\"post\">";
+		   _response += "Name: <input type=\"text\" name=\"name\"><br>Email: <input type=\"text\" name=\"email\"><br>";
+		   _response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
+		}
 }
 
 std::string CGI::getResponse(void) const

@@ -60,7 +60,7 @@ Nginx will not perform any image processing or special handling of the uploaded 
 In summary, without a specific location directive to handle POST requests, Nginx will treat the uploaded image as a file upload and save it to the server.
 */
 
-std::string Response::postMethod(Request &request, SocketS &server) {
+std::string Response::postMethod(Request &request, SocketS &server, Response *this_response) {
     // return "Resposta para POST";
 
 	// se for "POST", ele chama essa função... daí???
@@ -152,16 +152,36 @@ std::string Response::postMethod(Request &request, SocketS &server) {
 					// daí no final só armazenaria o que ele retorna na _response daqui....
 					
 					// NÃO SE ESQUEÇA DE IMPLEMENTAR O LOOP DE CHUNCKS TAMBEM
-					
+
+					script.handleCGIRequest(request);
+					return script.getResponse(); // retorna a response
 				}
 				else
 				{
 					// se nao encontrar a diretiva 'cgi-ext'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
+					this_response->setDateAndTime();
+					std::string date = this_response->getDate();
+					std::string response_error =
+        				"HTTP/1.1 404 Not Found\r\n"
+        				"Server: webserv/1.0.0\r\n"
+        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
+        				"Content-Type: text/html\r\n"
+        				"Content-Length: 162\r\n"
+        				"Connection: keep-alive\r\n\r\n";
+					return response_error;
 				}
 			}
 			else
 			{
 				// se nao encontrar a diretiva 'cgi-path'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
+				std::string response_error =
+        				"HTTP/1.1 404 Not Found\r\n"
+        				"Server: nginx/1.20.0\r\n"
+        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
+        				"Content-Type: text/html\r\n"
+        				"Content-Length: 162\r\n"
+        				"Connection: keep-alive\r\n\r\n";
+				return response_error;
 			}
 		}
 	}
@@ -216,6 +236,16 @@ void Response::setDateAndTime()
     //string info 
     strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S %Z", timeInfo);
     _headers["Date"] = buffer;
+}
+
+std::string Response::getDate(void) const
+{
+	std::map<std::string, std::string >::const_iterator it = _headers.find("Date");
+	if (it != _headers.end())
+	{
+		return it->second;
+	}
+	return "Date not found";
 }
 
 // void Response::setContentLength(size_t length)

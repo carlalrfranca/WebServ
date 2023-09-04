@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 20:16:36 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/03 20:29:26 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,11 @@ void Request::setRequest(const std::string& request)
     _request = request;
     _requestStream.str(request);
     std::getline(_requestStream, _firstLine);
+}
+
+std::string Request::getRequest(void) const
+{
+	return _request;
 }
 
 void Request::printRequest()

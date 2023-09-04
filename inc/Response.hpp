@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/02 23:17:44 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/03 20:56:43 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ class Response
         void setStatusCode(const std::string& statusCode);
         void setContentType(const std::string& contentType);
         void setDateAndTime(void);
+		std::string getDate(void) const;
         // void setContentLength(size_t length);
         void setResponse(const std::string& response);
         

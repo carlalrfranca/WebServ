@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/02 23:28:49 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/03 20:27:13 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define _CGI_H
 
 #include "./HeadersLibs.hpp"
+#include "./Request.hpp"
 
 class CGI {
 
@@ -21,7 +22,8 @@ class CGI {
 		CGI();
 		~CGI();
 		void executeScript(int *pipefd);
-		void handleCGIRequest(std::string& request);
+		// void handleCGIRequest(std::string& request);
+		void handleCGIRequest(Request &request);
 		std::string getResponse(void) const;
 	
 		// setters and getters for scripts
