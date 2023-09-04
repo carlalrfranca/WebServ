@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/31 15:27:32 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/02 20:30:42 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ SocketS::SocketS(){
     _response = "";
     _cssContent = "";
     _webServSocket = 0;
+    _root = "";
 }
 
 
@@ -87,24 +88,27 @@ const int& SocketS::getWebServSocket(void)const{
     return _webServSocket;
 }
 
-void SocketS::setServerName(std::vector<std::string> serverName)
-{
+void SocketS::setServerName(std::vector<std::string> serverName){
      this->_serverName = serverName;
 }
 
-std::vector<std::string> SocketS::getServerName(void)const
-{
+std::vector<std::string> SocketS::getServerName(void)const{
     return _serverName;
 }
  
-void SocketS::setMethods(std::vector<std::string> methods)
-{
+void SocketS::setMethods(std::vector<std::string> methods){
     _methods = methods;
 }
 
-std::vector<std::string> SocketS::getMethods(void) const
-{
+std::vector<std::string> SocketS::getMethods(void) const{
     return _methods;
+}
+
+void SocketS::setRoot(std::string root){
+    _root = root;
+}
+const std::string& SocketS::getRoot(void)const{
+    return root;
 }
  
      

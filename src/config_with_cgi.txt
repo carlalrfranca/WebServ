@@ -1,7 +1,7 @@
 server{  
     listen https://localhost.com:2001;
     server_name example.com;
-    root src/inc/map.txt;
+    root src/inc/;
 
 	location / {
 		index index.html
