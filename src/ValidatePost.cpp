@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/03 21:08:04 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/03 21:27:22 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/04 20:08:21 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,6 @@ bool ValidatePost::hasCommandsToScript(std::map<std::string, std::vector< std::s
 		return false;
 	return true;
 }
-
 
 bool ValidatePost::hasExtensionsToScript(std::map<std::string, std::vector< std::string > > &locationDirectives)
 {

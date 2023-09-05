@@ -102,6 +102,20 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		root_for_response = server.getRoot();
 	// agora vamos ver se tem o location do CGI (se nao tiver, ir pro caminho "padrão" do server (vai ser apenas uma postagem no diretorio do server (faz um metodo pra isso?)))
 	// /cgi-bin/
+
+	size_t found = request.getRequest().find("/process_data.cgi");
+	if (found == std::string::npos)
+	{
+		std::cerr << "---- Opa, essa request NÃO tem process_data CGI !!! ----" << std::endl;
+		std::string response_error =
+        				"HTTP/1.1 404 Not Found\r\n"
+        				"Server: nginx/1.20.0\r\n"
+        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
+        				"Content-Type: text/html\r\n"
+        				"Content-Length: 162\r\n"
+        				"Connection: keep-alive\r\n\r\n";
+		return response_error;
+	}
 	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
 	std::map<std::string, LocationDirective>::iterator it = serverLocations.find("/cgi-bin");
 	if (it != serverLocations.end())
@@ -455,38 +469,39 @@ std::string Response::buildResponse(Request &request, SocketS &server)
 
     if (found) {
         // método é permitido pra esse servidor. Continua...
-		std::string respostaGet = methodsFunctions[requestMethod](request, server);
-	
+		std::string resposta = methodsFunctions[requestMethod](request, server);
+		setResponse(resposta);
+    	return resposta;
 
 		// isso ficará na FUNÇÃO DE MÉTODO GET !!!! -------------------------------
         // temos que verificar se o servidor está apto a lidar com esse recurso (ver os
         // locations...)
-        std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-        std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI());
-
-        std::map<std::string, std::vector< std::string > > locationDirectives;
-        if (it != serverLocations.end()) {
-            std::cout << "Directives from this Location found!" << std::endl;
-            locationDirectives = it->second.getDirectives();
-             std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-
-            if (itIndex != locationDirectives.end()) {
-                std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
+        // std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+        // std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI());
+// 
+        // std::map<std::string, std::vector< std::string > > locationDirectives;
+        // if (it != serverLocations.end()) {
+            // std::cout << "Directives from this Location found!" << std::endl;
+            // locationDirectives = it->second.getDirectives();
+            //  std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+// 
+            // if (itIndex != locationDirectives.end()) {
+                // std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
                 // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
-                std::string bodyHTML = readFileToString(itIndex->second[0]);
-                //std::cout << "---- DEU PRA LER HTML ------";
-                //std::cout << bodyHTML << std::endl;
-                _body = bodyHTML;
-                //std::cout << "-----------------------------------" << std::endl;
-            } else {
-                std::cout << "Index not found!" << std::endl;
-            }
-        } else {
-            std::cout << "This server doesnt have this location!!" << std::endl;
-            std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
-            setResponse(response);
-            return response;    
-        }                
+                // std::string bodyHTML = readFileToString(itIndex->second[0]);
+                // std::cout << "---- DEU PRA LER HTML ------";
+                // std::cout << bodyHTML << std::endl;
+                // _body = bodyHTML;
+                // std::cout << "-----------------------------------" << std::endl;
+            // } else {
+                // std::cout << "Index not found!" << std::endl;
+            // }
+        // } else {
+            // std::cout << "This server doesnt have this location!!" << std::endl;
+            // std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
+            // setResponse(response);
+            // return response;    
+        // }                
     }
     else
     {
