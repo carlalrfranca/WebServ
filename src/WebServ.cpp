@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/05 19:25:43 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/06 19:32:21 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -314,7 +314,7 @@ void WebServ::handleCGIRequest(int clientSocket, std::string& requestString, Req
     if (found != std::string::npos) {
         std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
         CGI cgiExec;
-        cgiExec.handleCGIRequest(requestString);
+        cgiExec.handleCGIRequest(request);
         std::string response = cgiExec.getResponse();
         send(clientSocket, response.c_str(), response.length(), 0);
     }

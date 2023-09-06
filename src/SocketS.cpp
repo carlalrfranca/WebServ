@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/05 19:40:29 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/06 19:30:50 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,7 @@ void SocketS::setRoot(std::string root){
     _root = root;
 }
 const std::string& SocketS::getRoot(void)const{
-    return root;
+    return _root;
 }
  
      
