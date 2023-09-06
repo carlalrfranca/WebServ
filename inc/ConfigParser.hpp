@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 19:22:05 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/02 20:04:01 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,11 +43,13 @@ class ConfigParser
         
         void setPort(int portNumber);
         void setAddress(std::string ipAddress);
+        void setRoot(std::string root);
         
-        const std::vector<std::string>& getMethods(void)const;
         
+        const std::string& getRoot(void)const;
         const std::string& getPort(void)const;
         const std::string& getAddress(void)const;
+        const std::vector<std::string>& getMethods(void)const;
         const std::vector<std::string>& getIndexFiles(void)const;
         const std::string getErrorPage(int statusCode)const;
 		std::map<std::string, LocationDirective> getLocations(void) const;

@@ -1,6 +1,6 @@
 
 server{  
-    listen localhost:2001;
+    listen localhost:2008;
     server_name example.com;
     root src/inc/map.txt;
     client_max_body_size 10M;
@@ -12,7 +12,7 @@ server{
 }
 
 server{  
-    listen localhost:2004;
+    listen localhost:2009;
     server_name example.com example2.co.uk name_example3.org.br google.com protonmail.co.uk yahoo.com.br;
     root src/inc/map.txt;
 	client_max_body_size 50M;
@@ -20,7 +20,7 @@ server{
 }
 
 server{  
-    listen localhost:5002;
+    listen localhost:5005;
     server_name example.com www.example.com;
     root
     	allow_methods DELETE

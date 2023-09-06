@@ -19,6 +19,7 @@ SocketS::SocketS(){
     _response = "";
     _cssContent = "";
     _webServSocket = 0;
+    _root = "";
 }
 
 
@@ -87,27 +88,30 @@ const int& SocketS::getWebServSocket(void)const{
     return _webServSocket;
 }
 
-void SocketS::setServerName(std::vector<std::string> serverName)
-{
+void SocketS::setServerName(std::vector<std::string> serverName){
      this->_serverName = serverName;
 }
 
-std::vector<std::string> SocketS::getServerName(void)const
-{
+std::vector<std::string> SocketS::getServerName(void)const{
     return _serverName;
 }
  
-void SocketS::setMethods(std::vector<std::string> methods)
-{
+void SocketS::setMethods(std::vector<std::string> methods){
     _methods = methods;
 	std::cout << "MÉTODOS PERMITIDOS: ----------------" << std::endl;
 	std::cout << "Esse server permite " << _methods.size() << " método(s)" << std::endl;
 	std::cout << _methods[0] << " e " << _methods[1] << std::endl;
 }
 
-std::vector<std::string> SocketS::getMethods(void) const
-{
+std::vector<std::string> SocketS::getMethods(void) const{
     return _methods;
+}
+
+void SocketS::setRoot(std::string root){
+    _root = root;
+}
+const std::string& SocketS::getRoot(void)const{
+    return root;
 }
  
      

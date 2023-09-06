@@ -57,6 +57,8 @@ class Response
 		// static std::string postMethod(Request &request, SocketS &server);
 		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
 		static std::string getMethod(Request &request, SocketS &server, Response *this_response);
+        //void setPath(const std::string& allPath);    
+        //std::string getPath(void);
     
     private:
     
@@ -66,7 +68,7 @@ class Response
         std::string                         _code;
         SocketS                             *_chosenSocket;
 		std::map<std::string, Funcao>		methodsFunctions;
-
+        //std::string                         _path;
         /*
             ------------------------------------------- LETICIA DEIXOU ANOTADO ----------------------------------------------
             criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)

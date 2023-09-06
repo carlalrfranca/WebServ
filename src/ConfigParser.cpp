@@ -439,6 +439,14 @@ const std::vector<std::string>& ConfigParser::getIndexFiles(void) const{
     return _indexFiles;
 }
 
+void ConfigParser::setRoot(std::string root){
+    _root = root;
+}
+
+const std::string& ConfigParser::getRoot(void)const{
+    return _root;
+}
+
 const std::string ConfigParser::getErrorPage(int statusCode)const{
     std::map<int, std::string>::const_iterator it = _errorPages.find(statusCode);
         if (it != _errorPages.end())

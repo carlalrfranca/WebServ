@@ -36,13 +36,12 @@ class WebServ {
 		std::string handleCGIRequest(std::string& request);
 		std::string executeScriptAndTakeItsOutPut(int *pipefd);
 		
-		
 		//divisao da mainLoop() em 31.08.2023
-        void initializeEpoll();
-        void runMainLoop();
-        void handleEvents(struct epoll_event* events);
-        void handleClientEvent(struct epoll_event& event);
-        void handleRequest(const std::string& requestString, int clientSocket);
+        bool isEventFromServerSocket(struct epoll_event* events, int index);
+		Epoll& getEpollS();
+        
+        void handleCGIRequest(int clientSocket, std::string& requestString, Request& request);
+        void handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString);
         //fim da divisao da mainLoop() em 31.08.2023
 	
     private:
@@ -50,6 +49,7 @@ class WebServ {
         int             _clientSocket;
         std::string     _nameConfigFile;
         ConfigParser    _configParser; //sujeito comentado
+        Epoll           _epollS;
         
         
         std::vector<SocketS> _serverSocket; // ----vetor criado
