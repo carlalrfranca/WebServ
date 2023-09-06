@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/31 17:33:34 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/05 19:25:43 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ WebServ::WebServ(std::string filename){
         std::string line;
         bool isLocationBlock = false;
         while(getline(fileToParse, line)){
-            if (line.find("server{") != std::string::npos){
+            if (line.find("server {") != std::string::npos){
                 std::cout << "Index: " << index << std::endl;
                 if (index > 0)
                     configSocket(index - 1);
@@ -286,18 +286,18 @@ bool contains(const std::vector<std::string>& vec, const std::string& content) {
 
 // divisao da mainLoop em 31.08.2023
 
-void WebServ::startServer()
-{
-    std::cout << "-----------------------------------------" << std::endl;
-    std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
-    std::cout << "-----------------------------------------\n" << std::endl;
+// void WebServ::startServer()
+// {
+//     std::cout << "-----------------------------------------" << std::endl;
+//     std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
+//     std::cout << "-----------------------------------------\n" << std::endl;
 
-    initializeEpoll();
-    runMainLoop();
+//     initializeEpoll();
+//     runMainLoop();
     
-    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
-        close(_serverSocket[serverIndex].getWebServSocket());
-}
+//     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+//         close(_serverSocket[serverIndex].getWebServSocket());
+// }
 
 
 void WebServ::initializeEpoll()
@@ -318,7 +318,7 @@ void WebServ::handleRequest(const std::string& requestString, int clientSocket)
         
 // fim da divisao da mainLoop em 31.08.2023        
 
-/*
+
 void WebServ::mainLoop(){
     std::cout << "-----------------------------------------" << std::endl;
     std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
@@ -388,8 +388,12 @@ void WebServ::mainLoop(){
                 int selectedServer = currentResponse.selectServer(request, _serverSocket);
                 if (selectedServer != -1)
                 {
+					std::cout << "OLHA QUE ELE CHEGOU NUM SERVER HEIN" << std::endl;
+					std::cout << "------------------------------------" << std::endl;
+					std::cout << "------------------------------------" << std::endl;
                     currentResponse.buildResponse(request, _serverSocket[selectedServer]);
                     std::string response = currentResponse.getResponse();
+					std::cout << "RESPONSE DO BUILDER:  " << response << std::endl;
                     ssize_t bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
                     if (bytesSent == -1)
                         std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
@@ -397,17 +401,17 @@ void WebServ::mainLoop(){
                 else
                     std::cout << "Server não encontrado!" << std::endl;
                 
-                size_t found = requestString.find("process_data.cgi");
-                if (found != std::string::npos)
-                {
-                    // lida com o cgi
-                    std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
-                    CGI cgiExec;
+                // size_t found = requestString.find("process_data.cgi");
+                // if (found != std::string::npos)
+                // {
+                //     // lida com o cgi
+                //     std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
+                //     CGI cgiExec;
 
-                    cgiExec.handleCGIRequest(requestString);
-                    std::string response = cgiExec.getResponse();
-                    send(clientSocket, response.c_str(), response.length(), 0);
-                }
+                //     cgiExec.handleCGIRequest(request);
+                //     std::string response = cgiExec.getResponse();
+                //     send(clientSocket, response.c_str(), response.length(), 0);
+                // }
 
                 close(clientSocket);
                 std::cout << "\n---------------------------------------" << std::endl;
@@ -420,7 +424,7 @@ void WebServ::mainLoop(){
 
         close(_serverSocket[serverIndex].getWebServSocket());
 }
-*/
+
 
 
 
@@ -709,7 +713,7 @@ void WebServ::mainLoop(){
 }*/
 
 /*
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp src/CGI.cpp -o executavel_com_response
     ./executavel src/config.txt
 
 */

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/03 20:56:43 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/06 18:06:47 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,8 @@
 
 class SocketS;
 class Request;
-typedef std::string (*Funcao)(Request &request, SocketS &server);
+class Response;
+typedef std::string (*Funcao)(Request &request, SocketS &server, Response *this_response);
 
 class Response
 {
@@ -52,9 +53,10 @@ class Response
         void httpError(std::string errorCode, const std::string &errorMessage);
 
 		// method for each method
-		static std::string deleteMethod(Request &request, SocketS &server);
-		static std::string postMethod(Request &request, SocketS &server);
-		static std::string getMethod(Request &request, SocketS &server);
+		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
+		// static std::string postMethod(Request &request, SocketS &server);
+		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
+		static std::string getMethod(Request &request, SocketS &server, Response *this_response);
     
     private:
     
@@ -91,7 +93,7 @@ class Response
         };
     
 };
-std::ostream& operator<<(std::ostream& out, Response const& rhs);
+// std::ostream& operator<<(std::ostream& out, Response const& rhs);
 
 #endif 
 

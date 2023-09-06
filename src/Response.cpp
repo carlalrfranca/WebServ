@@ -1,12 +1,12 @@
-const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";/* ************************************************************************** */
+/* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 20:40:11 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/05 19:58:27 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@ const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html>
 Response::Response()
 {
     _chosenSocket = NULL;
-	methodsFunctions["GET"] = &getMethod;
-	methodsFunctions["POST"] = &postMethod;
-	methodsFunctions["DELETE"] = &deleteMethod;
+	methodsFunctions["GET"] = &Response::getMethod;
+	methodsFunctions["POST"] = &Response::postMethod;
+	methodsFunctions["DELETE"] = &Response::deleteMethod;
 }
 
 Response::~Response()
@@ -40,8 +40,10 @@ Response::Response(Request request)
 
 // métodos pra lidar com cada função respectiva
 // Funções de exemplo
-std::string Response::getMethod(Request &request, SocketS &server) {
-    return "Resposta para GET";
+std::string Response::getMethod(Request &request, SocketS &server, Response *this_response) {
+	std::string response_just_to_test =
+        "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><body><h1>Hello World aaaaaaa</h1></body></html>";
+	return response_just_to_test;
 }
 
 /*
@@ -98,10 +100,11 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 
 
 	std::string root_for_response; // essa é uma variavel temporaria daqui
-	if (server.getRoot().size() > 0)
-		root_for_response = server.getRoot();
+	//if (server.getRoot().size() > 0)
+	//	root_for_response = server.getRoot();
 	// agora vamos ver se tem o location do CGI (se nao tiver, ir pro caminho "padrão" do server (vai ser apenas uma postagem no diretorio do server (faz um metodo pra isso?)))
 	// /cgi-bin/
+	root_for_response = "./";
 
 	size_t found = request.getRequest().find("/process_data.cgi");
 	if (found == std::string::npos)
@@ -117,7 +120,7 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		return response_error;
 	}
 	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-	std::map<std::string, LocationDirective>::iterator it = serverLocations.find("/cgi-bin");
+	std::map<std::string, LocationDirective>::iterator it = serverLocations.find("cgi-bin");
 	if (it != serverLocations.end())
 	{
 		CGI script;
@@ -206,10 +209,17 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		std::cout << "NÃO HÁ um location PRO CGI! Vai pro caminho padrão..." << std::endl;
 		// ou seja, só "posta" o que tiver que postar num arquivo no diretório
 	}
-
+	std::string response_error =
+        				"HTTP/1.1 505 Not Found\r\n"
+        				"Server: nginx/1.20.0\r\n"
+        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
+        				"Content-Type: text/html\r\n"
+        				"Content-Length: 162\r\n"
+        				"Connection: keep-alive\r\n\r\n";
+	return response_error;
 }
 
-std::string Response::deleteMethod(Request &request, SocketS &server) {
+std::string Response::deleteMethod(Request &request, SocketS &server, Response *this_response) {
     return "Resposta para DELETE";
 }
 
@@ -454,6 +464,7 @@ std::string Response::buildResponse(Request &request, SocketS &server)
     //////////
 
     
+	std::cout << "----> CHEGAMOS AO BUILD RESPONSE -----" << std::endl;
     // verificar se o método requisitado pela solicitação é permitido pra esse servidor
     std::vector<std::string> allowed_methods = server.getMethods();
     std::string requestMethod = request.getMethod();
@@ -469,8 +480,10 @@ std::string Response::buildResponse(Request &request, SocketS &server)
 
     if (found) {
         // método é permitido pra esse servidor. Continua...
-		std::string resposta = methodsFunctions[requestMethod](request, server);
+		std::cout << "Encontramos o método permitido!" << std::endl;
+		std::string resposta = methodsFunctions[requestMethod](request, server, this);
 		setResponse(resposta);
+		std::cout << "A resposta é:::: " << getResponse() << std::endl;
     	return resposta;
 
 		// isso ficará na FUNÇÃO DE MÉTODO GET !!!! -------------------------------
