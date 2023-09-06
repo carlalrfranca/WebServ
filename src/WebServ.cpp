@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/02 21:15:15 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/05 19:25:43 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ WebServ::WebServ(std::string filename){
         std::string line;
         bool isLocationBlock = false;
         while(getline(fileToParse, line)){
-            if (line.find("server{") != std::string::npos){
+            if (line.find("server {") != std::string::npos){
                 std::cout << "Index: " << index << std::endl;
                 if (index > 0)
                     configSocket(index - 1);
@@ -295,7 +295,6 @@ Epoll& WebServ::getEpollS()
 }
 // fim da divisao da mainLoop em 31.08.2023  
 
-
 bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index)
 {
     _epollS.setIsServerFdTriggered(false);
@@ -349,8 +348,12 @@ void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, s
     int selectedServer = currentResponse.selectServer(request, _serverSocket);
     if (selectedServer != -1)
     {
+        std::cout << "OLHA QUE ELE CHEGOU NUM SERVER HEIN" << std::endl;
+				std::cout << "------------------------------------" << std::endl;
+				std::cout << "------------------------------------" << std::endl;
         currentResponse.buildResponse(request, _serverSocket[selectedServer]);
         std::string response = currentResponse.getResponse();
+        std::cout << "RESPONSE DO BUILDER:  " << response << std::endl;
         ssize_t bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
         if (bytesSent == -1)
         {
@@ -365,8 +368,6 @@ void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, s
     // handleCGIRequest(clientSocket, requestString, request);
     close(clientSocket);
 }
-
-
 
 
 void WebServ::mainLoop(){
@@ -410,7 +411,6 @@ void WebServ::mainLoop(){
                     std::cerr << "Erro ao receber solicitação do client " << std::endl;
                     continue;
                 }
-                
                 
                 std::string requestString(buffer, bytesRead);
                 printRequest(requestString);
@@ -752,7 +752,7 @@ void WebServ::mainLoop(){
 }*/
 
 /*
-    g++ -std=c++98 -I inc/ src/main.cpp src/CGI.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp src/CGI.cpp -o executavel_com_response
     ./executavel src/config.txt
 
 */

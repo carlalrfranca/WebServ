@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/02 23:17:56 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/06 18:06:47 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,12 @@
 #define _RESPONSE_HPP_
 #include "HeadersLibs.hpp"
 #include "SocketS.hpp"
+#include "CGI.hpp"
 
 class SocketS;
 class Request;
+class Response;
+typedef std::string (*Funcao)(Request &request, SocketS &server, Response *this_response);
 
 class Response
 {
@@ -35,6 +38,7 @@ class Response
         void setStatusCode(const std::string& statusCode);
         void setContentType(const std::string& contentType);
         void setDateAndTime(void);
+		std::string getDate(void) const;
         // void setContentLength(size_t length);
         void setResponse(const std::string& response);
         
@@ -47,8 +51,14 @@ class Response
         std::string buildResponse(Request &request, SocketS &server);
         void reset(void); //implementa a redefinição de resposta, limpando cabeçalhos e corpo
         void httpError(std::string errorCode, const std::string &errorMessage);
-        void setPath(const std::string& allPath);    
-        std::string getPath(void);
+
+		// method for each method
+		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
+		// static std::string postMethod(Request &request, SocketS &server);
+		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
+		static std::string getMethod(Request &request, SocketS &server, Response *this_response);
+        //void setPath(const std::string& allPath);    
+        //std::string getPath(void);
     
     private:
     
@@ -57,7 +67,8 @@ class Response
         std::string                         _response; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
         std::string                         _code;
         SocketS                             *_chosenSocket;
-        std::string                         _path;
+		std::map<std::string, Funcao>		methodsFunctions;
+        //std::string                         _path;
         /*
             ------------------------------------------- LETICIA DEIXOU ANOTADO ----------------------------------------------
             criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
@@ -84,7 +95,7 @@ class Response
         };
     
 };
-std::ostream& operator<<(std::ostream& out, Response const& rhs);
+// std::ostream& operator<<(std::ostream& out, Response const& rhs);
 
 #endif 
 

@@ -1,12 +1,12 @@
-const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><link rel='stylesheet' href='style.css'></head><body><h1>Hello World</h1></body></html>";/* ************************************************************************** */
+/* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 20:40:11 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/05 19:58:27 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,9 @@ const char *response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html>
 Response::Response()
 {
     _chosenSocket = NULL;
+	methodsFunctions["GET"] = &Response::getMethod;
+	methodsFunctions["POST"] = &Response::postMethod;
+	methodsFunctions["DELETE"] = &Response::deleteMethod;
 }
 
 Response::~Response()
@@ -34,6 +37,193 @@ Response::Response(Request request)
     //setContentLength(_body.length());
     _chosenSocket = NULL;
 }
+
+// métodos pra lidar com cada função respectiva
+// Funções de exemplo
+std::string Response::getMethod(Request &request, SocketS &server, Response *this_response) {
+	std::string response_just_to_test =
+        "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><body><h1>Hello World aaaaaaa</h1></body></html>";
+	return response_just_to_test;
+}
+
+/*
+If you don't have a specific location directive in your Nginx configuration and you try to POST an image or any other data to the server, Nginx will typically handle the request as follows:
+
+Nginx will receive the POST request with the image data from the client.
+
+It will process the request headers as usual.
+
+Since there is no specific location block defined to handle the POST request, Nginx will not perform any custom processing on the request data.
+
+Instead, it will look for a default behavior to handle the POST data, which often involves saving the POST data to a temporary file on the server's filesystem. The exact location and behavior may depend on your Nginx configuration, but Nginx will generally handle the data as a file upload.
+
+Nginx will not perform any image processing or special handling of the uploaded image by default. It won't display or process the image unless you have a separate process or script in your server's backend that handles uploaded files.
+
+In summary, without a specific location directive to handle POST requests, Nginx will treat the uploaded image as a file upload and save it to the server.
+*/
+
+std::string Response::postMethod(Request &request, SocketS &server, Response *this_response) {
+    // return "Resposta para POST";
+
+	// se for "POST", ele chama essa função... daí???
+
+	// já terá escolhido o socket, é claro.. então...
+	// tem que VER O LOCATION DO CGI, CERTO?
+	// porque pra ter POST, vai ter que usar um script CGI
+	// se nao tiver essa location, o que acontece????
+	// ele envia uma resposta de erro????? 
+	// ----> Não, o ngnix vai apenas POSTAR NO SERVER (diretorio) o conteudo,
+	// ele só NÃO VAI FAZER NENHUM PROCESSAMENTO DESSE CONTEUDO
+
+	// TO DO:
+	// entao vemos se tem location pra decidir se: ---> é pra ser um location pro script CGI ( location /cgi-bin/)
+	// -- ao receber um POST, vamos usar um script
+	// -- ou, como nao tem location (logo, nao tem script pra chamar), APENAS SALVA O CONTEUDO
+
+	// --> tambem temos que ver se tem "root" (seja no bloco de server ou do location)
+	// --- pra saber em que diretorio buscar
+
+	// Sobre se nao houver root em nenhum lugar do bloco server doarquivo:
+	/*
+		 Se nenhum root for especificado em qualquer lugar, o Nginx usará o diretório
+		 raiz padrão do sistema como ponto de partida para atender as solicitações.
+		 Isso é geralmente definido durante a compilação ou instalação do Nginx e pode
+		 variar de acordo com o sistema operacional.
+	*/
+
+	/*
+		ANTES DE TUDO:
+		-> verificar o TAMANHO DO CONTEUDO DO POST (vê se está dentro dos limites de max-content
+		determinado no arquivo de configuração. Se não estiver, corta na hora reornando uma
+		RESPONSE DE ERRO DE ACORDO COM A SITUAÇÃO)
+	*/
+
+
+	std::string root_for_response; // essa é uma variavel temporaria daqui
+	//if (server.getRoot().size() > 0)
+	//	root_for_response = server.getRoot();
+	// agora vamos ver se tem o location do CGI (se nao tiver, ir pro caminho "padrão" do server (vai ser apenas uma postagem no diretorio do server (faz um metodo pra isso?)))
+	// /cgi-bin/
+	root_for_response = "./";
+
+	size_t found = request.getRequest().find("/process_data.cgi");
+	if (found == std::string::npos)
+	{
+		std::cerr << "---- Opa, essa request NÃO tem process_data CGI !!! ----" << std::endl;
+		std::string response_error =
+        				"HTTP/1.1 404 Not Found\r\n"
+        				"Server: nginx/1.20.0\r\n"
+        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
+        				"Content-Type: text/html\r\n"
+        				"Content-Length: 162\r\n"
+        				"Connection: keep-alive\r\n\r\n";
+		return response_error;
+	}
+	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+	std::map<std::string, LocationDirective>::iterator it = serverLocations.find("cgi-bin");
+	if (it != serverLocations.end())
+	{
+		CGI script;
+		// quer dizer que teve esse location
+		std::cout << "Há um LOCATION PRO CGI!" << std::endl;
+		// agora verificamos se há um "root" dentro desse location (um root mais "especifico", portanto)
+		std::map<std::string, std::vector< std::string > > locationDirectives;
+		locationDirectives = it->second.getDirectives();
+        std::map<std::string, std::vector< std::string > >::iterator itLocationRoot = locationDirectives.find("root");
+		if (itLocationRoot != locationDirectives.end())
+		{
+			// quer dizer que teve um root mais especifico no location... daí substituímos o root_for_response por essa..
+			root_for_response = itLocationRoot->second[0];
+			std::cout << "Root ESPECIFICO da location do CGI:::: " << root_for_response << std::endl;
+			// tem que pegar outras duas diretivas dentro do it (ponteiro pra esse location):
+			/*
+				cgi_path --> location of interpreters installed on the current system, mandatory parameter
+				cgi_ext --> extensions for executable files, mandatory parameter
+			*/
+			// passar aqui pra classe de ValidationsPost
+			std::map<std::string, std::vector< std::string > >::iterator commandOfCGI = locationDirectives.find("cgi_path");
+			if (commandOfCGI != locationDirectives.end())
+			{
+				// encontrou CGI-path...
+				// tem que gravar isso numa variavel (pode ser um vetor, porque pode ter mais de um tipo de script CGI e, por
+				// consequencia, mais de um comando pra executar cada um)
+				std::vector<std::string> scriptsCommands = commandOfCGI->second;
+				for (int i = 0; i < scriptsCommands.size() ; i++)
+					std::cout << "Comandos para executar os scripts CGI ------> " << scriptsCommands[i] << std::endl;
+				std::cout << "------------------------------------------------------" << std::endl;
+				// bora encontrar a(s) extensão(ões)
+				std::map<std::string, std::vector< std::string > >::iterator CGIExtension = locationDirectives.find("cgi_ext");
+				if (CGIExtension != locationDirectives.end())
+				{
+					std::vector<std::string> scriptsExtensions = CGIExtension->second;
+					for (int j = 0; j < scriptsExtensions.size(); j++)
+						std::cout << "Extensões dods scripts CGI ------> " << scriptsExtensions[j] << std::endl;
+					std::cout << "------------------------------------------------------" << std::endl;
+					
+					// setando todas essas variaveis no objeto CGI pra processar o resto A PARTIR DELE
+					script.setRoot(root_for_response);
+					script.setCommands(scriptsCommands);
+					script.setExtensions(scriptsExtensions);
+					// podia já declarar um objeto CGI e inserir essas informações (extensão e comando) dentro dele, certo?
+					// e daí prosseguir a partir dele...
+					// chamando seus métodos aqui pra executar e criar a resposta...
+					// daí no final só armazenaria o que ele retorna na _response daqui....
+					
+					// NÃO SE ESQUEÇA DE IMPLEMENTAR O LOOP DE CHUNCKS TAMBEM
+
+					script.handleCGIRequest(request);
+					return script.getResponse(); // retorna a response
+				}
+				else
+				{
+					// se nao encontrar a diretiva 'cgi-ext'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
+					this_response->setDateAndTime();
+					std::string date = this_response->getDate();
+					std::string response_error =
+        				"HTTP/1.1 404 Not Found\r\n"
+        				"Server: webserv/1.0.0\r\n"
+        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
+        				"Content-Type: text/html\r\n"
+        				"Content-Length: 162\r\n"
+        				"Connection: keep-alive\r\n\r\n";
+					return response_error;
+				}
+			}
+			else
+			{
+				// se nao encontrar a diretiva 'cgi-path'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
+				std::string response_error =
+        				"HTTP/1.1 404 Not Found\r\n"
+        				"Server: nginx/1.20.0\r\n"
+        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
+        				"Content-Type: text/html\r\n"
+        				"Content-Length: 162\r\n"
+        				"Connection: keep-alive\r\n\r\n";
+				return response_error;
+			}
+		}
+	}
+	else
+	{
+		//quer dizer que nao teve o locatin do cgi-bin, então lidamos com a postagem da forma "padrão" (grava o conteudo num arquivo no diretorio raiz do projeto)
+		std::cout << "NÃO HÁ um location PRO CGI! Vai pro caminho padrão..." << std::endl;
+		// ou seja, só "posta" o que tiver que postar num arquivo no diretório
+	}
+	std::string response_error =
+        				"HTTP/1.1 505 Not Found\r\n"
+        				"Server: nginx/1.20.0\r\n"
+        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
+        				"Content-Type: text/html\r\n"
+        				"Content-Length: 162\r\n"
+        				"Connection: keep-alive\r\n\r\n";
+	return response_error;
+}
+
+std::string Response::deleteMethod(Request &request, SocketS &server, Response *this_response) {
+    return "Resposta para DELETE";
+}
+
+
 
 //metodo para ler o conteudo do html
 std::string Response::readHtmlFile(const std::string& filePath)
@@ -71,6 +261,16 @@ void Response::setDateAndTime()
     //string info 
     strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S %Z", timeInfo);
     _headers["Date"] = buffer;
+}
+
+std::string Response::getDate(void) const
+{
+	std::map<std::string, std::string >::const_iterator it = _headers.find("Date");
+	if (it != _headers.end())
+	{
+		return it->second;
+	}
+	return "Date not found";
 }
 
 // void Response::setContentLength(size_t length)
@@ -271,6 +471,7 @@ std::string Response::buildResponse(Request &request, SocketS &server)
     //////////
 
     
+	std::cout << "----> CHEGAMOS AO BUILD RESPONSE -----" << std::endl;
     // verificar se o método requisitado pela solicitação é permitido pra esse servidor
     std::vector<std::string> allowed_methods = server.getMethods();
     std::string requestMethod = request.getMethod();
@@ -283,46 +484,47 @@ std::string Response::buildResponse(Request &request, SocketS &server)
             break;
         }
     }
-    std::string hasRoot;
-    if (found){ 
-        if(server.getRoot().size() > 0)
-            hasRoot = server.getRoot();
-        else{
-            hasRoot = "./";
-        }
-        std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-        std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI());
-        std::map<std::string, std::vector< std::string > > locationDirectives;
-        if (it != serverLocations.end()){
-            std::cout << "Directives from this Location found!" << std::endl;
-            locationDirectives = it->second.getDirectives();
-             std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root");
-            if (itRoot != locationDirectives.end())
-                hasRoot = itRoot->second[0]; 
-            std::cout << "Directives from this Location found!" << std::endl;
-            locationDirectives = it->second.getDirectives();
-             std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-            if (itIndex != locationDirectives.end()){
-                std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
+
+    if (found) {
+        // método é permitido pra esse servidor. Continua...
+		std::cout << "Encontramos o método permitido!" << std::endl;
+		std::string resposta = methodsFunctions[requestMethod](request, server, this);
+		setResponse(resposta);
+		std::cout << "A resposta é:::: " << getResponse() << std::endl;
+    	return resposta;
+
+		// isso ficará na FUNÇÃO DE MÉTODO GET !!!! -------------------------------
+        // temos que verificar se o servidor está apto a lidar com esse recurso (ver os
+        // locations...)
+        // std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+        // std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI());
+// 
+        // std::map<std::string, std::vector< std::string > > locationDirectives;
+        // if (it != serverLocations.end()) {
+            // std::cout << "Directives from this Location found!" << std::endl;
+            // locationDirectives = it->second.getDirectives();
+            //  std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+// 
+            // if (itIndex != locationDirectives.end()) {
+                // std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
                 // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
-                setPath(hasRoot + itIndex->second[0]);
-                std::string bodyHTML = readFileToString(getPath());
-            
-                
-                //std::cout << "---- DEU PRA LER HTML ------";
-                //std::cout << bodyHTML << std::endl;
-                _body = bodyHTML;
-                //std::cout << "-----------------------------------" << std::endl;
-            } else {
-                std::cout << "Index not found!" << std::endl;
-            }
-        } else {
-            std::cout << "This server doesnt have this location!!" << std::endl;
-            std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
-            setResponse(response);
-            return response;    
-        }                
-    } else {
+                // std::string bodyHTML = readFileToString(itIndex->second[0]);
+                // std::cout << "---- DEU PRA LER HTML ------";
+                // std::cout << bodyHTML << std::endl;
+                // _body = bodyHTML;
+                // std::cout << "-----------------------------------" << std::endl;
+            // } else {
+                // std::cout << "Index not found!" << std::endl;
+            // }
+        // } else {
+            // std::cout << "This server doesnt have this location!!" << std::endl;
+            // std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
+            // setResponse(response);
+            // return response;    
+        // }                
+    }
+    else
+    {
         //constrói resposta de erro porque esse método não é permitido
         // e retorna
         std::cout << "MÉTODO NÃO PERMITIDO!";

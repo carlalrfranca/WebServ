@@ -1,6 +1,7 @@
-server{  
-    listen https://localhost.com:2001;
+server {
+    listen localhost:2006;
     server_name example.com;
+	allow_methods GET POST
     root src/inc/;
 
 	location / {

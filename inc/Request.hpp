@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 19:41:26 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/03 20:29:00 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class Request
         ~Request(void);
         
         void setRequest(const std::string& request);
+		std::string getRequest(void) const;
         void printRequest(void);
         bool isFirstLineValid(void);
         bool validateRequest(void);
