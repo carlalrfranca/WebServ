@@ -31,10 +31,13 @@ class WebServ {
         void mainLoop();
         void configSocket(size_t index);
         void responseError();
-        bool isFirstLineValid(const std::string& request, std::string& _firstLine);
+
+        void validateFile(std::string filename);
         void printRequest(const std::string& request);
 		// std::string handleCGIRequest(std::string& request);
 		// std::string executeScriptAndTakeItsOutPut(int *pipefd);
+
+        bool isFirstLineValid(const std::string& request, std::string& _firstLine);
 		
 		//divisao da mainLoop() em 31.08.2023
         bool isEventFromServerSocket(struct epoll_event* events, int index);
@@ -43,16 +46,15 @@ class WebServ {
         // void handleCGIRequest(int clientSocket, std::string& requestString, Request& request);
         void handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString);
         //fim da divisao da mainLoop() em 31.08.2023
-	
+
+
     private:
     
-        int             _clientSocket;
-        std::string     _nameConfigFile;
-        ConfigParser    _configParser; //sujeito comentado
-        Epoll           _epollS;
-        
-        
-        std::vector<SocketS> _serverSocket; // ----vetor criado
+        int                     _clientSocket;
+        std::string             _nameConfigFile;
+        ConfigParser            _configParser; //sujeito comentado
+        Epoll                   _epollS;
+        std::vector<SocketS>    _serverSocket; // ----vetor criado
         
         
         //SocketS         _serverSocket;
@@ -61,19 +63,43 @@ class WebServ {
 
         struct sockaddr_in clientAddress;    
 
-        class WebServException: public std::exception{
+        class ErrorException: public std::exception{
         public:
+        
+            ErrorException(const std::string& message) : _errorMessage(message) {}
             virtual const char* what() const throw(){
-                return "\nError: Inserir uma mensagem no WebServ Exception\n";
+                return _errorMessage.c_str();
             }
+
+        private:
+            std::string _errorMessage;
+        
         };
 };
 
 #endif
 
 
+
 /*
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp -o executavel
-    ./executavel src/config.txt
+    em 31.08.2023
+
+   g++ -std=c++98 -I inc/ src/main.cpp src/CGI.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response 
+    ./executavel_com_response src/config.txt
 
 */
+
+
+        
+        
+/*
+
+    static int getTypePath(std::string const path);
+    static int checkFile(std::string const path, int mode);
+    std::string	readFile(std::string path);
+    static int isFileExistAndReadable(std::string const path, std::string const index);
+    std::string getPath();
+    int getSize();
+
+*/
+    

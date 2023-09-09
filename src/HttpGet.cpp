@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:43:28 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/05 22:08:02 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/06 18:05:44 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,4 +32,3 @@ bool ValidGet::fileNotFound(const std::string& fullPath){
 
     return true;
 }
-

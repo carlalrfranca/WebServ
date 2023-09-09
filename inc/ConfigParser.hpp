@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/02 20:04:01 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/08 22:02:01 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,24 @@ class ConfigParser
         const std::string getErrorPage(int statusCode)const;
 		std::map<std::string, LocationDirective> getLocations(void) const;
 		void setLocations(std::map<std::string, LocationDirective>& locations);
+		void trimWhiteSpace(std::string &line);
+		void removeComments(std::string &line);
+	    void validateFile(std::ifstream& fileToParse);
+	    bool getHasDirListen(void)const;
+        bool getHasDirServerName(void)const;
+        bool getHasDirRoot(void)const;
+        bool getHasDirIndex(void)const;
+        bool getHasDirSsl(void)const;
+        bool getHasDirAllowMethods(void)const;
+        bool getHasDirMaxBodySize(void)const;
+        bool getHasDirReturn(void)const;
+		
+		//acrescentado dia 06.09
 
+		//void trimWhiteSpace(std::string &line);
+        //bool validateSyntax(const std::string &line);
+        //void removeComments(std::string &line);
+        
     private:
         
         std::vector<std::string> _indexFiles;
@@ -78,6 +95,15 @@ class ConfigParser
         size_t          _delimiter;
         bool            _hasRoot;
         
+        bool            _hasDirListen;
+        bool            _hasDirServerName;
+        bool            _hasDirRoot;
+        bool            _hasDirIndex;
+        bool            _hasDirSsl;
+        bool            _hasDirAllowNethods;
+        bool            _hasDirMaxBodySize;
+        bool            _hasDirReturn;
+        
         std::vector<std::string> _methods;
         // abaixo: map e string do path location atual pra guardar os arquivos de locations no config file
         std::map<std::string, std::vector<std::string> > _locationsMap;
@@ -85,6 +111,21 @@ class ConfigParser
         //MAP DE OBJETOS DE LOCATION PRA INCORPORAR DEPOIS (tirar o _locationsMap acima):
 		std::map<std::string, LocationDirective> _locations; //vai ser -> "/" com seu objeto location respectivo, daí "cgi-bin" com seu objeto location respectivo (com suas respectivas diretivas)
         std::map<int, std::string> _errorPages;
+        
+        
+        class ErrorException: public std::exception{
+        public:
+        
+            ErrorException(const std::string& message) : _errorMessage(message) {}
+            virtual const char* what() const throw(){
+                return _errorMessage.c_str();
+            }
+
+        private:
+        
+            std::string _errorMessage;
+        
+        };
 };
 #endif
 

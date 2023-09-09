@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/05 19:53:33 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/09 16:48:16 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,24 +32,64 @@ ConfigParser::ConfigParser()
     _delimiter = 0;
     _root = "";
     _hasRoot = true;
+    _hasDirListen = false;
+    _hasDirServerName = false;
+    _hasDirRoot = false;
+    _hasDirIndex = false;
+    _hasDirSsl = false;
+    _hasDirAllowNethods = false;
+    _hasDirMaxBodySize = false;
+    _hasDirReturn = false;
+        
 }
 
 ConfigParser::~ConfigParser() {}
 
 
 // getter e setter do locations
-std::map<std::string, LocationDirective> ConfigParser::getLocations(void) const
-{
+std::map<std::string, LocationDirective> ConfigParser::getLocations(void) const{
 	return _locations;
 }
 
-void ConfigParser::setLocations(std::map<std::string, LocationDirective>& locations)
-{
+void ConfigParser::setLocations(std::map<std::string, LocationDirective>& locations){
 	_locations = locations;
 }
 
-void ConfigParser::processListen(std::string &line)
-{
+bool ConfigParser::getHasDirListen(void)const{
+    return _hasDirListen;
+}
+
+bool ConfigParser::getHasDirServerName(void)const{
+    return _hasDirServerName;
+}
+
+bool ConfigParser::getHasDirRoot(void)const{
+    return _hasDirRoot;
+}
+
+bool ConfigParser::getHasDirIndex(void)const{
+    return _hasDirIndex;
+}
+
+bool ConfigParser::getHasDirSsl(void)const{
+    return _hasDirSsl;
+}
+
+bool ConfigParser::getHasDirAllowMethods(void)const{
+    return _hasDirAllowNethods;
+}
+
+bool ConfigParser::getHasDirMaxBodySize(void)const{
+    return _hasDirMaxBodySize;
+}
+
+bool ConfigParser::getHasDirReturn(void)const{
+    return _hasDirReturn;
+}
+
+void ConfigParser::processListen(std::string &line){
+    if(_hasDirListen == true)
+        throw ErrorException("Error: The Directive Listen has been duplicated.");    
     _directive = line.find("listen");
     if(line == "listen"){
         _ipAddress = "0.0.0.0";
@@ -102,14 +142,15 @@ void ConfigParser::processListen(std::string &line)
             //std::cout << std::endl;
         }
     }
-}     
+    _hasDirListen = true;  
+}
 
-
-void ConfigParser::processServerName(std::string &line)
-{
+void ConfigParser::processServerName(std::string &line){
+    if(_hasDirServerName == true)
+        throw ErrorException("Error: The Directive Server_Name has been duplicated.");
     _directive = line.find("server_name");
     if(_directive != std::string::npos){
-        _directive += std::string("server_name").length();                               // avança para além da palavra "server_name"
+        _directive += std::string("server_name").length(); // avança para além da palavra "server_name"
         _posInit = line.find_first_of("*", _directive); // busca para os casos de wildcard
         if(_posInit != std::string::npos){ // se ele encontrou
             _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
@@ -164,10 +205,12 @@ void ConfigParser::processServerName(std::string &line)
             }
         }
     }
+    _hasDirServerName = true;
 }
 
-bool ConfigParser::processRoot(std::string &line)
-{
+bool ConfigParser::processRoot(std::string &line){
+    if(_hasDirRoot == true)
+        throw ErrorException("Error: The Directive Root has been duplicated.");
     _directive = line.find("root");
     if(_directive != std::string::npos){
         _directive += std::string("root").length();;
@@ -181,20 +224,19 @@ bool ConfigParser::processRoot(std::string &line)
         }
         else
         {
-                //antes de dar o erro devera recorrer a outras diretivas e verificar se algum dado foi armazenado
-                std::cout << "Error 404 (Not Found)" << std::endl;
-                _hasRoot = false;
-                std::cout << "Flag não teve root: " << _hasRoot << std::endl;
-                return _hasRoot;
+            //antes de dar o erro devera recorrer a outras diretivas e verificar se algum dado foi armazenado
+            std::cout << "Error 404 (Not Found)" << std::endl;
+            _hasRoot = false;
+            std::cout << "Flag não teve root: " << _hasRoot << std::endl;
+            return _hasRoot;
         }
     }
     std::cout << "Flag teve root: " << _hasRoot << std::endl;
     return _hasRoot;
+    _hasDirRoot = true;
 }
 
-
-void ConfigParser::storeCurrentLocationDirectives(std::string &line)
-{
+void ConfigParser::storeCurrentLocationDirectives(std::string &line){
 	std::string directiveName = _currentLocationPathOnMap;
 
 	std::map<std::string, LocationDirective>::iterator it = _locations.find(directiveName);
@@ -233,10 +275,59 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &line)
 				currentIndex++;
 			}
 		}
-		std::cout << "TAMANHO DO LCOATIONS: " << _locations.size() << std::endl;
-		
+		std::cout << "TAMANHO DO LOCATIONS: " << _locations.size() << std::endl;
 	}
 }
+
+void ConfigParser::trimWhiteSpace(std::string &line){
+
+    size_t startPos = line.find_first_not_of(" \t");
+    if(startPos != std::string::npos)
+        line = line.substr(startPos);
+    size_t endPos = line.find_last_not_of(" \t");
+    if(endPos != std::string::npos)
+        line = line.substr(0, endPos + 1); 
+}
+
+void ConfigParser::removeComments(std::string &line){
+
+    size_t start = line.find('#');
+    while (start != std::string::npos)
+    {
+        size_t end = line.find('\n', start);
+        if (end != std::string::npos)
+            line.erase(start, end - start + 1); // +1 para '\n'
+        else{
+            line.erase(start);
+            break;
+        }
+        start = line.find('#');
+    }
+}
+
+void ConfigParser::validateFile(std::ifstream& fileToParse){
+ 
+    if (!fileToParse.is_open())
+        throw ErrorException("File is not accessible");
+    fileToParse.seekg(0, std::ios::end);
+    std::streampos fileSize = fileToParse.tellg();
+    fileToParse.seekg(0, std::ios::beg);
+    if(fileSize <= 0)
+        throw ErrorException("File is empty");
+}
+
+/*
+    DIRETIVA DUPLICADA OK
+    VER SE JÁ ESTA PREENCHIDO OK
+    ESTA ARMAZENANDO NO ConfigParser OK
+    ANTES DE PARSEAR VERIFICAR SE O ATRIBUTO NA QUAL SE ARMAZENA JA ESTA PREENCHIDO OK
+*/
+
+/*
+    EM CADA METODO PROCESS PRECISO ANTES VERIFICAR SE A
+    NO CASOS DAS PORTAS PRECISO VER O RANGE DE PORTAS PERMITIDAS 
+    FORA DISSO DA ERRO  EXCEÇÃO
+*/
 
 void ConfigParser::processLocation(std::string &line)
 {
@@ -259,9 +350,9 @@ void ConfigParser::processLocation(std::string &line)
     }
     else //acho que esse "else" tambem pode ser identificando os caminhos do location (hardcoded) e, dependendo de qual for, encaminha
     {	//pra um metodo correspondente (entao se for '/' é pra um, se for 'cgi-bin' é outro, se for regex é outro, etc)
-		std::cout << std::endl;
-		std::cout << "Current location: " << _currentLocationPathOnMap << std::endl;
-		storeCurrentLocationDirectives(line);
+        std::cout << std::endl;
+        std::cout << "Current location: " << _currentLocationPathOnMap << std::endl;
+        storeCurrentLocationDirectives(line);
     }
 }
 
@@ -329,8 +420,6 @@ void ConfigParser::processAllowMethods(std::string &line)
 	{
 		std::cout << "Método::: " << _methods[j] << std::endl;
 	}
-
-   
 }
 
 void ConfigParser::processClientMaxBodySize(std::string &line)
@@ -360,7 +449,8 @@ void ConfigParser::processSSL(std::string &line)
            std::cout << "Unknown SSL configuration: " << line << std::endl;
 }
 
-void ConfigParser::processAutoIndex(std::string &line) {
+void ConfigParser::processAutoIndex(std::string &line)
+{
     try
     {
         if (line == "on")
@@ -435,7 +525,7 @@ const std::string& ConfigParser::getAddress(void)const{
     return _ipAddress;
 }
 
-const std::vector<std::string>& ConfigParser::getIndexFiles(void) const{
+const std::vector<std::string>& ConfigParser::getIndexFiles(void)const{
     return _indexFiles;
 }
 

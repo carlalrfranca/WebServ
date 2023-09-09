@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/06 19:30:50 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/09 17:11:06 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,18 @@ void SocketS::loadConfiguration(){}
 
 
 void SocketS::setPort(std::string portNumber){
-    this->_portNumber = portNumber;
+
+    unsigned int port = 0;
+
+    for(size_t i = 0; i < portNumber.length(); ++i){
+        if(!std::isdigit(portNumber[i]))
+            throw SocketSException("Error: Worng Syntax: port");
+    }
+    port = stoi(portNumber);
+    if(port < 1 || port > 65636)
+        throw SocketSException("Error: Worng Syntax: port");
+    this->_portNumber = (uint16_t)port;
+    
 }
 
 void SocketS::setAddress(std::string ipAddress){
