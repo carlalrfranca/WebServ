@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
 /*   Updated: 2023/09/09 16:48:16 by cleticia         ###   ########.fr       */
@@ -398,8 +398,13 @@ void ConfigParser::processAllowMethods(std::string &line)
     std::istringstream iss(line);
     std::string method;
     while (iss >> method)
-        methods.push_back(method);
-    for (size_t i = 0; i < methods.size(); ++i) {
+	{
+		std::cout << "Parte da linha de agora pro methods: " << method << std::endl;
+			methods.push_back(method);
+	}
+	std::cout << std::endl;
+	std::cout << "Methods gravou >>> " << methods.size() << " metodos" << std::endl; 
+    for (size_t i = 1; i < methods.size(); i++) {
         if (methods[i] == "GET") {
             std::cout << "GET method is allowed." << std::endl;
         } else if (methods[i] == "POST") {
@@ -409,6 +414,12 @@ void ConfigParser::processAllowMethods(std::string &line)
         }
     }
     _methods = methods;
+	_methods.erase(_methods.begin());
+	std::cout << "|||||||||||||||||||||||||||||" << std::endl;
+	for (size_t j = 0; j < _methods.size(); j++)
+	{
+		std::cout << "Método::: " << _methods[j] << std::endl;
+	}
 }
 
 void ConfigParser::processClientMaxBodySize(std::string &line)

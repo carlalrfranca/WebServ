@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
 /*   Updated: 2023/09/09 17:11:06 by cleticia         ###   ########.fr       */
@@ -109,6 +109,9 @@ std::vector<std::string> SocketS::getServerName(void)const{
  
 void SocketS::setMethods(std::vector<std::string> methods){
     _methods = methods;
+	std::cout << "MÉTODOS PERMITIDOS: ----------------" << std::endl;
+	std::cout << "Esse server permite " << _methods.size() << " método(s)" << std::endl;
+	std::cout << _methods[0] << " e " << _methods[1] << std::endl;
 }
 
 std::vector<std::string> SocketS::getMethods(void) const{

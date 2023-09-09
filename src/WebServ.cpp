@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
 /*   Updated: 2023/09/08 22:02:03 by cleticia         ###   ########.fr       */
@@ -322,7 +322,6 @@ Epoll& WebServ::getEpollS()
 }
 // fim da divisao da mainLoop em 31.08.2023  
 
-
 bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index) {
     _epollS.setIsServerFdTriggered(false);
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex) {
@@ -359,9 +358,14 @@ void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, s
     std::cout << "Dominio da request: " << request.getDomainRequest() << "| Size: " << request.getDomainRequest().size() << std::endl;
     std::cout << "--------------------********---------" << std::endl;
     int selectedServer = currentResponse.selectServer(request, _serverSocket);
-    if (selectedServer != -1) {
+    if (selectedServer != -1)
+    {
+        std::cout << "OLHA QUE ELE CHEGOU NUM SERVER HEIN" << std::endl;
+				std::cout << "------------------------------------" << std::endl;
+				std::cout << "------------------------------------" << std::endl;
         currentResponse.buildResponse(request, _serverSocket[selectedServer]);
         std::string response = currentResponse.getResponse();
+        std::cout << "RESPONSE DO BUILDER:  " << response << std::endl;
         ssize_t bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
         if (bytesSent == -1)
             std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
@@ -703,7 +707,7 @@ void WebServ::mainLoop(){
 }*/
 
 /*
-    g++ -std=c++98 -I inc/ src/main.cpp src/CGI.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response
+    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp src/CGI.cpp -o executavel_com_response
     ./executavel src/config.txt
 
 */
