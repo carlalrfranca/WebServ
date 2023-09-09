@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 19:41:26 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/05 16:14:10 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,18 +40,17 @@ class Request
     
     private:
     
-        std::istringstream _requestStream;
-        std::string _request;
-        std::string _firstLine;
-        
-        std::string _hostLine;
-        std::string _hostContent;
-        std::string _domainContent;
-        std::string _portRequest;
-        std::string _method;
-        std::string _uri;
-        std::string _version;
-        bool        _hasError;
+        std::istringstream  _requestStream;
+        std::string         _request;
+        std::string         _firstLine; 
+        std::string         _hostLine;
+        std::string         _hostContent;
+        std::string         _domainContent;
+        std::string         _portRequest;
+        std::string         _method;
+        std::string         _uri;
+        std::string         _version;
+        bool                _hasError;
         
     
         class RequestException: public std::exception {

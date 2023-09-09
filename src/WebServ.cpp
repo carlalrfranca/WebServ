@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/02 21:15:15 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/08 22:02:03 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,21 +14,49 @@
 #include "../inc/WebServ.hpp"
 #include "../inc/Response.hpp"
 #include "../inc/CGI.hpp"
+#include "../inc/ConfigParser.hpp"
+
 
 WebServ::WebServ(){}
 
 WebServ::~WebServ(){}
-                
-//----------------17.08.2023
+
+
+
+//void WebServ::validateFile(std::ifstream fileToParse){
+// 
+//    if (!fileToParse.is_open()) {
+//        throw ErrorException("File is not accessible");
+//    }
+//    
+//    fileToParse.seekg(0, std::ios::end);
+//    std::streampos fileSize = fileToParse.tellg();
+//    fileToParse.seekg(0, std::ios::beg);
+//    
+//    if(fileSize <= 0){
+//        throw ErrorException("File is empty");
+//    }
+//}
+
+
 WebServ::WebServ(std::string filename){
 
     std::ifstream fileToParse;
 	size_t index = 0;
     fileToParse.open(filename.c_str());
+    
+    _configParser.validateFile(fileToParse);
+
     if(fileToParse.is_open()){
         std::string line;
         bool isLocationBlock = false;
+        
         while(getline(fileToParse, line)){
+            _configParser.trimWhiteSpace(line); //trima espaços em branco
+            _configParser.removeComments(line); //remove comentarios
+            size_t semicolon = line.find_last_not_of(" \t"); //remove semicolon
+            if(semicolon != std::string::npos && line[semicolon] == ';')
+                line = line.substr(0, semicolon);   
             if (line.find("server{") != std::string::npos){
                 std::cout << "Index: " << index << std::endl;
                 if (index > 0)
@@ -44,21 +72,21 @@ WebServ::WebServ(std::string filename){
 				std::cout << "LINHA: " << line << std::endl;
                 _configParser.processLocation(line);
             } // configSocket(index);
-            else if (line.find("listen") != std::string::npos){
+            else if (line.find("listen") != std::string::npos && _configParser.getHasDirListen() == false){
                 _configParser.processListen(line);
-            }else if (line.find("server_name") != std::string::npos){
+            }else if (line.find("server_name") != std::string::npos && _configParser.getHasDirServerName() == false){
                 _configParser.processServerName(line);
-            }else if (line.find("root") != std::string::npos){
+            }else if (line.find("root") != std::string::npos && _configParser.getHasDirRoot() == false){
                 _configParser.processRoot(line);
-            }else if (line.find("index") != std::string::npos){
+            }else if (line.find("index") != std::string::npos && _configParser.getDirIndex() == false){
                 _configParser.processIndex(line);
-			}else if (line.find("ssl on") != std::string::npos){
+			}else if (line.find("ssl on") != std::string::npos  && _configParser.getDirSsl() == false){
 				_configParser.processSSL(line);
-			}else if (line.find("allow_methods") != std::string::npos){
+			}else if (line.find("allow_methods") != std::string::npos && _configParser.getHasDirAllowMethods() == false){
 				_configParser.processAllowMethods(line);
-			}else if (line.find("client_max_body_size") != std::string::npos){
+			}else if (line.find("client_max_body_size") != std::string::npos && _configParser.getHasDirMaxBodySize() == false){
 				_configParser.processClientMaxBodySize(line);
-			}else if (line.find("return") != std::string::npos){
+			}else if (line.find("return") != std::string::npos && _configParser.getDirReturn() == false){
 				_configParser.processReturn(line);
 			}
         }
@@ -78,7 +106,6 @@ void WebServ::configSocket(size_t serverIndex){
     temp_socket.setAddress(_configParser.getAddress());
 	//adicionar o _locations do ConfigParser ao _locations do temp_socket
 	temp_socket.setLocations(_configParser.getLocations());
-	
     temp_socket.setMethods(_configParser.getMethods());
     temp_socket.setRoot(_configParser.getRoot());
 
@@ -296,13 +323,10 @@ Epoll& WebServ::getEpollS()
 // fim da divisao da mainLoop em 31.08.2023  
 
 
-bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index)
-{
+bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index) {
     _epollS.setIsServerFdTriggered(false);
-    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
-    {
-        if (events[index].data.fd == _serverSocket[serverIndex].getWebServSocket())
-        {
+    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex) {
+        if (events[index].data.fd == _serverSocket[serverIndex].getWebServSocket()) {
             getEpollS().setIsServerFdTriggered(true); // Retorna true se encontrar um socket do servidor
                 break;
         }
@@ -321,61 +345,36 @@ void WebServ::handleCGIRequest(int clientSocket, std::string& requestString, Req
     }
 }
 
-void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString)
-{
-    //std::string requestString(buffer, bytesRead);
+void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString) {
     Request request(requestString);
-    //printRequest(requestString);
-
-    if (!request.isFirstLineValid())
-    {
+    if (!request.isFirstLineValid()) {
         request.setHasError(true);
         close(clientSocket);
-        //return;
     }
-
     if (request.getHasError())
-    {
         responseError();
-        //return;
-    }
     request.validateRequest();
-
     Response currentResponse;
     std::cout << "--------------------********---------" << std::endl;
     std::cout << "Dominio da request: " << request.getDomainRequest() << "| Size: " << request.getDomainRequest().size() << std::endl;
     std::cout << "--------------------********---------" << std::endl;
-
     int selectedServer = currentResponse.selectServer(request, _serverSocket);
-    if (selectedServer != -1)
-    {
+    if (selectedServer != -1) {
         currentResponse.buildResponse(request, _serverSocket[selectedServer]);
         std::string response = currentResponse.getResponse();
         ssize_t bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
         if (bytesSent == -1)
-        {
             std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
-        }
     } 
     else
-    {
         std::cout << "Server não encontrado!" << std::endl;
-    }
-
-    // handleCGIRequest(clientSocket, requestString, request);
     close(clientSocket);
 }
-
-
-
 
 void WebServ::mainLoop(){
     std::cout << "-----------------------------------------" << std::endl;
     std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
     std::cout << "-----------------------------------------\n" << std::endl;
-
-    //Epoll _epollS;
-
     _epollS.addServersToEpoll(_serverSocket);
     int epollFd = _epollS.getEpollFd();
     if (epollFd == -1 || epollFd == -2)
@@ -383,76 +382,29 @@ void WebServ::mainLoop(){
     const int maxEvents = _epollS.getMaxEvents();
     struct epoll_event events[maxEvents];
 
-    while(true)
-    {
+    while(true) {
         _epollS.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
         if (_epollS.getNumberEvents() == -1) {
             perror("Error in epoll_wait");
             return;
         }
-        for (int index = 0; index < _epollS.getNumberEvents(); ++index)
-        {
+        for (int index = 0; index < _epollS.getNumberEvents(); ++index) {
             isEventFromServerSocket(events,index);
-
-            if (_epollS.getIsServerFdTriggered() == true)
-            {
+            if (_epollS.getIsServerFdTriggered() == true) {
                 int result = _epollS.addNewClientToEpoll(events, index);
                 if (result == -3)
                     continue;
-            }
-            else
-            {
+            } else {
                 int clientSocket = events[index].data.fd;
                 char buffer[1024];
                 ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-                if(bytesRead <= 0)
-                {
+                if(bytesRead <= 0) {
                     std::cerr << "Erro ao receber solicitação do client " << std::endl;
                     continue;
                 }
-                
-                
                 std::string requestString(buffer, bytesRead);
                 printRequest(requestString);
-                
-                // handleCGIRequest(clientSocket, requestString, request);
                 handleRequest(clientSocket, buffer, bytesRead, requestString);
-                //if(!request.isFirstLineValid())
-                //{
-                //    request.setHasError(true);
-                //    close(clientSocket);
-                //}
-                //if(request.getHasError())
-                //    responseError();
-                //request.validateRequest();
-                //
-                //Response currentResponse;
-                //
-                //int selectedServer = currentResponse.selectServer(request, _serverSocket);
-                //if (selectedServer != -1)
-                //{
-                //    currentResponse.buildResponse(request, _serverSocket[selectedServer]);
-                //    std::string response = currentResponse.getResponse();
-                //    ssize_t bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
-                //    if (bytesSent == -1)
-                //        std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
-                //}
-                //else
-                //    std::cout << "Server não encontrado!" << std::endl;
-                //
-                //size_t found = requestString.find("process_data.cgi");
-                //if (found != std::string::npos)
-                //{
-                //    // lida com o cgi
-                //    std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
-                //    CGI cgiExec;
-//
-                //    cgiExec.handleCGIRequest(requestString);
-                //    std::string response = cgiExec.getResponse();
-                //    send(clientSocket, response.c_str(), response.length(), 0);
-                //}
-//
-                //close(clientSocket);
                 std::cout << "\n---------------------------------------" << std::endl;
                 std::cout <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << std::endl;
                 std::cout << "-----------------------------------------" << std::endl;  
@@ -460,7 +412,6 @@ void WebServ::mainLoop(){
         }
     }
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
-
         close(_serverSocket[serverIndex].getWebServSocket());
 }
 

@@ -1,5 +1,5 @@
 server{  
-    listen https://localhost.com:2001;
+    listen localhost:2001;
     server_name example.com;
     root src/inc/;
 

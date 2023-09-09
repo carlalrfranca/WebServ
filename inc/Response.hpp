@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/02 23:17:56 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/06 19:22:10 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 class SocketS;
 class Request;
+class ValidGet;
 
 class Response
 {
@@ -30,21 +31,23 @@ class Response
         
         //getters and setters
         const std::string& getHeader(const std::string& header)const; // busca pelo campo de cabeçalho na lista de cabeçalhos
-        std::string getResponse(void);
         
         void setStatusCode(const std::string& statusCode);
         void setContentType(const std::string& contentType);
         void setDateAndTime(void);
-        // void setContentLength(size_t length);
         void setResponse(const std::string& response);
-        
-        int selectServer(Request& stringDomain, std::vector<SocketS> serverSocket);
+        int  selectServer(Request& stringDomain, std::vector<SocketS> serverSocket);
         bool contains(const std::vector<std::string>& vec, const std::string& content);
         
+        std::string getResponse(void);//foi criado outro metodo, precisa ajustar .cpp
+        std::string httpGet(Request &request, SocketS &server);
+        //std::string httpPost(Request &request, SocketS &server);
+        //std::string httpDelete(Request &request, SocketS &server);
         
         //response methods
         std::string readHtmlFile(const std::string& filePath);
         std::string buildResponse(Request &request, SocketS &server);
+
         void reset(void); //implementa a redefinição de resposta, limpando cabeçalhos e corpo
         void httpError(std::string errorCode, const std::string &errorMessage);
         void setPath(const std::string& allPath);    
@@ -56,8 +59,8 @@ class Response
         std::string                         _body;
         std::string                         _response; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
         std::string                         _code;
-        SocketS                             *_chosenSocket;
         std::string                         _path;
+        SocketS                             *_chosenSocket;
         /*
             ------------------------------------------- LETICIA DEIXOU ANOTADO ----------------------------------------------
             criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
