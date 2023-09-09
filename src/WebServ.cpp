@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/06 23:38:59 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/07 21:52:25 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,7 +287,7 @@ void WebServ::mainLoop(){
 				// ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
 				std::string toBeRequest;
 				ssize_t bytesRead;
-				while ((bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0)) > 0) {
+				while ((bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0)) > 0) { //isso nao tá dando muito certo.. tem que dar uma olhada no Kaydoo como ele fez....
         			// Adicione os dados lidos à string toBeRequest.
 					std::cout << "ENTRAMOS NO LOOP DE LEITURA" << std::endl;
         			toBeRequest.append(buffer, bytesRead);
@@ -305,7 +305,7 @@ void WebServ::mainLoop(){
 					std::cout << requestString.substr(0, 800) << std::endl;
 				std::cout << std::endl;
 				std::cout << std::endl;
-                // printRequest(requestString);
+                printRequest(requestString);
 				
 
                 // if(bytesRead <= 0)

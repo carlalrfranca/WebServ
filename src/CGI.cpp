@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/07 00:05:28 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/07 22:30:53 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void CGI::executeScript(int *pipefd)
 	}
 }
 
-void CGI::handleCGIRequest(Request &request)
+void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber o ponteiro pro obj Response pra poder acessar headers
 {
 	// primeiro criamos a header da response:
 	_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
@@ -130,16 +130,25 @@ void CGI::handleCGIRequest(Request &request)
 		{
 			//_inputFormData = request_content.substr(data_init_pos + 4);
 			// como ele vai ter uma imagem.. entao
+			std::cout << "Entrou no if" << std::endl;
 			std::string image_content = request_content.substr(data_init_pos + 4);
+			std::cout << "Entrou no if = 2" << std::endl;
 			size_t content_type_pos = image_content.find("Content-Type");
+			std::cout << "Entrou no if = 3" << std::endl;
 			std::size_t contentTypeEnd = image_content.find("\r\n", content_type_pos);
+			std::cout << "Entrou no if = 4" << std::endl;
+			std::cout << "ContenttypeEnd::: " << contentTypeEnd << std::endl;
+			if (content_type_pos != std::string::npos)
+				std::cout << "Encontrou content-type" << std::endl;
+			if (contentTypeEnd != std::string::npos)
+				std::cout << "Encontrou O FIM do content-type" << std::endl;
 			std::string content_type = image_content.substr(content_type_pos, contentTypeEnd);
 
 			std::cout << "CONTENT TYPE ----> " << content_type << std::endl;
 			// Save the received image data to a file
 			std::size_t fileDataStart = contentTypeEnd + 4;
 			std::string image_content_cleaned = image_content.substr(fileDataStart);
-    		std::ofstream imageFile("SOMEWHERE_image.jpeg", std::ios::binary);
+    		std::ofstream imageFile("SOMEWHERE_image.jpg", std::ios::binary);
 			// Process chunks of data
 			std::cout << std::endl;
 			// std::cout << "Image content: -----------" << std::endl;
@@ -174,12 +183,14 @@ void CGI::handleCGIRequest(Request &request)
 		}
 		else
 		{
+			std::cout << "Entrou no else" << std::endl;
 		// ou seja, não foi um 'POST'
 		// retorna uma reponse só pra teste
 			_response += "<html><body><h1>Simple Form</h1><form method=\"post\">";
 		   _response += "Name: <input type=\"text\" name=\"name\"><br>Email: <input type=\"text\" name=\"email\"><br>";
 		   _response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
 		}
+		std::cout << "Tá fora do if else do cgi" << std::endl;
 }
 
 std::string CGI::getResponse(void) const
