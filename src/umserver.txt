@@ -1,5 +1,5 @@
 server{  
-    listen localhost:2002;
+    listen localhost:2003;
     server_name example.com;
     root src/inc/map.txt;
     client_max_body_size 10M;

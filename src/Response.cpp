@@ -13,11 +13,12 @@
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/Response.hpp"
 #include "../inc/Request.hpp"
+#include "../inc/HttpGet.hpp"
 
 Response::Response()
 {
     _chosenSocket = NULL;
-	methodsFunctions["GET"] = &Response::getMethod;
+	methodsFunctions["GET"] = &Response::httpGet;
 	methodsFunctions["POST"] = &Response::postMethod;
 	methodsFunctions["DELETE"] = &Response::deleteMethod;
 }
@@ -319,10 +320,6 @@ void Response::setPath(const std::string& allPath){
 /*
 
 
-
-
-
-
 Na configuração que você forneceu, onde existem dois servidores virtuais ouvindo em portas diferentes, mas com o mesmo nome de servidor, 
 a ordem de verificação será a seguinte:
 
@@ -354,7 +351,7 @@ int Response::selectServer(Request& stringDomain, std::vector<SocketS> serverSoc
     int indexChosenSocket = -1;
     for (size_t serverIndex = 0; serverIndex < serverSocket.size(); ++serverIndex)
     {
-        std::cout << "----- DENTRO DO SELECT SERVER ------------" << std::endl;
+        std::cout << "-------------- DENTRO DO SELECT SERVER ------------" << std::endl;
         std::cout << "Dominio da request: " << stringDomain.getDomainRequest() << "| Size: " << stringDomain.getDomainRequest().size() << std::endl;
         std::cout << "Address do servidor: " << serverSocket[serverIndex].getAddress() << "| Size: " << serverSocket[serverIndex].getAddress().size() << std::endl;
         std::cout << "Porta do servidor: " << serverSocket[serverIndex].getPort() << " | Size: " << serverSocket[serverIndex].getPort().size() << std::endl;
@@ -449,25 +446,72 @@ std::string readFileToString(const std::string& filename) {
         std::cout << "Não deu pra abrir o html" << std::endl;
         return ""; // Retorna uma string vazia se não for possível abrir o arquivo
     }
-
     std::string content;
     std::string line;
-
     while (std::getline(file, line)) {
         content += line + "\n"; // Adiciona cada linha ao conteúdo da string
     }
-
     file.close();
-
     return content;
+}
+
+std::string Response::httpGet(Request &request, SocketS &server){
+
+    std::string root;
+
+    if(server.getRoot().size() > 0)
+        root = server.getRoot();
+    else
+        root = "./";
+
+    std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+    std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI());
+    std::map<std::string, std::vector< std::string > > locationDirectives;
+
+    if (it != serverLocations.end()){
+        std::cout << "Directives from this Location found!" << std::endl;
+        locationDirectives = it->second.getDirectives();
+         std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root");
+        if (itRoot != locationDirectives.end())
+            root = itRoot->second[0]; 
+        std::cout << "Directives from this Location found!" << std::endl;
+        locationDirectives = it->second.getDirectives();
+         std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+        if (itIndex != locationDirectives.end()){
+            std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
+            // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
+            setPath(root + itIndex->second[0]);
+            std::string bodyHTML = readFileToString(getPath());
+        
+            
+            //std::cout << "---- DEU PRA LER HTML ------";
+            //std::cout << bodyHTML << std::endl;
+            _body = bodyHTML;
+            
+            //std::cout << "-----------------------------------" << std::endl;
+            std::cout << "----------- CUMEÇA AQUI O: -----------------------------" << std::endl;
+            std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + _body;
+            setResponse(response);
+            return response;
+        } else {
+            std::cout << "Index not found!" << std::endl;
+        }
+    } else {
+        std::cout << "This server doesnt have this location!!" << std::endl;
+        std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
+        setResponse(response);
+        return response;    
+    }
+    return "DEU MERDA JOHNSONS";
 }
 
 std::string Response::buildResponse(Request &request, SocketS &server)
 {
+    
+    //////////    
     // Implementação para construir a resposta completa, incluindo cabeçalho e corpo
     // Incluir os cabeçalhos necessários, como Content-Length e outros
     // Retorne a resposta completa construída
-
     //////////
 
     
@@ -484,6 +528,8 @@ std::string Response::buildResponse(Request &request, SocketS &server)
             break;
         }
     }
+
+    std::string hasRoot;
 
     if (found) {
         // método é permitido pra esse servidor. Continua...
@@ -575,6 +621,7 @@ void Response::httpError(std::string errorCode, const std::string &errorMessage)
     _response = errorMessage;
     _headers.clear(); //limpa cabeçalhos anteriores
 }
+
 
 
 /*

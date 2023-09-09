@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/08/30 20:20:22 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/06 21:12:17 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@
 #include <cctype>
 #include <vector>
 #include <string>
-#include <cctype> //Para usar a função std::isspace
+#include <cctype> // to std::isspace
 #include <map>
 
 
