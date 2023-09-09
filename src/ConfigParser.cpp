@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/09 16:48:16 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/09 19:34:29 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ ConfigParser::ConfigParser()
     _hasDirRoot = false;
     _hasDirIndex = false;
     _hasDirSsl = false;
-    _hasDirAllowNethods = false;
+    _hasDirAllowMethods = false;
     _hasDirMaxBodySize = false;
     _hasDirReturn = false;
         
@@ -53,6 +53,10 @@ std::map<std::string, LocationDirective> ConfigParser::getLocations(void) const{
 
 void ConfigParser::setLocations(std::map<std::string, LocationDirective>& locations){
 	_locations = locations;
+}
+
+bool ConfigParser::getHasDirLocation(void)const{
+    return _hasDirLocation;
 }
 
 bool ConfigParser::getHasDirListen(void)const{
@@ -76,7 +80,7 @@ bool ConfigParser::getHasDirSsl(void)const{
 }
 
 bool ConfigParser::getHasDirAllowMethods(void)const{
-    return _hasDirAllowNethods;
+    return _hasDirAllowMethods;
 }
 
 bool ConfigParser::getHasDirMaxBodySize(void)const{
@@ -146,6 +150,7 @@ void ConfigParser::processListen(std::string &line){
 }
 
 void ConfigParser::processServerName(std::string &line){
+
     if(_hasDirServerName == true)
         throw ErrorException("Error: The Directive Server_Name has been duplicated.");
     _directive = line.find("server_name");
@@ -331,6 +336,7 @@ void ConfigParser::validateFile(std::ifstream& fileToParse){
 
 void ConfigParser::processLocation(std::string &line)
 {
+        
     std::vector<std::string> filesForPath1;
     
     _directive = line.find("location");
@@ -358,6 +364,8 @@ void ConfigParser::processLocation(std::string &line)
 
 void ConfigParser::processIndex(std::string &line)
 {
+    if(_hasDirIndex == true)
+        throw ErrorException("Error: The Directive Index has been duplicated.");
     if(line.find("index") != std::string::npos)
     {
         std::istringstream iss(line);
@@ -369,6 +377,7 @@ void ConfigParser::processIndex(std::string &line)
         while(indicesStream >> index)
             _indexFiles.push_back(index);
     }
+    _hasDirIndex = true;
     //só para saber a posição mesmo
     //for (size_t i = 0; i < _indexFiles.size(); ++i)
     //std::cout << "Index file at position " << i << ": " << _indexFiles[i] << std::endl;
@@ -394,17 +403,14 @@ const std::vector<std::string>& ConfigParser::getMethods()const
 
 void ConfigParser::processAllowMethods(std::string &line)
 {
+    if(_hasDirAllowMethods == true)
+        throw ErrorException("Error: The Directive Allow Methods has been duplicated.");
     std::vector<std::string> methods;
     std::istringstream iss(line);
     std::string method;
     while (iss >> method)
-	{
-		std::cout << "Parte da linha de agora pro methods: " << method << std::endl;
-			methods.push_back(method);
-	}
-	std::cout << std::endl;
-	std::cout << "Methods gravou >>> " << methods.size() << " metodos" << std::endl; 
-    for (size_t i = 1; i < methods.size(); i++) {
+        methods.push_back(method);
+    for (size_t i = 0; i < methods.size(); ++i) {
         if (methods[i] == "GET") {
             std::cout << "GET method is allowed." << std::endl;
         } else if (methods[i] == "POST") {
@@ -414,16 +420,13 @@ void ConfigParser::processAllowMethods(std::string &line)
         }
     }
     _methods = methods;
-	_methods.erase(_methods.begin());
-	std::cout << "|||||||||||||||||||||||||||||" << std::endl;
-	for (size_t j = 0; j < _methods.size(); j++)
-	{
-		std::cout << "Método::: " << _methods[j] << std::endl;
-	}
+    _hasDirAllowMethods = true;
 }
 
 void ConfigParser::processClientMaxBodySize(std::string &line)
 {
+    if(_hasDirMaxBodySize == true)
+        throw ErrorException("Error: The Directive Client Max Body Size has been duplicated.");
     std::string directive = "client_max_body_size";
     std::size_t pos = line.find(directive);
     if (pos != std::string::npos)
@@ -437,16 +440,20 @@ void ConfigParser::processClientMaxBodySize(std::string &line)
             }
         }
     }
+    _hasDirMaxBodySize = true;
 }
 
 void ConfigParser::processSSL(std::string &line)
 {
+  if(_hasDirMaxBodySize == true)
+        throw ErrorException("Error: The Directive SSL has been duplicated.");
     if (line == "ssl on")
            std::cout << "SSL enabled" << std::endl;
     else if (line == "ssl off")
            std::cout << "SSL disabled" << std::endl;
     else
            std::cout << "Unknown SSL configuration: " << line << std::endl;
+    _hasDirSsl = true;
 }
 
 void ConfigParser::processAutoIndex(std::string &line)
@@ -483,6 +490,8 @@ void ConfigParser::processReturn(std::string &line)
 {
     std::string directive = "return";
     std::size_t pos = line.find(directive);
+    if(_hasDirReturn == true)
+        throw ErrorException("Error: The Directive Return has been duplicated.");
     if (pos != std::string::npos)
     {
         pos = line.find_first_of("0123456789", pos + directive.size());
@@ -507,6 +516,7 @@ void ConfigParser::processReturn(std::string &line)
             }
         }
     }
+    _hasDirReturn = true;
 }
 
 void ConfigParser::setPort(int portNumber){
