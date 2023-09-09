@@ -34,15 +34,16 @@ class WebServ {
 
         void validateFile(std::string filename);
         void printRequest(const std::string& request);
+		// std::string handleCGIRequest(std::string& request);
+		// std::string executeScriptAndTakeItsOutPut(int *pipefd);
+
         bool isFirstLineValid(const std::string& request, std::string& _firstLine);
-		std::string handleCGIRequest(std::string& request);
-		std::string executeScriptAndTakeItsOutPut(int *pipefd);
 		
 		//divisao da mainLoop() em 31.08.2023
         bool isEventFromServerSocket(struct epoll_event* events, int index);
 		Epoll& getEpollS();
-       
-        void handleCGIRequest(int clientSocket, std::string& requestString, Request& request);
+        
+        // void handleCGIRequest(int clientSocket, std::string& requestString, Request& request);
         void handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString);
         //fim da divisao da mainLoop() em 31.08.2023
 

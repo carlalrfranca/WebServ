@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/05 19:58:27 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/06 19:30:26 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -307,9 +307,9 @@ bool Response::contains(const std::vector<std::string>& vec , const std::string&
     return false;
 }
 
-void Response::setPath(const std::string& allPath){
-    _path = allPath;
-}
+// void Response::setPath(const std::string& allPath){
+//     _path = allPath;
+// }
 
 
 // refazer esse metodo selectServer
@@ -436,9 +436,9 @@ std::string Response::getResponse(){
     return _response; //Retorna o corpo da resposta
 }
 
-std::string Response::getPath(){
-    return _path;
-}
+// std::string Response::getPath(){
+//     return _path;
+// }
 
 std::string readFileToString(const std::string& filename) {
     std::ifstream file(filename.c_str());

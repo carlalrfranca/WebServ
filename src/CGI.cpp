@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/03 20:31:36 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/07 22:30:53 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void CGI::executeScript(int *pipefd)
 	}
 }
 
-void CGI::handleCGIRequest(Request &request)
+void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber o ponteiro pro obj Response pra poder acessar headers
 {
 	// primeiro criamos a header da response:
 	_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
@@ -123,37 +123,74 @@ void CGI::handleCGIRequest(Request &request)
 		// _method = request.substr(indexMethod, indexMethod + 3);
 		std::string request_content = request.getRequest();
 		std::size_t data_init_pos = request_content.find("\r\n\r\n");
+		std::cout << "CABEÇALHO DESSA REQUEST ----------- !!!!!!!!!!!!!!!!!!!!" << std::endl;
+		std::cout << request_content.substr(0, data_init_pos) << std::endl;
+		std::cout << "!!!!!!!!!!!!!!!!!!!!!!! ----------- !!!!!!!!!!!!!!!!!!!!" << std::endl;
 		if (data_init_pos != std::string::npos)
 		{
-			_inputFormData = request_content.substr(data_init_pos + 4);
+			//_inputFormData = request_content.substr(data_init_pos + 4);
+			// como ele vai ter uma imagem.. entao
+			std::cout << "Entrou no if" << std::endl;
+			std::string image_content = request_content.substr(data_init_pos + 4);
+			std::cout << "Entrou no if = 2" << std::endl;
+			size_t content_type_pos = image_content.find("Content-Type");
+			std::cout << "Entrou no if = 3" << std::endl;
+			std::size_t contentTypeEnd = image_content.find("\r\n", content_type_pos);
+			std::cout << "Entrou no if = 4" << std::endl;
+			std::cout << "ContenttypeEnd::: " << contentTypeEnd << std::endl;
+			if (content_type_pos != std::string::npos)
+				std::cout << "Encontrou content-type" << std::endl;
+			if (contentTypeEnd != std::string::npos)
+				std::cout << "Encontrou O FIM do content-type" << std::endl;
+			std::string content_type = image_content.substr(content_type_pos, contentTypeEnd);
+
+			std::cout << "CONTENT TYPE ----> " << content_type << std::endl;
+			// Save the received image data to a file
+			std::size_t fileDataStart = contentTypeEnd + 4;
+			std::string image_content_cleaned = image_content.substr(fileDataStart);
+    		std::ofstream imageFile("SOMEWHERE_image.jpg", std::ios::binary);
+			// Process chunks of data
+			std::cout << std::endl;
+			// std::cout << "Image content: -----------" << std::endl;
+			// std::cout << image_content_cleaned << std::endl;
+			std::cout << "Size of image: " << image_content_cleaned.size() << std::endl;
+			if (imageFile.is_open())
+			{
+				imageFile.write(image_content_cleaned.c_str(), image_content_cleaned.size());
+				imageFile.close();
+			}
+			_response += "<html><body><h1>Simple Image</h1></body></html>";
 			
+			// -------------------------------------------------
 			// setamos a env QUERY_STRING com esses valores do form
-			setenv("QUERY_STRING", _inputFormData.c_str(), 1);
+			// setenv("QUERY_STRING", _inputFormData.c_str(), 1);
 
 			// criar o pipe pra redirecionar a saída do script pra poder resgatar pra cá
-			int pipefd[2];
-			if (pipe(pipefd) == -1)
-			{
-				std::cerr << "ERROR creating PIPE" << std::endl;
-				return;
-			}
-			std::cout << "----------- CRIOU O PIPE! -----------" << std::endl;
-
-			executeScript(pipefd);
-			if (_scriptOutput.empty())
-			{
-				return ;
-			}
-			_response += _scriptOutput;
+			//int pipefd[2];
+			//if (pipe(pipefd) == -1)
+			//{
+			//	std::cerr << "ERROR creating PIPE" << std::endl;
+			//	return;
+			//}
+			//std::cout << "----------- CRIOU O PIPE! -----------" << std::endl;
+//
+			//executeScript(pipefd);
+			//if (_scriptOutput.empty())
+			//{
+			//	return ;
+			//}
+			//_response += _scriptOutput;
 		}
 		else
 		{
+			std::cout << "Entrou no else" << std::endl;
 		// ou seja, não foi um 'POST'
 		// retorna uma reponse só pra teste
 			_response += "<html><body><h1>Simple Form</h1><form method=\"post\">";
 		   _response += "Name: <input type=\"text\" name=\"name\"><br>Email: <input type=\"text\" name=\"email\"><br>";
 		   _response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
 		}
+		std::cout << "Tá fora do if else do cgi" << std::endl;
 }
 
 std::string CGI::getResponse(void) const
