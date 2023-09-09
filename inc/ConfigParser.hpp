@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/08 22:02:01 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/09 19:34:34 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,17 +29,17 @@ class ConfigParser
         void processServerName(std::string &line);
         bool processRoot(std::string &line);
         void processLocation(std::string& line);
+		void processIndex(std::string &line);
+		void processSSL(std::string &line);
+        void processReturn(std::string &line);
+		void processAllowMethods(std::string &line);
+        void processClientMaxBodySize(std::string &line);
         
 		// expansao do processamento do location (divisao da funcao)
 		void storeCurrentLocationDirectives(std::string &line);
-		void processIndex(std::string &line);
         void processErrorPage(std::string &line);
 		void processRewrite(std::string &line);
-		void processSSL(std::string &line);
-		void processAllowMethods(std::string &line);
         void processAutoIndex(std::string &line);
-        void processClientMaxBodySize(std::string &line);
-        void processReturn(std::string &line);
         
         void setPort(int portNumber);
         void setAddress(std::string ipAddress);
@@ -57,6 +57,7 @@ class ConfigParser
 		void trimWhiteSpace(std::string &line);
 		void removeComments(std::string &line);
 	    void validateFile(std::ifstream& fileToParse);
+	    bool getHasDirLocation(void)const;
 	    bool getHasDirListen(void)const;
         bool getHasDirServerName(void)const;
         bool getHasDirRoot(void)const;
@@ -96,11 +97,12 @@ class ConfigParser
         bool            _hasRoot;
         
         bool            _hasDirListen;
+        bool            _hasDirLocation;
         bool            _hasDirServerName;
         bool            _hasDirRoot;
         bool            _hasDirIndex;
         bool            _hasDirSsl;
-        bool            _hasDirAllowNethods;
+        bool            _hasDirAllowMethods;
         bool            _hasDirMaxBodySize;
         bool            _hasDirReturn;
         
