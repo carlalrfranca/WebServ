@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/09 19:17:28 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/09 20:24:09 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ WebServ::WebServ(std::string filename){
     if(fileToParse.is_open()){
         std::string line;
         bool isLocationBlock = false;
+        bool isInsideServerBlock = false;
         
         while(getline(fileToParse, line)){
             _configParser.trimWhiteSpace(line); //trima espaços em branco
@@ -62,41 +63,43 @@ WebServ::WebServ(std::string filename){
                 if (index > 0)
                     configSocket(index - 1);
 				index++;
+			    isInsideServerBlock = true; // Entramos em um bloco "server"
             }
-			else if (line.find("location") != std::string::npos || isLocationBlock == true){
-                if (line.find("}") != std::string::npos){
-                    isLocationBlock = false;
-					continue;
-				}
-                isLocationBlock = true;
-				std::cout << "LINHA: " << line << std::endl;
-                _configParser.processLocation(line);
-            } // configSocket(index);
-            else if (line.find("listen") != std::string::npos){
-                _configParser.processListen(line);
-                
-            }else if (line.find("server_name") != std::string::npos){
-                _configParser.processServerName(line);
-                
-            }else if (line.find("root") != std::string::npos){
-                _configParser.processRoot(line);
-                
-            }else if (line.find("index") != std::string::npos){
-                _configParser.processIndex(line);
-                
-			}else if (line.find("ssl on") != std::string::npos){
-				_configParser.processSSL(line);
-				
-			}else if (line.find("allow_methods") != std::string::npos){
-			
-				_configParser.processAllowMethods(line);
-			}else if (line.find("client_max_body_size") != std::string::npos){
-			
-				_configParser.processClientMaxBodySize(line);
-			}else if (line.find("return") != std::string::npos){
-			
-				_configParser.processReturn(line);
-			}
+            else if (line.find("}") != std::string::npos && isLocationBlock == false) {
+                isInsideServerBlock = false; // Saímos do bloco "server"
+                continue;
+            }
+            else if(isInsideServerBlock){
+    			if (line.find("location") != std::string::npos || isLocationBlock == true){
+                    if (line.find("}") != std::string::npos){
+                        isLocationBlock = false;
+    					continue;
+    				}
+                    isLocationBlock = true;
+    				std::cout << "LINHA: " << line << std::endl;
+                    _configParser.processLocation(line);
+                } // configSocket(index);
+                else if (line.find("listen") != std::string::npos){
+                    _configParser.processListen(line);
+                }else if (line.find("server_name") != std::string::npos){
+                    _configParser.processServerName(line);
+                }else if (line.find("root") != std::string::npos){
+                    _configParser.processRoot(line);
+                }else if (line.find("index") != std::string::npos){
+                    _configParser.processIndex(line);
+    			}else if (line.find("ssl on") != std::string::npos){
+    				_configParser.processSSL(line);
+    			}else if (line.find("allow_methods") != std::string::npos){
+    				_configParser.processAllowMethods(line);
+    			}else if (line.find("client_max_body_size") != std::string::npos){
+    				_configParser.processClientMaxBodySize(line);
+    			}else if (line.find("return") != std::string::npos){
+    				_configParser.processReturn(line);
+    			}
+            }
+        }
+        if(index == 0){
+            throw ErrorException("Error: Server Block not found!");
         }
     }else
         std::cout << "[Error] : file cannot be opened" << std::endl;
