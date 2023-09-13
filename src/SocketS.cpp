@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/09 17:11:06 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/11 22:42:40 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,10 +72,11 @@ void SocketS::setPort(std::string portNumber){
         if(!std::isdigit(portNumber[i]))
             throw SocketSException("Error: Worng Syntax: port");
     }
-    port = stoi(portNumber);
+    // port = stoi(portNumber);
+	port = atoi(portNumber.c_str());
     if(port < 1 || port > 65636)
         throw SocketSException("Error: Worng Syntax: port");
-    this->_portNumber = (uint16_t)port;
+    this->_portNumber = portNumber;
     
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/06 21:46:45 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/12 12:24:19 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,13 @@
 #include "../inc/WebServ.hpp"
 
 int main(int argc, char **argv){
-    std::string filename(argv[1]);
+	std::string filename;
+	if (argc == 1)
+		filename = "./src/config.txt";
+    else if (argc == 2)
+		filename = argv[1];
     if(argc != 2){
-        std::cerr << "Error" << std::endl;
+        std::cerr << "Error: Too many arguments" << std::endl;
         exit(EXIT_FAILURE);
     }
     try

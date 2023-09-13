@@ -62,16 +62,19 @@ private:
 
     class ErrorException : public std::exception
     {
-    public:
-        ErrorException(const std::string &message) : _errorMessage(message) {}
-        virtual const char *what() const throw()
-        {
-            return _errorMessage.c_str();
-        }
+      public:      
+            ErrorException(const std::string& message) throw() : _errorMessage(message) {}
+            
+			virtual ~ErrorException() throw() {}
+			
+			virtual const char* what() const throw(){
+                return _errorMessage.c_str();
+            }
 
-    private:
-        std::string _errorMessage;
-    };
+        private:
+            std::string _errorMessage;
+		};
+
 };
 
 #endif

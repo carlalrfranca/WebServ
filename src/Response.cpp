@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/06 19:30:26 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/12 20:48:23 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,11 @@ Response::Response(Request request)
 
 // métodos pra lidar com cada função respectiva
 // Funções de exemplo
-std::string Response::getMethod(Request &request, SocketS &server, Response *this_response) {
-	std::string response_just_to_test =
-        "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><body><h1>Hello World aaaaaaa</h1></body></html>";
-	return response_just_to_test;
-}
+// std::string Response::getMethod(Request &request, SocketS &server, Response *this_response) {
+// 	std::string response_just_to_test =
+//         "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><body><h1>Hello World aaaaaaa</h1></body></html>";
+// 	return response_just_to_test;
+// }
 
 /*
 If you don't have a specific location directive in your Nginx configuration and you try to POST an image or any other data to the server, Nginx will typically handle the request as follows:
@@ -307,9 +307,9 @@ bool Response::contains(const std::vector<std::string>& vec , const std::string&
     return false;
 }
 
-// void Response::setPath(const std::string& allPath){
-//     _path = allPath;
-// }
+void Response::setPath(const std::string& allPath){
+    _path = allPath;
+}
 
 
 // refazer esse metodo selectServer
@@ -436,9 +436,9 @@ std::string Response::getResponse(){
     return _response; //Retorna o corpo da resposta
 }
 
-// std::string Response::getPath(){
-//     return _path;
-// }
+std::string Response::getPath(){
+    return _path;
+}
 
 std::string readFileToString(const std::string& filename) {
     std::ifstream file(filename.c_str());
@@ -455,14 +455,13 @@ std::string readFileToString(const std::string& filename) {
     return content;
 }
 
-std::string Response::httpGet(Request &request, SocketS &server){
+std::string Response::httpGet(Request &request, SocketS &server, Response *this_response){
 
     std::string root;
 
-    if(server.getRoot().size() > 0)
-        root = server.getRoot();
-    else
-        root = "./";
+	root = server.getRoot();
+	// ACIMA: não é preciso também ver se tem um ROOT ESPECIFICO DO LOCATION? (e, caso tenha,
+	// utilizá-lo como referencia?)
 
     std::map<std::string, LocationDirective> serverLocations = server.getLocations();
     std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI());
@@ -480,26 +479,29 @@ std::string Response::httpGet(Request &request, SocketS &server){
         if (itIndex != locationDirectives.end()){
             std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
             // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
-            setPath(root + itIndex->second[0]);
-            std::string bodyHTML = readFileToString(getPath());
+            this_response->setPath(root + itIndex->second[0]);
+			std::cout << "1111 PATH DO ARQUIVO QUE SERÁ LIDO: " << this_response->getPath() << std::endl;
+            std::string bodyHTML = readFileToString(this_response->getPath());
         
             
             //std::cout << "---- DEU PRA LER HTML ------";
             //std::cout << bodyHTML << std::endl;
-            _body = bodyHTML;
+            this_response->_body = bodyHTML;
             
             //std::cout << "-----------------------------------" << std::endl;
             std::cout << "----------- CUMEÇA AQUI O: -----------------------------" << std::endl;
-            std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + _body;
-            setResponse(response);
+            std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
+            this_response->setResponse(response);
             return response;
         } else {
+			// é, mas caso NAO HAJA um index no NIVEL LOCATION, não poderia usar o INDEX DO NIVEL SERVER?
             std::cout << "Index not found!" << std::endl;
         }
     } else {
         std::cout << "This server doesnt have this location!!" << std::endl;
+		// aqui precisa ser processado e construído a response COM A PAGINA DE ERRO DESSE STATUSCODE
         std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
-        setResponse(response);
+        this_response->setResponse(response);
         return response;    
     }
     return "DEU MERDA JOHNSONS";
@@ -518,6 +520,10 @@ std::string Response::buildResponse(Request &request, SocketS &server)
 	std::cout << "----> CHEGAMOS AO BUILD RESPONSE -----" << std::endl;
     // verificar se o método requisitado pela solicitação é permitido pra esse servidor
     std::vector<std::string> allowed_methods = server.getMethods();
+	// ACIMA: nao é suficiente vermos o "allow_methods" APENAS no server, é preciso ver também
+	// para ESTE LOCATION (porque pode ter um allow_methods que restringe esse método no
+	// location especifico) e daí pegar dele SE TIVER, caso NAO TENHA, DAÍ usa o allow_methods
+	// do bloco server como critério
     std::string requestMethod = request.getMethod();
     
     bool found = false;
