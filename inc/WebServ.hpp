@@ -34,6 +34,7 @@ class WebServ {
 
         void validateFile(std::string filename);
         void printRequest(const std::string& request);
+        void checkForDuplicates();
 		// std::string handleCGIRequest(std::string& request);
 		// std::string executeScriptAndTakeItsOutPut(int *pipefd);
 
@@ -66,15 +67,18 @@ class WebServ {
         class ErrorException: public std::exception{
         public:
         
-            ErrorException(const std::string& message) : _errorMessage(message) {}
-            virtual const char* what() const throw(){
+            ErrorException(const std::string& message) throw() : _errorMessage(message) {}
+            
+			virtual ~ErrorException() throw() {}
+			
+			virtual const char* what() const throw(){
                 return _errorMessage.c_str();
             }
 
         private:
             std::string _errorMessage;
-        
-        };
+		};
+     
 };
 
 #endif

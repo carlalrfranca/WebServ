@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/09 19:34:29 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/12 12:24:22 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 ConfigParser::ConfigParser()
 {
     //_line = ""; // talvez, mas acho que nao precisa mesmo
-    _domain = ""; // server_name
+    // _domains = ""; // server_name
     //_ssl = "";    //ssl_certificate
     _key = "";      // ssl_certificate
     _rules = "";    // location
@@ -44,6 +44,39 @@ ConfigParser::ConfigParser()
 }
 
 ConfigParser::~ConfigParser() {}
+
+// reset dir bools
+void ConfigParser::resetConfig()
+{
+	_hasDirAllowMethods = false;
+	_hasDirIndex = false;
+	_hasDirListen = false;
+	_hasDirLocation = false;
+	_hasDirMaxBodySize = false;
+	_hasDirReturn = false;
+	_hasDirRoot = false;
+	_hasDirServerName = false;
+	_hasDirSsl = false;
+
+	//
+	// tinha algo aqui dando problema antes.... ver onde essas var comentadas estao sendo usadas e avaliar
+	_key = "";      // ssl_certificate
+    _rules = "";    // location
+    _directive = 0;
+    // _portNumber = "";
+    // _ipAddress = "";
+    // _httpAddress = "";
+    _path = "";
+    _posInit = 0;
+    _posEnd = 0;
+    _posSemicolon = 0;
+    _semicolonIndex = 0;
+    _delimiter = 0;
+    _root = "";
+    _hasRoot = true;
+
+	_indexFiles.clear();
+}
 
 
 // getter e setter do locations
@@ -91,9 +124,30 @@ bool ConfigParser::getHasDirReturn(void)const{
     return _hasDirReturn;
 }
 
+bool ConfigParser::contemApenasLetras(const std::string& str) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        if (!std::isalpha(*it)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ConfigParser::contemApenasNumeros(const std::string& str) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        if (!std::isdigit(*it)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void ConfigParser::processListen(std::string &line){
     if(_hasDirListen == true)
-        throw ErrorException("Error: The Directive Listen has been duplicated.");    
+	{
+		std::cout << "Line: " << line << std::endl;
+        throw ErrorException("Error: The Directive Listen has been duplicated.");
+	}
     _directive = line.find("listen");
     if(line == "listen"){
         _ipAddress = "0.0.0.0";
@@ -134,19 +188,32 @@ void ConfigParser::processListen(std::string &line){
             }
             else if(line.find(".", _directive) != std::string::npos){// significa que tem ipAddress (port será default)
                _ipAddress = line.substr(_directive);
-               _portNumber = "80";   
+               _portNumber = "80"; //a gente vai usar o default como? porque 8080 e 80 ele nao deixa (sera que na VM deixa?
             }
             else{
-                _portNumber = line.substr(_directive);
-                _ipAddress = "0.0.0.0";
+				std::cout << "Ou SÓ TEM PORTA ou SÓ TEM IP" << std::endl;
+				// tem que verificar se é a porta ou o ipadress (e se estiver escrito "localhost" apenas?)
+                std::string listenValue = line.substr(_directive);
+				 if (contemApenasNumeros(listenValue))
+				 {
+					_portNumber = listenValue;
+                	_ipAddress = "0.0.0.0"; // isso ou 'localhost?'
+				 }
+				 else if (contemApenasLetras(listenValue))
+				 {
+					_ipAddress = listenValue;
+					_portNumber = "4005"; //a gente vai usar o default como? porque 8080 e 80 ele nao deixa (sera que na VM deixa?)
+				 }
+				//  mas um else, pro caso das duas funções darem falso -> erro de sintaxe, pessoa pode ter misturado letra e numero e daí dá exceção
             }
             std::cout << "\n-----[TERCEIRO] TESTE SEM HTTP E HTTPS -----\n";
             std::cout << "IP: " << _ipAddress << std::endl;
             std::cout << "Porta: " << _portNumber << std::endl;
             //std::cout << std::endl;
         }
+		// std::cout << "Que diabo...?" << std::endl;
     }
-    _hasDirListen = true;  
+    _hasDirListen = true;
 }
 
 void ConfigParser::processServerName(std::string &line){
@@ -155,90 +222,137 @@ void ConfigParser::processServerName(std::string &line){
         throw ErrorException("Error: The Directive Server_Name has been duplicated.");
     _directive = line.find("server_name");
     if(_directive != std::string::npos){
-        _directive += std::string("server_name").length(); // avança para além da palavra "server_name"
-        _posInit = line.find_first_of("*", _directive); // busca para os casos de wildcard
-        if(_posInit != std::string::npos){ // se ele encontrou
-            _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
-            if(_posSemicolon != std::string::npos){
-                _domain = line.substr(_posInit, _posSemicolon - (_posInit)); // se quiser extrair sem * _domain = line.substr(_posInit + 1, _posSemicolon - (_posInit + 1));
-                std::cout << "Domain: " << _domain << std::endl;     
-            }
-        }
-        else{
-            if(line.find_first_of("~", _directive) != std::string::npos){ // busca para os casos de expressao regular
-                _posInit = line.find_first_of("~", _directive);
-                _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
-                if(_posSemicolon != std::string::npos){
-                    _domain = line.substr(_posInit, _posSemicolon - (_posInit)); // se quiser extrair sem ~ _domain = line.substr(_posInit + 1, _posSemicolon - (_posInit + 1));
-                    std::cout << "Domain: " << _domain << std::endl;             // pra TESTE
-                }
-            }
-            else if(line.find_first_of("/", _directive) != std::string::npos){
-                _posInit = line.find_first_of("/", _directive);
-                _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
-                if(_posSemicolon != std::string::npos){
-                    _domain = line.substr(_posInit, _posSemicolon - (_posInit));
-                    std::cout << "Domain: " << _domain << std::endl; // pra TESTE
-                } 
-            }
-            else if(line.find(".", _directive) != std::string::npos && line.find(" ", _directive) != std::string::npos && line.find_first_of(";", _directive) != std::string::npos){
-                size_t _posDot = line.find(".", _directive); // busca para os casos de caminho vazio de dominio
-                size_t _posSpace = line.find(" ", _directive); // busca para os casos de caminho vazio de dominio
-                _posSemicolon = line.find_first_of(";", _directive); // estrai do asterisco até antes do ;
-                _domain = line.substr(_posSpace + 1, _posSemicolon - (_posSpace + 1));
-                // PRECISA ARMAZNAR NUM VETOR AQUI ENTÃO
-                //só copiar o trecho odo código da processLocation pra splitar a line e armazenar num vector
-                std::istringstream iss(line);
-                std::vector<std::string> multipleDomains;
+		// tem que extrair o ;
+		if (line[line.length() - 1] == ';')
+			line = line.substr(0, line.length() - 1);
+		// vamos splitar essa linha
+		std::istringstream server_name_values(line);
+		std::string palavra;
+    	std::vector<std::string> palavras;
+	
+		while (server_name_values >> palavra)
+		{
+			if (palavra.find_first_not_of("abcdefghijklmnopqrstuvwxyz._") != std::string::npos)
+				throw ErrorException("Syntax Error: Server_name can only be written with [letters and dot]. You CANNOT use regex or wildcards, only LITERAL names.");
+        	palavras.push_back(palavra);
+    	}
+		// o problema é que no vetor "palavras", ele gravou o nome da diretiva (server_name), temos que extrai-la do vetor
+		palavras.erase(palavras.begin());
+		for (size_t i = 0; i < palavras.size(); ++i)
+        	_domains.push_back(palavras[i]);
+
+        // _directive += std::string("server_name").length(); // avança para além da palavra "server_name"
+        // _posInit = line.find_first_of("*", _directive); // busca para os casos de wildcard
+        // if(_posInit != std::string::npos){ // se ele encontrou
+        //     _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
+        //     if(_posSemicolon != std::string::npos){
+        //         _domain = line.substr(_posInit, _posSemicolon - (_posInit)); // se quiser extrair sem * _domain = line.substr(_posInit + 1, _posSemicolon - (_posInit + 1));
+        //         std::cout << "Domain: " << _domain << std::endl;
+		// 		// passar esse dominio pra classe
+        //     }
+        // }
+        // else{
+        //     if(line.find_first_of("~", _directive) != std::string::npos){ // busca para os casos de expressao regular
+        //         _posInit = line.find_first_of("~", _directive);
+        //         _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
+        //         if(_posSemicolon != std::string::npos){
+        //             _domain = line.substr(_posInit, _posSemicolon - (_posInit)); // se quiser extrair sem ~ _domain = line.substr(_posInit + 1, _posSemicolon - (_posInit + 1));
+        //             std::cout << "Domain: " << _domain << std::endl;             // pra TESTE
+		// 			// passar esse dominio pra classe
+        //         }
+        //     }
+        //     else if(line.find_first_of("/", _directive) != std::string::npos){
+        //         _posInit = line.find_first_of("/", _directive);
+        //         _posSemicolon = line.find_first_of(";", _posInit); // estrai do asterisco até antes do ;
+        //         if(_posSemicolon != std::string::npos){
+        //             _domain = line.substr(_posInit, _posSemicolon - (_posInit));
+        //             std::cout << "Domain: " << _domain << std::endl; // pra TESTE
+		// 			// passar esse dominio pra classe
+        //         } 
+        //     }
+        //     else if(line.find(".", _directive) != std::string::npos && line.find(" ", _directive) != std::string::npos && line.find_first_of(";", _directive) != std::string::npos){
+        //         size_t _posDot = line.find(".", _directive); // busca para os casos de caminho vazio de dominio
+        //         size_t _posSpace = line.find(" ", _directive); // busca para os casos de caminho vazio de dominio
+        //         _posSemicolon = line.find_first_of(";", _directive); // estrai do asterisco até antes do ;
+        //         _domain = line.substr(_posSpace + 1, _posSemicolon - (_posSpace + 1));
+        //         // PRECISA ARMAZNAR NUM VETOR AQUI ENTÃO
+        //         //só copiar o trecho odo código da processLocation pra splitar a line e armazenar num vector
+        //         std::istringstream iss(line);
+        //         std::vector<std::string> multipleDomains;
                 
-                std::string currentFile;
-                while(iss >> currentFile){
-                    multipleDomains.push_back(currentFile);
-                }
-                multipleDomains.erase(multipleDomains.begin());
-                std::cout << "------Server names ------\n" ;
-                for (size_t i = 0; i < multipleDomains.size(); ++i) {
-                    std::cout << multipleDomains[i] << " " << std::endl;
-                }  
-                std::cout << "--------------------------" << std::endl;
-                
-                // std::cout << "Domain LISTA DE DOMINIOS: " << _domain << std::endl; // pra TESTE   
-            }
-            else{ // ou seja não encontrou nada e é defaut
-                _domain = "default";
-                std::cout << "Domain: " << _domain << std::endl; // pra TESTE
-            }
-        }
+        //         std::string currentFile;
+        //         while(iss >> currentFile){
+        //             multipleDomains.push_back(currentFile);
+        //         }
+        //         multipleDomains.erase(multipleDomains.begin());
+        //         std::cout << "------Server names ------\n" ;
+        //         for (size_t i = 0; i < multipleDomains.size(); ++i) {
+        //             std::cout << multipleDomains[i] << " " << std::endl;
+        //         }  
+        //         std::cout << "--------------------------" << std::endl;
+		// 		// passar esse dominio pra classe
+
+
+        //         // std::cout << "Domain LISTA DE DOMINIOS: " << _domain << std::endl; // pra TESTE   
+        //     }
+        //     else{ // ou seja não encontrou nada e é defaut
+        //         _domain = "default";
+        //         std::cout << "Domain: " << _domain << std::endl; // pra TESTE
+		// 		// passar esse dominio pra classe
+        //     }
+        // }
     }
     _hasDirServerName = true;
 }
 
 bool ConfigParser::processRoot(std::string &line){
+	std::istringstream iss(line);
+    std::vector<std::string> partes;
+
+    std::string palavra;
+	if (_root.empty())
+		std::cout << "Nesse momento, _root tá empty" << std::endl;
+    while (iss >> palavra) {
+        partes.push_back(palavra);
+    }
+	if (partes[0] != "root" || partes.size() != 2)
+		throw ErrorException("Syntax Error: Directive Root");
     if(_hasDirRoot == true)
         throw ErrorException("Error: The Directive Root has been duplicated.");
-    _directive = line.find("root");
-    if(_directive != std::string::npos){
-        _directive += std::string("root").length();;
-        _posInit = line.find_first_of("/", _directive);
-        if(_posInit != std::string::npos){
-            _posSemicolon = line.find_first_of(";", _posInit);
-            if(_posSemicolon != std::string::npos){
-                _root = line.substr(_posInit, _posSemicolon - (_posInit));
-                std::cout << "Root: " << _root << std::endl;
-            }
-        }
-        else
-        {
-            //antes de dar o erro devera recorrer a outras diretivas e verificar se algum dado foi armazenado
-            std::cout << "Error 404 (Not Found)" << std::endl;
-            _hasRoot = false;
-            std::cout << "Flag não teve root: " << _hasRoot << std::endl;
-            return _hasRoot;
-        }
+	_root = partes[1];
+	struct stat info;
+    if (stat(_root.c_str(), &info) != 0) {
+        // Erro ao chamar stat (o diretório não existe)
+        throw ErrorException("Error: The path apointed by 'root' doesn't exist.");
     }
+	if ((info.st_mode & S_IFDIR) == 0)
+		throw ErrorException("Error: The path apointed by 'root' ISN'T A DIRECTORY.");
+    // _directive = line.find("root");
+	// std::cout << "ROOOT : " << partes[1] << std::endl;
+    // if(_directive != std::string::npos){
+        // _directive += std::string("root").length();
+		
+        // _posInit = line.find_first_of("/", _directive); //arrumar isso aqui
+        // if(_posInit != std::string::npos){
+            // _posSemicolon = line.find_first_of(";", _posInit);
+            // if(_posSemicolon != std::string::npos){
+                // _root = line.substr(_posInit, _posSemicolon - (_posInit));
+                // std::cout << "Root: " << _root << std::endl;
+            // }
+        // }
+        // else
+        // {
+            //antes de dar o erro devera recorrer a outras diretivas e verificar se algum dado foi armazenado
+            // std::cout << "Error 404 (Not Found)" << std::endl;
+            // _hasRoot = false;
+            // std::cout << "Flag não teve root: " << _hasRoot << std::endl;
+            // return _hasRoot;
+        // }
+    // }
     std::cout << "Flag teve root: " << _hasRoot << std::endl;
-    return _hasRoot;
+	std::cout << "Root: " << _root << std::endl;
     _hasDirRoot = true;
+    return _hasRoot;
 }
 
 void ConfigParser::storeCurrentLocationDirectives(std::string &line){
@@ -259,8 +373,17 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &line){
 		{
 			values.push_back(singleValue);
 		}
-		// if (values.size() < 2)
-		// 	throw exception porque diretivas tem que ter valores
+		if (values.size() < 2)
+			throw ErrorException("Syntax Error: Missing values to directive in location block"); 
+
+		// nao pode ter nem "listen" nem "server_name" dentro de um bloco location...
+		if (values[0].find("listen") != std::string::npos || values[0].find("server_name") != std::string::npos)
+			throw ErrorException("Configuration Error: CANNOT have 'listen' or 'server_name' in location block");
+		// precisa verificar se essa diretiva JA EXISTE no location tambem...
+		std::map<std::string, std::vector<std::string> >::iterator directiveIt = it->second.getDirectives().find(values[0]);
+		if (directiveIt != it->second.getDirectives().end())
+			throw ErrorException("Syntax Error: Duplicated directive in location block"); 
+		// ------------------------------
 		// com os argumentos splitados e num vetor, vamos inserir a key no objeto
 		it->second.addDirective(values[0], values[1]);
 		// std::cout << "Diretiva: " << values[0] << std::endl;
@@ -291,7 +414,7 @@ void ConfigParser::trimWhiteSpace(std::string &line){
         line = line.substr(startPos);
     size_t endPos = line.find_last_not_of(" \t");
     if(endPos != std::string::npos)
-        line = line.substr(0, endPos + 1); 
+        line = line.substr(0, endPos + 1);
 }
 
 void ConfigParser::removeComments(std::string &line){
@@ -340,8 +463,24 @@ void ConfigParser::processLocation(std::string &line)
     std::vector<std::string> filesForPath1;
     
     _directive = line.find("location");
+	// verificar que essa linha 'location' tem que ser finalizada com '{'
+	// (tambem teremos que verificar, pra outras diretivas do config file,
+	// que elas nao estejam dentro do location -> que o bool dele seja falso, no caso,
+	// porque pode ter aberto o 'location...' mas pode nao ter fechado)
+	// no fim, tem que verificar se esses bools (tanto o de location
+	// quanto o de server) são falsos, se algum deles foi
+	// verdadeiro.. é porque tem algo errado no arquivo
+	// na hora que encontra um novo 'server {' tambem tem que verificar antes
+	// se o bool dele está como falso, porque se for verdadeiro, quer dizer que
+	// partiu pra um outro server sem fechar o anterior..
+
     if (_directive != std::string::npos)
     {
+		// --------------------- parte nova adicionada
+		if (line[line.size() - 1] != '{')
+			throw ErrorException("Syntax Error: Missing '{' to open LOCATION BLOCK"); 
+
+		// --------------- 
         // verificar o tipo de location ("/", "/[directorio], etc")
         // pra isso, teremos que dividir a line em partes pra ver o que é apontado pela location
         std::istringstream iss(line);
@@ -351,6 +490,13 @@ void ConfigParser::processLocation(std::string &line)
         while (iss >> part)
             parts.push_back(part);
         _currentLocationPathOnMap = parts[1];
+		// antes de passar, verifica se em _locationsMap ja nao tem um location desse igual do current...
+		std::map<std::string, std::vector<std::string> >::iterator it = _locationsMap.find(_currentLocationPathOnMap);
+		if (it != _locationsMap.end())
+		{
+			// quer dizer que ja tem esse location
+			throw ErrorException("Syntax Error: DUPLICATED location");
+		}
         _locationsMap[_currentLocationPathOnMap];
 		_locations[_currentLocationPathOnMap];
     }
@@ -368,16 +514,24 @@ void ConfigParser::processIndex(std::string &line)
         throw ErrorException("Error: The Directive Index has been duplicated.");
     if(line.find("index") != std::string::npos)
     {
-        std::istringstream iss(line);
-        std::string directive, indices;
-        iss >> directive >> indices;
+		std::cout << "Index line found: " << line << std::endl;
         
-        std::istringstream indicesStream(indices);
+        std::istringstream indicesStream(line);
         std::string index;
         while(indicesStream >> index)
+		{
+			std::cout << "Index no CONFIG: " << index << std::endl;
             _indexFiles.push_back(index);
+		}
+		std::cout << std::endl;
+		_indexFiles.erase(_indexFiles.begin());
+		std::cout << _indexFiles[0] << std::endl;
     }
+	std::cout << "Tamanho do indexFiles: " << _indexFiles.size() << std::endl;
     _hasDirIndex = true;
+	// precisa passar pra classe
+	
+
     //só para saber a posição mesmo
     //for (size_t i = 0; i < _indexFiles.size(); ++i)
     //std::cout << "Index file at position " << i << ": " << _indexFiles[i] << std::endl;
@@ -537,6 +691,10 @@ const std::string& ConfigParser::getAddress(void)const{
 
 const std::vector<std::string>& ConfigParser::getIndexFiles(void)const{
     return _indexFiles;
+}
+
+void ConfigParser::setIndexFiles(std::string index){
+    _indexFiles.push_back(index);
 }
 
 void ConfigParser::setRoot(std::string root){

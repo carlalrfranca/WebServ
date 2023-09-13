@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/06 19:22:10 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/11 22:10:57 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ class Response
         bool contains(const std::vector<std::string>& vec, const std::string& content);
         
         std::string getResponse(void);//foi criado outro metodo, precisa ajustar .cpp
-        std::string httpGet(Request &request, SocketS &server);
         //std::string httpPost(Request &request, SocketS &server);
         //std::string httpDelete(Request &request, SocketS &server);
         
@@ -60,9 +59,10 @@ class Response
 		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
 		// static std::string postMethod(Request &request, SocketS &server);
 		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
-		static std::string getMethod(Request &request, SocketS &server, Response *this_response);
-        //void setPath(const std::string& allPath);    
-        //std::string getPath(void);
+		// static std::string getMethod(Request &request, SocketS &server, Response *this_response);
+        static std::string httpGet(Request &request, SocketS &server, Response *this_response);
+        void setPath(const std::string& allPath);    
+        std::string getPath(void);
     
     private:
     

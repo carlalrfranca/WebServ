@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/09 20:24:09 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/12 22:56:42 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,50 +21,45 @@ WebServ::WebServ(){}
 
 WebServ::~WebServ(){}
 
-
-
-//void WebServ::validateFile(std::ifstream fileToParse){
-// 
-//    if (!fileToParse.is_open()) {
-//        throw ErrorException("File is not accessible");
-//    }
-//    
-//    fileToParse.seekg(0, std::ios::end);
-//    std::streampos fileSize = fileToParse.tellg();
-//    fileToParse.seekg(0, std::ios::beg);
-//    
-//    if(fileSize <= 0){
-//        throw ErrorException("File is empty");
-//    }
-//}
-
-
 WebServ::WebServ(std::string filename){
 
     std::ifstream fileToParse;
 	size_t index = 0;
     fileToParse.open(filename.c_str());
-    
+    char contentFile;
+
+    if(!(fileToParse >> contentFile)){
+        fileToParse.close();
+        throw ErrorException("Configuration Error: empty file!");
+    }
+    fileToParse.unget(); //funcao que desfaz a leitura do conteudo.
     _configParser.validateFile(fileToParse);
 
     if(fileToParse.is_open()){
         std::string line;
         bool isLocationBlock = false;
         bool isInsideServerBlock = false;
-        
         while(getline(fileToParse, line)){
             _configParser.trimWhiteSpace(line); //trima espaços em branco
+			size_t startPos = line.find_first_not_of(" \t");
+    		if (startPos == std::string::npos) //quer dizer que ou só tem espaço ou tab, nao tem conteudo, entao pode pular pra proxima iteração
+				continue;
             _configParser.removeComments(line); //remove comentarios
             size_t semicolon = line.find_last_not_of(" \t"); //remove semicolon
             if(semicolon != std::string::npos && line[semicolon] == ';')
                 line = line.substr(0, semicolon);   
             if (line.find("server{") != std::string::npos){
+				// verifica que o arquivo nao está tentando abrir outro server dentro de um bloco de server (ou dentro de um bloco de location)..
+				if (isInsideServerBlock == true || isLocationBlock == true)
+					throw ErrorException("Configuration Error: Server Block INSIDE another Server or Location block!");
                 std::cout << "Index: " << index << std::endl;
                 if (index > 0)
                     configSocket(index - 1);
 				index++;
 			    isInsideServerBlock = true; // Entramos em um bloco "server"
             }
+            else if (!isInsideServerBlock && !isLocationBlock && !line.empty())
+                throw ErrorException("Wrong character out of server scope: " + line);
             else if (line.find("}") != std::string::npos && isLocationBlock == false) {
                 isInsideServerBlock = false; // Saímos do bloco "server"
                 continue;
@@ -96,20 +91,81 @@ WebServ::WebServ(std::string filename){
     			}else if (line.find("return") != std::string::npos){
     				_configParser.processReturn(line);
     			}
+				else
+				{
+					std::cout << line << std::endl;
+					throw ErrorException("Configuration Error: Directive not allowed!");
+				}
             }
         }
         if(index == 0){
-            throw ErrorException("Error: Server Block not found!");
+            throw ErrorException("Configuration Error: Server Block not found!");
         }
+		if (isLocationBlock == true || isInsideServerBlock == true)
+			throw ErrorException("Configuration Error: Server Block or Location Block not closed!");
     }else
-        std::cout << "[Error] : file cannot be opened" << std::endl;
+        throw ErrorException("File Error : file cannot be opened");
     if (index != 0)
         configSocket(index - 1);
     fileToParse.close();
-    mainLoop();
+	checkForDuplicates();
+	mainLoop();
 }
 
-void WebServ::configSocket(size_t serverIndex){
+void WebServ::checkForDuplicates()
+{
+    for(size_t i = 0; i < _serverSocket.size() - 1; ++i){
+        for(size_t j = i + 1; j < _serverSocket.size(); ++j){
+            if(_serverSocket[i].getPort() == _serverSocket[j].getPort() &&
+               _serverSocket[i].getAddress() == _serverSocket[j].getAddress()){
+				std::vector<std::string> currentSocketServerNames = _serverSocket[i].getServerName();
+				std::vector<std::string> nextSocketServerNames = _serverSocket[j].getServerName();
+				for (size_t k = 0; k < currentSocketServerNames.size(); ++k){
+					for (size_t l = 0; l < nextSocketServerNames.size(); ++l){
+						if (currentSocketServerNames[k] == nextSocketServerNames[l])
+							throw ErrorException("Configuration Error : Duplicated server_name in multiple servers");
+                    }
+				}
+			}
+        }
+    }
+}
+
+void WebServ::configSocket(size_t serverIndex)
+{
+	// antes de passar os itens do _configParser para o socket, verificar que todas as diretivas mandatórias estão preenchidas..
+	/* modelo:
+		if (server.getRoot().empty())
+			server.setRoot("/;");
+		if (server.getHost() == 0)
+			server.setHost("localhost;");
+		if (server.getIndex().empty())
+			server.setIndex("index.html;");
+		if (ConfigFile::isFileExistAndReadable(server.getRoot(), server.getIndex()))
+			throw ErrorException("Index from config file not found or unreadable");
+		if (server.checkLocaitons())
+			throw ErrorException("Locaition is duplicated"); // ja ta resolvido no processLocation, certo?
+		if (!server.getPort())
+			throw ErrorException("Port not found");
+		server.setErrorPages(error_codes);
+		if (!server.isValidErrorPages())
+			throw ErrorException("Incorrect path for error page or number of error");
+	*/
+	if (_configParser.getRoot().empty())
+		_configParser.setRoot("./");
+	if (_configParser.getAddress().empty())
+		_configParser.setAddress("localhost"); //ver se isso já não está sendo resolvendo no processListen
+	//definir index, caso não tenha encontrado (e armazenar o que é encontrado no processIndex na classe)
+	// verificar tambem se o arquivo desse index existe e é acessivel
+	if (_configParser.getIndexFiles().size() == 0)
+		_configParser.setIndexFiles("index.html");
+	if (_configParser.getPort().empty())
+		throw ErrorException("Configuration Error: Port not found!");
+	// tem que setar as errorPages e verificar a existencia e acessibilidade delas...
+	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server, a gente vai definir um padrão? (ou deixar sem?)
+
+
+	// passagem do conteudo do configParser pro temp_socket
     SocketS temp_socket;
     //_serverSocket[serverIndex].setPort(_configParser.getPort());
     //_serverSocket[serverIndex].setAddress(_configParser.getAddress());
@@ -119,7 +175,11 @@ void WebServ::configSocket(size_t serverIndex){
 	temp_socket.setLocations(_configParser.getLocations());
     temp_socket.setMethods(_configParser.getMethods());
     temp_socket.setRoot(_configParser.getRoot());
+	// nós resetamos os bools do _configParser pra false // agora reseta tudo
+	_configParser.resetConfig();
+	// _configParser.cleanAttributes();
 
+	// ------------------------------------------------
     _serverSocket.push_back(temp_socket);
     std::cout << "Port: " << _serverSocket.back().getPort() << std::endl;
     std::cout << "Address: " << _serverSocket.back().getAddress() << std::endl;
@@ -135,10 +195,10 @@ void WebServ::configSocket(size_t serverIndex){
     }
 	std::cout << "--------------------------------" << std::endl;
 	
-    //cria socket
+    //cria socket -----> deixa isso em outra função pra daí poder avaliar se tem server escutando no msmo ip:port e só fazer bind de um e replicar o fd pro outro?
     _serverSocket[serverIndex].setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));//int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(_serverSocket[serverIndex].getWebServSocket() == -1){
-        throw WebServException();
+        throw ErrorException("Socket Error: Failed to create socket!");
     }
     //configura endereço do servidor e inicializa os campos da estrutura com 0
     struct sockaddr_in server_address = {0};
@@ -148,12 +208,12 @@ void WebServ::configSocket(size_t serverIndex){
     //chamada para o bind - vincula o socket ao endereço e porta, 0 -1 tem haver com a falha na chamada do bind
     if(bind(_serverSocket[serverIndex].getWebServSocket(),(struct sockaddr*)&server_address, sizeof(server_address)) == -1){
         close(_serverSocket[serverIndex].getWebServSocket());
-         WebServException();
+          throw ErrorException("Socket Error: Bind failed!");
     }
     //habilitar o socket para aguardar conexões de entrada. ) 5 representa o tamanho máximo da fila de conexões pendentes.
     if(listen(_serverSocket[serverIndex].getWebServSocket(), 5) == -1){
         close(_serverSocket[serverIndex].getWebServSocket());
-        throw WebServException();
+        throw ErrorException("Socket Error: Listen failed!");
     } //std::cout << "--------- Socket atual colocado pra escutar..." << std::endl;
 }
 
@@ -211,109 +271,109 @@ void WebServ::responseError()
     }
 }
 
-std::string WebServ::executeScriptAndTakeItsOutPut(int *pipefd)
-{
-	pid_t childPid = fork();
+// std::string WebServ::executeScriptAndTakeItsOutPut(int *pipefd)
+// {
+// 	pid_t childPid = fork();
 	
-	if (childPid == -1)
-	{
-		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
-		return NULL;
-	}
-	else if (childPid == 0) //é processo filho
-	{
-		// por estarmos no processo filho nesse bloco, vamos então modificar o valor
-		// do STDOUT pra poder redirecionar a saída do script pra cá
-		dup2(pipefd[1], STDOUT_FILENO);
-		close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
+// 	if (childPid == -1)
+// 	{
+// 		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
+// 		return NULL;
+// 	}
+// 	else if (childPid == 0) //é processo filho
+// 	{
+// 		// por estarmos no processo filho nesse bloco, vamos então modificar o valor
+// 		// do STDOUT pra poder redirecionar a saída do script pra cá
+// 		dup2(pipefd[1], STDOUT_FILENO);
+// 		close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
 		
-		// Executamos agora o script de exemplo
-		execl("./process_form.sh", "./process_form.sh", static_cast<char*>(0));
-		// Se chegou aqui, houve um erro no execl
-		std::cerr << "ERROR executing SCRIPT" << std::endl;
-		return NULL;
-	} else {
-		// processo pai
-		close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
+// 		// Executamos agora o script de exemplo
+// 		execl("./process_form.sh", "./process_form.sh", static_cast<char*>(0));
+// 		// Se chegou aqui, houve um erro no execl
+// 		std::cerr << "ERROR executing SCRIPT" << std::endl;
+// 		return NULL;
+// 	} else {
+// 		// processo pai
+// 		close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
 		
-		// Ler a saída do script CGI do pipe e armazená-la numa string
-		std::string scriptOutPut;
-		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
-		while (true)
-		{
-			ssize_t bytesRead = read(pipefd[0], buffer, sizeof(buffer)); //lê 1024 bytes do pipefd[0] pro buffer
-			if (bytesRead <= 0)
-				break;
-			scriptOutPut.append(buffer, bytesRead);
-		}
-		close(pipefd[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
+// 		// Ler a saída do script CGI do pipe e armazená-la numa string
+// 		std::string scriptOutPut;
+// 		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
+// 		while (true)
+// 		{
+// 			ssize_t bytesRead = read(pipefd[0], buffer, sizeof(buffer)); //lê 1024 bytes do pipefd[0] pro buffer
+// 			if (bytesRead <= 0)
+// 				break;
+// 			scriptOutPut.append(buffer, bytesRead);
+// 		}
+// 		close(pipefd[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
 		
-		// É importante colocarmos esse processo (pai) pra aguardar o término do processo filho
-		int status;
-		waitpid(childPid, &status, 0);
-		// Agora a saída do script CGI está armazenada em 'scriptOutPut'
-		std::cout << "------ SAÍDA DO SCRIPT --------\n" << scriptOutPut << std::endl;
-		return scriptOutPut;
-	}
-}
+// 		// É importante colocarmos esse processo (pai) pra aguardar o término do processo filho
+// 		int status;
+// 		waitpid(childPid, &status, 0);
+// 		// Agora a saída do script CGI está armazenada em 'scriptOutPut'
+// 		std::cout << "------ SAÍDA DO SCRIPT --------\n" << scriptOutPut << std::endl;
+// 		return scriptOutPut;
+// 	}
+// }
 
-std::string WebServ::handleCGIRequest(std::string& request)
-{
-	// primeiro criamos a header da response:
-	std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+// std::string WebServ::handleCGIRequest(std::string& request)
+// {
+// 	// primeiro criamos a header da response:
+// 	std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
 
-	/* 
-		aqui vamos:
-			- confirmar que o método é o POST (depois, transferir isso para um outro método, antes de
-			chamar essa função aqui)
-				> Se for, vamos resgatar o conteúdo enviado pelo formulário e passar para uma
-				  função que cuidará disso (parseFormData) -> irá criar um map com os valores dos inputs do formulario
-				> Vamos inserir esses valores na variavel de ambiente QUERY_STRING com setenv() - (para que o script possa acessar essas informações)
-				> vamos abrir um pipe_fd pra leitura e escrita - e poder manipular o STDIN e STDOUT pra poder
-				  "pegar" aqui no programa o que o script, por padrão, só pode escrever no terminal (STDOUT)
-				> vamos fazer um fork() - criar um processo filho que irá modificar o STDOUT com dup e executará o script
-				> vamos resgatar a saída do script e construir uma response pra retornar pra mainLoop()
-	*/
+// 	/* 
+// 		aqui vamos:
+// 			- confirmar que o método é o POST (depois, transferir isso para um outro método, antes de
+// 			chamar essa função aqui)
+// 				> Se for, vamos resgatar o conteúdo enviado pelo formulário e passar para uma
+// 				  função que cuidará disso (parseFormData) -> irá criar um map com os valores dos inputs do formulario
+// 				> Vamos inserir esses valores na variavel de ambiente QUERY_STRING com setenv() - (para que o script possa acessar essas informações)
+// 				> vamos abrir um pipe_fd pra leitura e escrita - e poder manipular o STDIN e STDOUT pra poder
+// 				  "pegar" aqui no programa o que o script, por padrão, só pode escrever no terminal (STDOUT)
+// 				> vamos fazer um fork() - criar um processo filho que irá modificar o STDOUT com dup e executará o script
+// 				> vamos resgatar a saída do script e construir uma response pra retornar pra mainLoop()
+// 	*/
 
-	if (request.find("POST") != std::string::npos)
-	{
-		std::size_t data_init_pos = request.find("\r\n\r\n");
-		if (data_init_pos != std::string::npos)
-		{
-			std::string inputData = request.substr(data_init_pos + 4);
+// 	if (request.find("POST") != std::string::npos)
+// 	{
+// 		std::size_t data_init_pos = request.find("\r\n\r\n");
+// 		if (data_init_pos != std::string::npos)
+// 		{
+// 			std::string inputData = request.substr(data_init_pos + 4);
 			
-			// setamos a env QUERY_STRING com esses valores do form
-			setenv("QUERY_STRING", inputData.c_str(), 1);
+// 			// setamos a env QUERY_STRING com esses valores do form
+// 			setenv("QUERY_STRING", inputData.c_str(), 1);
 
-			// criar o pipe pra redirecionar a saída do script pra poder resgatar pra cá
-			int pipefd[2];
-			if (pipe(pipefd) == -1)
-			{
-				std::cerr << "ERROR creating PIPE" << std::endl;
-				return NULL;
-			}
-			std::cout << "----------- CRIOU O PIPE! -----------" << std::endl;
-			std::string scriptOutPut;
+// 			// criar o pipe pra redirecionar a saída do script pra poder resgatar pra cá
+// 			int pipefd[2];
+// 			if (pipe(pipefd) == -1)
+// 			{
+// 				std::cerr << "ERROR creating PIPE" << std::endl;
+// 				return NULL;
+// 			}
+// 			std::cout << "----------- CRIOU O PIPE! -----------" << std::endl;
+// 			std::string scriptOutPut;
 
-			scriptOutPut = executeScriptAndTakeItsOutPut(pipefd);
-			if (scriptOutPut.empty())
-			{
-				return NULL;
-			}
-			response += scriptOutPut;
-			return response;
-		}
-	}
-	else
-	{
-		// ou seja, não foi um 'POST'
-		// retorna uma reponse só pra teste
-		response += "<html><body><h1>Simple Form</h1><form method=\"post\">";
-        response += "Name: <input type=\"text\" name=\"name\"><br>Email: <input type=\"text\" name=\"email\"><br>";
-        response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
-	}
-	return response;
-}
+// 			scriptOutPut = executeScriptAndTakeItsOutPut(pipefd);
+// 			if (scriptOutPut.empty())
+// 			{
+// 				return NULL;
+// 			}
+// 			response += scriptOutPut;
+// 			return response;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		// ou seja, não foi um 'POST'
+// 		// retorna uma reponse só pra teste
+// 		response += "<html><body><h1>Simple Form</h1><form method=\"post\">";
+//         response += "Name: <input type=\"text\" name=\"name\"><br>Email: <input type=\"text\" name=\"email\"><br>";
+//         response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
+// 	}
+// 	return response;
+// }
 
 bool contains(const std::vector<std::string>& vec, const std::string& content) {
     for (size_t i = 0; i < vec.size(); ++i) {
@@ -345,16 +405,16 @@ bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index) {
     return false; // Retorna false se não encontrar nenhum socket do servidor
 }
 
-void WebServ::handleCGIRequest(int clientSocket, std::string& requestString, Request& request) {
-    size_t found = requestString.find("process_data.cgi");
-    if (found != std::string::npos) {
-        std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
-        CGI cgiExec;
-        cgiExec.handleCGIRequest(requestString);
-        std::string response = cgiExec.getResponse();
-        send(clientSocket, response.c_str(), response.length(), 0);
-    }
-}
+// void WebServ::handleCGIRequest(int clientSocket, std::string& requestString, Request& request) {
+//     size_t found = requestString.find("process_data.cgi");
+//     if (found != std::string::npos) {
+//         std::cout << "Recebeu solicitação para >> RECURSO CGI" << std::endl;
+//         CGI cgiExec;
+//         cgiExec.handleCGIRequest(requestString);
+//         std::string response = cgiExec.getResponse();
+//         send(clientSocket, response.c_str(), response.length(), 0);
+//     }
+// }
 
 void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString) {
     Request request(requestString);
@@ -375,12 +435,13 @@ void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, s
         std::string response = currentResponse.getResponse();
         ssize_t bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
         if (bytesSent == -1)
-            std::cerr << "Erro ao enviar a resposta ao cliente" << std::endl;
+            throw ErrorException ("Erro ao enviar a resposta ao cliente");
     } 
     else
         std::cout << "Server não encontrado!" << std::endl;
     close(clientSocket);
 }
+
 
 void WebServ::mainLoop(){
     std::cout << "-----------------------------------------" << std::endl;
@@ -405,7 +466,7 @@ void WebServ::mainLoop(){
                 int result = _epollS.addNewClientToEpoll(events, index);
                 if (result == -3)
                     continue;
-            } else {
+            } else { //quarta: temos que ldiar com as requests pra GET e provavelmente fazer um objeto pro client - guardando informação de em que server ele está bindando... (pesquisar mais com o chat)
                 int clientSocket = events[index].data.fd;
                 char buffer[1024];
                 ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);

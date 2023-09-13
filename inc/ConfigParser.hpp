@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/09 19:34:34 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/12 11:46:53 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "HeadersLibs.hpp"
 #include "LocationDirective.hpp"
+#include <stdio.h>
 
 
 class ConfigParser
@@ -51,6 +52,7 @@ class ConfigParser
         const std::string& getAddress(void)const;
         const std::vector<std::string>& getMethods(void)const;
         const std::vector<std::string>& getIndexFiles(void)const;
+		void setIndexFiles(std::string index);
         const std::string getErrorPage(int statusCode)const;
 		std::map<std::string, LocationDirective> getLocations(void) const;
 		void setLocations(std::map<std::string, LocationDirective>& locations);
@@ -66,7 +68,11 @@ class ConfigParser
         bool getHasDirAllowMethods(void)const;
         bool getHasDirMaxBodySize(void)const;
         bool getHasDirReturn(void)const;
-		
+		void resetConfig(void);
+
+		// validar o tipo do ipaddress
+		bool contemApenasLetras(const std::string& str);
+		bool contemApenasNumeros(const std::string& str);
 		//acrescentado dia 06.09
 
 		//void trimWhiteSpace(std::string &line);
@@ -76,7 +82,7 @@ class ConfigParser
     private:
         
         std::vector<std::string> _indexFiles;
-        std::string     _domain; //server_name
+        std::vector<std::string>     _domains; //server_name
         std::string     _ssl; //ssl_certificate
         std::string     _key; //ssl_certificate
         std::string     _rules; //location
@@ -95,7 +101,6 @@ class ConfigParser
         size_t          _semicolonIndex;
         size_t          _delimiter;
         bool            _hasRoot;
-        
         bool            _hasDirListen;
         bool            _hasDirLocation;
         bool            _hasDirServerName;
@@ -105,6 +110,7 @@ class ConfigParser
         bool            _hasDirAllowMethods;
         bool            _hasDirMaxBodySize;
         bool            _hasDirReturn;
+
         
         std::vector<std::string> _methods;
         // abaixo: map e string do path location atual pra guardar os arquivos de locations no config file
@@ -117,18 +123,20 @@ class ConfigParser
         
         class ErrorException: public std::exception{
         public:
-        
-            ErrorException(const std::string& message) : _errorMessage(message) {}
-            virtual const char* what() const throw(){
+     
+            ErrorException(const std::string& message) throw() : _errorMessage(message) {}
+            
+			virtual ~ErrorException() throw() {}
+			
+			virtual const char* what() const throw(){
                 return _errorMessage.c_str();
-            }
-
+			}
         private:
-        
             std::string _errorMessage;
-        
+
         };
 };
+
 #endif
 
 
