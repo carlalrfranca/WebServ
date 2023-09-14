@@ -1,29 +1,26 @@
-
 server{  
-    listen localhost:2008;
+    listen 127.0.0.1:2002;
     server_name example.com;
-    root src/inc/map.txt;
     client_max_body_size 10M;
     allow_methods GET
-    
+
     location / {
         index index.html index.php;
     }
 }
 
 server{  
-    listen localhost:2009;
-    server_name example.com example2.co.uk name_example3.org.br google.com protonmail.co.uk yahoo.com.br;
-    root src/inc/map.txt;
+    listen localhost;
+    server_name example.com google.com protonmail.co.uk yahoo.com.br;
+    root src/;
 	client_max_body_size 50M;
 	allow_methods POST
 }
 
 server{  
-    listen localhost:5005;
+    listen localhost:5003;
     server_name example.com www.example.com;
-    root
-    	allow_methods DELETE
+    allow_methods DELETE
 }
 
 
