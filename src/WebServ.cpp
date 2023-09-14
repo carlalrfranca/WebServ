@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/13 21:10:20 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/13 23:06:15 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,8 +168,6 @@ void WebServ::configSocket(size_t serverIndex)
 
 	// passagem do conteudo do configParser pro temp_socket
     SocketS temp_socket;
-    //_serverSocket[serverIndex].setPort(_configParser.getPort());
-    //_serverSocket[serverIndex].setAddress(_configParser.getAddress());
     temp_socket.setPort(_configParser.getPort());
     temp_socket.setAddress(_configParser.getAddress());
 	//adicionar o _locations do ConfigParser ao _locations do temp_socket
@@ -178,24 +176,13 @@ void WebServ::configSocket(size_t serverIndex)
     temp_socket.setRoot(_configParser.getRoot());
 	// nós resetamos os bools do _configParser pra false // agora reseta tudo
 	_configParser.resetConfig();
-	// _configParser.cleanAttributes();
 
 	// ------------------------------------------------
     _serverSocket.push_back(temp_socket);
-    // std::cout << "Port: " << _serverSocket.back().getPort() << std::endl;
-    // std::cout << "Address: " << _serverSocket.back().getAddress() << std::endl;
 
 	// iterar o map do Locations pra verificar os valores
 	std::map<std::string, LocationDirective>::iterator it = _serverSocket.back().getLocations().begin();
 	int size_locations =  _serverSocket.back().getLocations().size();
-	// std::cout << "---- Locations desse server ----" << std::endl;
-	// std::cout << "Size Locations: " << _serverSocket.back().getLocations().size() << std::endl;
-	// for ( int monitor_locations = 0; monitor_locations < size_locations; ++monitor_locations) {
-        // std::cout << "Chave: " << it->first << std::endl;
-		// ++it;
-    // }
-	// std::cout << "--------------------------------" << std::endl;
-	
     //cria socket -----> deixa isso em outra função pra daí poder avaliar se tem server escutando no msmo ip:port e só fazer bind de um e replicar o fd pro outro?
     _serverSocket[serverIndex].setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));//int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(_serverSocket[serverIndex].getWebServSocket() == -1){

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/13 22:19:02 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/13 22:48:51 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,11 @@ ConfigParser::ConfigParser()
     // _domains = ""; // server_name
     //_ssl = "";    //ssl_certificate
     _key = "";      // ssl_certificate
-    _rules = "";    // location
+    // _rules = "";    // location
     _directive = 0;
     _portNumber = "";
     _ipAddress = "";
-    _httpAddress = "";
+    // _httpAddress = "";
     _path = "";
     _posInit = 0;
     _posEnd = 0;
@@ -61,7 +61,7 @@ void ConfigParser::resetConfig()
 	//
 	// tinha algo aqui dando problema antes.... ver onde essas var comentadas estao sendo usadas e avaliar
 	_key = "";      // ssl_certificate
-    _rules = "";    // location
+    // _rules = "";    // location
     _directive = 0;
     // _portNumber = "";
     // _ipAddress = "";
