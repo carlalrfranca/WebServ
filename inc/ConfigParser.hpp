@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/12 11:46:53 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/13 23:09:54 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,13 +29,13 @@ class ConfigParser
         void processListen(std::string &line);
         void processServerName(std::string &line);
         bool processRoot(std::string &line);
-        void processLocation(std::string& line);
+		void processLocation(std::string& line);
 		void processIndex(std::string &line);
 		void processSSL(std::string &line);
-        void processReturn(std::string &line);
+		void processReturn(std::string &line);
 		void processAllowMethods(std::string &line);
-        void processClientMaxBodySize(std::string &line);
-        
+		void processClientMaxBodySize(std::string &line);
+
 		// expansao do processamento do location (divisao da funcao)
 		void storeCurrentLocationDirectives(std::string &line);
         void processErrorPage(std::string &line);
@@ -70,24 +70,23 @@ class ConfigParser
         bool getHasDirReturn(void)const;
 		void resetConfig(void);
 
+        void hasMandatoryParameters(void);
+        void processErrorPage(std::map<std::string, std::string> errorPage);
 		// validar o tipo do ipaddress
 		bool contemApenasLetras(const std::string& str);
 		bool contemApenasNumeros(const std::string& str);
 		//acrescentado dia 06.09
-
-		//void trimWhiteSpace(std::string &line);
-        //bool validateSyntax(const std::string &line);
-        //void removeComments(std::string &line);
         
     private:
         
-        std::vector<std::string> _indexFiles;
-        std::vector<std::string>     _domains; //server_name
+        std::vector<std::string>            _indexFiles;
+        std::vector<std::string>            _domains; //server_name
+        std::map<std::string, std::string>  _errorPage;
         std::string     _ssl; //ssl_certificate
         std::string     _key; //ssl_certificate
-        std::string     _rules; //location
+        // std::string     _rules; //location
         std::string     _ipAddress;
-        std::string     _httpAddress;
+        // std::string     _httpAddress;
         std::string     _path;
         std::string     _portNumber;
         std::string     _root;
@@ -95,8 +94,8 @@ class ConfigParser
         size_t          _directive;
         size_t          _posInit;
         size_t          _posEnd;
-        size_t          _http;
-        size_t          _https;
+        // size_t          _http;
+        // size_t          _https;
         size_t          _posSemicolon;
         size_t          _semicolonIndex;
         size_t          _delimiter;
@@ -122,18 +121,18 @@ class ConfigParser
         
         
         class ErrorException: public std::exception{
-        public:
-     
-            ErrorException(const std::string& message) throw() : _errorMessage(message) {}
-            
-			virtual ~ErrorException() throw() {}
-			
-			virtual const char* what() const throw(){
-                return _errorMessage.c_str();
-			}
-        private:
-            std::string _errorMessage;
-
+        	public:
+	
+        	    ErrorException(const std::string& message) throw() : _errorMessage(message) {}
+	
+				virtual ~ErrorException() throw() {}
+				
+				virtual const char* what() const throw(){
+        	        return _errorMessage.c_str();
+				}
+        	private:
+        	    std::string _errorMessage;
+	
         };
 };
 
