@@ -31,35 +31,25 @@ public:
     void mainLoop();
     void configSocket(size_t index);
     void responseError();
-
-    // void validateFile(std::string filename);
 	void checkForDuplicates();
     void printRequest(const std::string &request);
-    // std::string handleCGIRequest(std::string& request);
-    // std::string executeScriptAndTakeItsOutPut(int *pipefd);
 
     bool isFirstLineValid(const std::string &request, std::string &_firstLine);
 
     // divisao da mainLoop() em 31.08.2023
     bool isEventFromServerSocket(struct epoll_event *events, int index);
     Epoll &getEpollS();
-
-    // void handleCGIRequest(int clientSocket, std::string& requestString, Request& request);
     void handleRequest(int clientSocket, char *buffer, ssize_t bytesRead, std::string &requestString);
     // fim da divisao da mainLoop() em 31.08.2023
 
 private:
-    int _clientSocket;
-    std::string _nameConfigFile;
-    ConfigParser _configParser; // sujeito comentado
-    Epoll _epollS;
-    std::vector<SocketS> _serverSocket; // ----vetor criado
-
-    // SocketS         _serverSocket;
-    socklen_t _clientAddressLength;
-    // std::string     _request;
-
-    struct sockaddr_in clientAddress;
+    int						_clientSocket;
+    std::string				_nameConfigFile;
+    ConfigParser			_configParser; // sujeito comentado
+    Epoll					_epollS;
+    std::vector<SocketS>	_serverSocket; // ----vetor criado
+    socklen_t				_clientAddressLength;
+    struct sockaddr_in		clientAddress;
 
     class ErrorException : public std::exception
     {

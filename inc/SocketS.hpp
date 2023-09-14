@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/02 20:20:06 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/13 23:11:34 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@
 
 class SocketS
 {
-
     public:
         
         SocketS();
@@ -31,10 +30,8 @@ class SocketS
         void setPort(std::string portNumber);
         void setAddress(std::string ipAddress);
         void setWebServSocket(int webServSocket);
-        
         void setServerName(std::vector<std::string> serverName);
         std::vector<std::string> getServerName(void)const;
-        
         const std::string& getPort(void)const;
         const std::string& getAddress(void)const;
         const int& getWebServSocket(void)const;
@@ -42,7 +39,6 @@ class SocketS
 		void setLocations(std::map<std::string, LocationDirective> locations);
         void setMethods(std::vector<std::string>methods);
         std::vector<std::string> getMethods(void) const;
-        
         void setRoot(std::string root);
         const std::string& getRoot(void)const;
         
@@ -53,7 +49,7 @@ class SocketS
         std::string     _portNumber;
         std::string     _ipAddress;
         std::string     _response; //talvez na response class
-        std::string     _cssContent;
+        // std::string     _cssContent;
         std::vector<std::string> _serverName;
         std::vector<std::string> _methods;
         // struct sockaddr_in _socketAddress;
