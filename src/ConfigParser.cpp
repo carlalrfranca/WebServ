@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/12 12:24:22 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/13 22:19:02 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,8 @@ void ConfigParser::resetConfig()
     _hasRoot = true;
 
 	_indexFiles.clear();
+	_locationsMap.clear();
+	_locations.clear();
 }
 
 
@@ -153,8 +155,8 @@ void ConfigParser::processListen(std::string &line){
         _ipAddress = "0.0.0.0";
         _portNumber = "80";
         std::cout << "\n-----[PRIMEIRO] TESTE DEFAULT-----";
-        std::cout << "IP Address: " << _ipAddress << std::endl;
-        std::cout << "Port: " << _portNumber << std::endl;
+        // std::cout << "IP Address: " << _ipAddress << std::endl;
+        // std::cout << "Port: " << _portNumber << std::endl;
         //std::cout << std::endl;
         return ;
     }
@@ -175,8 +177,8 @@ void ConfigParser::processListen(std::string &line){
             }else
                 _portNumber = "80";
             std::cout << "\n-----[SEGUNDO] TESTE DE HTTP E HTTPS  COM E SEM PORTA-----" << std::endl;
-            std::cout << "IP Address: " << _ipAddress << std::endl;
-            std::cout << "Port: " << _portNumber << std::endl;
+            // std::cout << "IP Address: " << _ipAddress << std::endl;
+            // std::cout << "Port: " << _portNumber << std::endl;
             //std::cout << std::endl;
         }
         else
@@ -207,8 +209,8 @@ void ConfigParser::processListen(std::string &line){
 				//  mas um else, pro caso das duas funções darem falso -> erro de sintaxe, pessoa pode ter misturado letra e numero e daí dá exceção
             }
             std::cout << "\n-----[TERCEIRO] TESTE SEM HTTP E HTTPS -----\n";
-            std::cout << "IP: " << _ipAddress << std::endl;
-            std::cout << "Porta: " << _portNumber << std::endl;
+            // std::cout << "IP: " << _ipAddress << std::endl;
+            // std::cout << "Porta: " << _portNumber << std::endl;
             //std::cout << std::endl;
         }
 		// std::cout << "Que diabo...?" << std::endl;
@@ -310,8 +312,8 @@ bool ConfigParser::processRoot(std::string &line){
     std::vector<std::string> partes;
 
     std::string palavra;
-	if (_root.empty())
-		std::cout << "Nesse momento, _root tá empty" << std::endl;
+	// if (_root.empty())
+		// std::cout << "Nesse momento, _root tá empty" << std::endl;
     while (iss >> palavra) {
         partes.push_back(palavra);
     }
@@ -349,7 +351,7 @@ bool ConfigParser::processRoot(std::string &line){
             // return _hasRoot;
         // }
     // }
-    std::cout << "Flag teve root: " << _hasRoot << std::endl;
+    // std::cout << "Flag teve root: " << _hasRoot << std::endl;
 	std::cout << "Root: " << _root << std::endl;
     _hasDirRoot = true;
     return _hasRoot;
@@ -393,7 +395,7 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &line){
 		if (values.size() > 2)
 		{
 			size_t totalValues = values.size();
-			std::cout << "Size values: " << values.size() << std::endl;
+			// std::cout << "Size values: " << values.size() << std::endl;
 			size_t currentIndex = 2;
 			while (currentIndex < totalValues)
 			{
@@ -403,7 +405,7 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &line){
 				currentIndex++;
 			}
 		}
-		std::cout << "TAMANHO DO LOCATIONS: " << _locations.size() << std::endl;
+		// std::cout << "TAMANHO DO LOCATIONS: " << _locations.size() << std::endl;
 	}
 }
 
@@ -443,6 +445,33 @@ void ConfigParser::validateFile(std::ifstream& fileToParse){
     if(fileSize <= 0)
         throw ErrorException("File is empty");
 }
+/*
+void ConfigParser::processErrorPages(std::map<std::string, std::string> errorPages){
+
+    errorPages = _errorPages;
+    
+    //vai ter que ser um mapa
+    // apenasvai setar
+}*/
+/*
+void ConfigParser::hasMandatoryParameters(){
+
+    if(!getHasDirListen()){
+        throw ErrorException("");
+    }
+    if(!getHasDirServerName()){
+
+    }
+
+
+    
+    listen 
+    server_name 
+    se nao tiver nada no error pages fazemos atribuição e 
+    validar que as paginas estao presentes
+    root [ja tem um default]
+
+}*/
 
 /*
     DIRETIVA DUPLICADA OK
@@ -483,6 +512,7 @@ void ConfigParser::processLocation(std::string &line)
 		// --------------- 
         // verificar o tipo de location ("/", "/[directorio], etc")
         // pra isso, teremos que dividir a line em partes pra ver o que é apontado pela location
+		std::cout << "Line in Location: " << line << std::endl;
         std::istringstream iss(line);
         std::vector<std::string> parts;
     
@@ -514,39 +544,48 @@ void ConfigParser::processIndex(std::string &line)
         throw ErrorException("Error: The Directive Index has been duplicated.");
     if(line.find("index") != std::string::npos)
     {
-		std::cout << "Index line found: " << line << std::endl;
+		// std::cout << "Index line found: " << line << std::endl;
         
         std::istringstream indicesStream(line);
         std::string index;
         while(indicesStream >> index)
 		{
-			std::cout << "Index no CONFIG: " << index << std::endl;
+			// std::cout << "Index no CONFIG: " << index << std::endl;
             _indexFiles.push_back(index);
 		}
 		std::cout << std::endl;
 		_indexFiles.erase(_indexFiles.begin());
 		std::cout << _indexFiles[0] << std::endl;
     }
-	std::cout << "Tamanho do indexFiles: " << _indexFiles.size() << std::endl;
     _hasDirIndex = true;
-	// precisa passar pra classe
-	
-
-    //só para saber a posição mesmo
-    //for (size_t i = 0; i < _indexFiles.size(); ++i)
-    //std::cout << "Index file at position " << i << ": " << _indexFiles[i] << std::endl;
 }
 
 void ConfigParser::processErrorPage(std::string &line)
 {
     if(line.find("error_page") != std::string::npos)
     {
+		/*
+		error_page 404 /404.html;
+		error_page 500 /500.html;
+		*/
         std::istringstream iss(line);
-        std::string directive, status, path;
-        iss >> directive >> status >> path;
-        int statusCode = std::atoi(status.c_str()); // Converte o status para um número inteiro
-        _errorPages[statusCode] = path; // Armazena a página de erro no mapa
-        std::cout << "Error page for status " << statusCode << ": " << path << std::endl;
+        std::vector<std::string> errorCode;
+        std::string token;
+        while(iss >> token){
+            std::cout << "error_page: " << token << std::endl;
+            errorCode.push_back(token);   
+        }
+        if(errorCode.size() != 3 || errorCode[0] != "error_page")
+            throw ErrorException("Found inconsistence in error_page parameter");
+		std::string statusCode;
+        statusCode = errorCode[1];
+        for(size_t i = 0; i < statusCode.size(); ++i){
+            if(!isdigit(statusCode[i]))
+                throw ErrorException("Found inconsistence in status parameter");
+        }
+        std::string pathError;
+        pathError = errorCode[2];
+        _errorPage[statusCode] = pathError; // Armazena a página de erro no mapa
     }
 }
 
@@ -564,16 +603,15 @@ void ConfigParser::processAllowMethods(std::string &line)
     std::string method;
     while (iss >> method)
         methods.push_back(method);
-    for (size_t i = 0; i < methods.size(); ++i) {
-        if (methods[i] == "GET") {
-            std::cout << "GET method is allowed." << std::endl;
-        } else if (methods[i] == "POST") {
-            std::cout << "POST method is allowed." << std::endl;
-        } else if (methods[i] == "DELETE") {
-            std::cout << "DELETE method is allowed." << std::endl;
-        }
-    }
-    _methods = methods;
+    if (methods.size() < 2 || methods[0] != "allow_methods")
+		throw ErrorException("Syntax Error: The Directive Allow Methods isn't properly configured.");
+	_methods = methods;
+	_methods.erase(_methods.begin());
+	for (size_t i = 0; i < _methods.size(); ++i)
+	{
+		if (_methods[i] != "GET" || _methods[i] != "POST" || _methods[i] != "DELETE")
+			throw ErrorException("Configuration Error: Only GET | POST | DELETE methods are accepted.");
+	}
     _hasDirAllowMethods = true;
 }
 
