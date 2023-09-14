@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/12 11:46:53 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/13 21:11:01 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,8 @@ class ConfigParser
         bool getHasDirReturn(void)const;
 		void resetConfig(void);
 
+        void hasMandatoryParameters(void);
+        void processErrorPage(std::map<std::string, std::string> errorPage);
 		// validar o tipo do ipaddress
 		bool contemApenasLetras(const std::string& str);
 		bool contemApenasNumeros(const std::string& str);
@@ -81,8 +83,9 @@ class ConfigParser
         
     private:
         
-        std::vector<std::string> _indexFiles;
-        std::vector<std::string>     _domains; //server_name
+        std::vector<std::string>            _indexFiles;
+        std::vector<std::string>            _domains; //server_name
+        std::map<std::string, std::string>  _errorPage;
         std::string     _ssl; //ssl_certificate
         std::string     _key; //ssl_certificate
         std::string     _rules; //location

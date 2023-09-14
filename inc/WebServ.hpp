@@ -32,7 +32,8 @@ public:
     void configSocket(size_t index);
     void responseError();
 
-    void validateFile(std::string filename);
+    // void validateFile(std::string filename);
+	void checkForDuplicates();
     void printRequest(const std::string &request);
     // std::string handleCGIRequest(std::string& request);
     // std::string executeScriptAndTakeItsOutPut(int *pipefd);
