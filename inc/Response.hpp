@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/11 22:10:57 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/14 16:57:55 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ class Response
 
     public:
     
-        Response(void);
-        ~Response(void);
+        Response();
+        ~Response();
         Response(Request request); //precisa desses dois
         //Response &operator=(Response const &other);
         
@@ -37,14 +37,14 @@ class Response
         
         void setStatusCode(const std::string& statusCode);
         void setContentType(const std::string& contentType);
-        void setDateAndTime(void);
-		    std::string getDate(void) const;
+        void setDateAndTime();
+		std::string getDate() const;
         // void setContentLength(size_t length);
         void setResponse(const std::string& response);
         int  selectServer(Request& stringDomain, std::vector<SocketS> serverSocket);
         bool contains(const std::vector<std::string>& vec, const std::string& content);
         
-        std::string getResponse(void);//foi criado outro metodo, precisa ajustar .cpp
+        std::string getResponse()const;//foi criado outro metodo, precisa ajustar .cpp
         //std::string httpPost(Request &request, SocketS &server);
         //std::string httpDelete(Request &request, SocketS &server);
         
@@ -52,7 +52,7 @@ class Response
         std::string readHtmlFile(const std::string& filePath);
         std::string buildResponse(Request &request, SocketS &server);
 
-        void reset(void); //implementa a redefinição de resposta, limpando cabeçalhos e corpo
+        void reset(); //implementa a redefinição de resposta, limpando cabeçalhos e corpo
         void httpError(std::string errorCode, const std::string &errorMessage);
 
 		// method for each method
@@ -61,8 +61,9 @@ class Response
 		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
 		// static std::string getMethod(Request &request, SocketS &server, Response *this_response);
         static std::string httpGet(Request &request, SocketS &server, Response *this_response);
-        void setPath(const std::string& allPath);    
-        std::string getPath(void);
+        
+        void setPath(const std::string& allPath); 
+        const std::string getPath()const;
     
     private:
     
@@ -72,7 +73,7 @@ class Response
         std::string                         _code;
         std::string                         _path;
         SocketS                             *_chosenSocket;
-		std::map<std::string, Funcao>		methodsFunctions;
+		std::map<std::string, Funcao>		_methodsFunctions;
         /*
             ------------------------------------------- LETICIA DEIXOU ANOTADO ----------------------------------------------
             criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
