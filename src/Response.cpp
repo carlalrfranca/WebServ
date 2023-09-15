@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 00:05:27 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 13:19:31 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -449,6 +449,7 @@ std::string readFileToString(const std::string& filename) {
 
 std::string Response::httpGet(Request &request, SocketS &server, Response *this_response){
     std::string root;
+	std::string indexPage;
 
 	root = server.getRoot();
 	// ACIMA: não é preciso também ver se tem um ROOT ESPECIFICO DO LOCATION? (e, caso tenha,
@@ -464,34 +465,40 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
          std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
         if (itRoot != locationDirectives.end())
             root = itRoot->second[0]; // se tem root atualiza os valores especificados
-            
+
         std::cout << "Directives from this Location found!" << std::endl; //o mesmo para Index
         locationDirectives = it->second.getDirectives();
          std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
         if (itIndex != locationDirectives.end()){ //se tiver a diret index
             std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
-            
-            // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
-            this_response->setPath(root + itIndex->second[0]); //isso deveria atualizar o valor do path com o root mais a index
-            std::string bodyHTML = readFileToString(this_response->getPath()); //declara o corpo do HTML
-        
-            
-            //std::cout << "---- DEU PRA LER HTML ------";
-            //std::cout << bodyHTML << std::endl;
-            this_response->_body = bodyHTML;
-             std::cout << "----------- CONSTRUÇÃO DA RESPONSE DO HTTPGET COMEÇA AQUI O: -----------------------------" << std::endl;
-			std::string response;
-			std::cout << "REQUEST URI: " << request.getURI() << std::endl;
-			if (request.getURI().find("styles") != std::string::npos)
-				response = "HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\r\n" + this_response->_body;
-            else
-				response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
+			indexPage = itIndex->second[0];
+		}
+		else
+			indexPage = server.getIndexFile();
+		// tem que testar pra validar que esse caminho existe...
+		// se não dá o que? server error?! --> como o nginx lida com isso?
+		// é antes de fazer o server funcionar e exita (exceção)
+		// ou ele roda servidores e daí esse em particular dá erro 505? (falha de servidor?)
+
+
+        // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
+        this_response->setPath(root + indexPage); //isso deveria atualizar o valor do path com o root mais a index
+        std::string bodyHTML = readFileToString(this_response->getPath()); //declara o corpo do HTML
+
+
+        //std::cout << "---- DEU PRA LER HTML ------";
+        //std::cout << bodyHTML << std::endl;
+        this_response->_body = bodyHTML;
+        std::cout << "----------- CONSTRUÇÃO DA RESPONSE DO HTTPGET COMEÇA AQUI O: -----------------------------" << std::endl;
+		std::string response;
+		std::cout << "REQUEST URI: " << request.getURI() << std::endl;
+		if (request.getURI().find("styles") != std::string::npos)
+			response = "HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\r\n" + this_response->_body;
+        else
+			response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
 			// response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
-            this_response->setResponse(response);
-            return response;
-        } else {
-            std::cout << "Index not found!" << std::endl;
-        }
+        this_response->setResponse(response);
+        return response;
     } else {
         std::cout << "This server doesnt have this location!!" << std::endl;
         std::string errorFilePath = root + "Error404.html";

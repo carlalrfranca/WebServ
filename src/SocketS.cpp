@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/14 22:43:26 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 13:14:21 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,16 @@ void SocketS::setRoot(std::string root){
 const std::string& SocketS::getRoot(void)const{
     return _root;
 }
- 
+
+const std::string& SocketS::getIndexFile(void) const
+{
+	return _indexFile;
+}
+
+void SocketS::setIndexFile(std::string index)
+{
+	_indexFile = index;
+}
      
 // int SocketS::bindSocketListenConnections(){
 // 

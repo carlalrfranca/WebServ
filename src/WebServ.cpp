@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/14 23:11:53 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 13:16:02 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,6 +174,7 @@ void WebServ::configSocket(size_t serverIndex)
 	temp_socket.setLocations(_configParser.getLocations());
     temp_socket.setMethods(_configParser.getMethods());
     temp_socket.setRoot(_configParser.getRoot());
+	temp_socket.setIndexFile(_configParser.getIndexFile());
 	// nós resetamos os bools do _configParser pra false // agora reseta tudo
 	_configParser.resetConfig();
 

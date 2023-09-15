@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 12:30:56 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 13:11:07 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -498,8 +498,14 @@ void ConfigParser::processLocation(std::string &line)
     }
 }
 
+const std::string& ConfigParser::getIndexFile(void) const
+{
+	return _indexFile;
+}
+
 void ConfigParser::processIndex(std::string &line)
 {
+	std::vector<std::string>            _indexFiles;
     if(_hasDirIndex == true)
         throw ErrorException("Error: The Directive Index has been duplicated.");
     if(line.find("index") != std::string::npos)
@@ -508,9 +514,20 @@ void ConfigParser::processIndex(std::string &line)
         std::string index;
         while(indicesStream >> index)
             _indexFiles.push_back(index);
-		std::cout << std::endl;
-		_indexFiles.erase(_indexFiles.begin());
-		std::cout << _indexFiles[0] << std::endl;
+		if (_indexFiles.size() != 2)
+			throw ErrorException("Configuration Error: You must point ONE index file.");
+		if (_indexFiles[0] != "index")
+			throw ErrorException("Syntax Error: Correct Format: [directive] [value]");
+		_indexFile = _indexFiles[1];
+		// tem que DEPOIS (check_mandatory?) verificar a existencia do index file:
+		/*
+			se tiver root no nivel do server, formar o caminho root/index e verificar se existe e é acessível
+			se nao tiver root...
+			* Quando que verifica isso? Agora ou durante a execução do server?
+		*/
+		// std::cout << std::endl;
+		// _indexFiles.erase(_indexFiles.begin());
+		// std::cout << _indexFiles[0] << std::endl;
     }
     _hasDirIndex = true;
 }
@@ -589,6 +606,8 @@ void ConfigParser::processClientMaxBodySize(std::string &line)
     _hasDirMaxBodySize = true;
 }
 
+// eu acho que isso é na hora de executar o autoindexamento, nao agora
+// agora é só pra armazenar essa informação no objeto configparser, que depois passa pro server
 void ConfigParser::processAutoIndex(std::string &line)
 {
     try
