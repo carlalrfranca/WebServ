@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/13 23:09:54 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 14:03:04 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ class ConfigParser
         bool processRoot(std::string &line);
 		void processLocation(std::string& line);
 		void processIndex(std::string &line);
-		void processSSL(std::string &line);
 		void processReturn(std::string &line);
 		void processAllowMethods(std::string &line);
 		void processClientMaxBodySize(std::string &line);
@@ -59,15 +58,16 @@ class ConfigParser
 		void trimWhiteSpace(std::string &line);
 		void removeComments(std::string &line);
 	    void validateFile(std::ifstream& fileToParse);
-	    bool getHasDirLocation(void)const;
-	    bool getHasDirListen(void)const;
-        bool getHasDirServerName(void)const;
-        bool getHasDirRoot(void)const;
-        bool getHasDirIndex(void)const;
-        bool getHasDirSsl(void)const;
-        bool getHasDirAllowMethods(void)const;
-        bool getHasDirMaxBodySize(void)const;
-        bool getHasDirReturn(void)const;
+		const std::string& getIndexFile(void) const;
+		void setIndexFile(std::string index);
+	    // bool getHasDirLocation(void)const;
+	    // bool getHasDirListen(void)const;
+        // bool getHasDirServerName(void)const;
+        // bool getHasDirRoot(void)const;
+        // bool getHasDirIndex(void)const;
+        // bool getHasDirAllowMethods(void)const;
+        // bool getHasDirMaxBodySize(void)const;
+        // bool getHasDirReturn(void)const;
 		void resetConfig(void);
 
         void hasMandatoryParameters(void);
@@ -79,33 +79,23 @@ class ConfigParser
         
     private:
         
-        std::vector<std::string>            _indexFiles;
+        std::string            _indexFile;
         std::vector<std::string>            _domains; //server_name
         std::map<std::string, std::string>  _errorPage;
-        std::string     _ssl; //ssl_certificate
-        std::string     _key; //ssl_certificate
         // std::string     _rules; //location
         std::string     _ipAddress;
-        // std::string     _httpAddress;
         std::string     _path;
         std::string     _portNumber;
         std::string     _root;
         std::string     _currentLocationPathOnMap;
         size_t          _directive;
-        size_t          _posInit;
-        size_t          _posEnd;
-        // size_t          _http;
-        // size_t          _https;
-        size_t          _posSemicolon;
-        size_t          _semicolonIndex;
-        size_t          _delimiter;
-        bool            _hasRoot;
+        size_t			_maxBodySize;
+		
+		bool            _hasRoot;
         bool            _hasDirListen;
         bool            _hasDirLocation;
         bool            _hasDirServerName;
-        bool            _hasDirRoot;
         bool            _hasDirIndex;
-        bool            _hasDirSsl;
         bool            _hasDirAllowMethods;
         bool            _hasDirMaxBodySize;
         bool            _hasDirReturn;

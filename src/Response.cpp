@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/14 17:32:10 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/15 15:41:47 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,12 +44,6 @@ Response::Response(Request request)
 
 // métodos pra lidar com cada função respectiva
 // Funções de exemplo
-std::string Response::getMethod(Request &request, SocketS &server, Response *this_response) {
-	std::string response_just_to_test =
-        "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head><body><h1>Hello World aaaaaaa</h1></body></html>";
-	return response_just_to_test;
-}
-
 /*
 If you don't have a specific location directive in your Nginx configuration and you try to POST an image or any other data to the server, Nginx will typically handle the request as follows:
 
@@ -433,7 +427,7 @@ const std::string Response::getPath()const{
     return _path;
 }
 
-void setPath(const std::string& allPath){
+void Response::setPath(const std::string& allPath){
     _path = allPath;
 }
 
@@ -453,16 +447,21 @@ std::string readFileToString(const std::string& filename) {
 }
 
 
-static std::string httpGet(Request &request, SocketS &server, Response *this_response){
-    std::string root; //root para caminho do servidor
-    if(server.getRoot().size() > 0) //se o root tiver uma raiz defind
-        root = server.getRoot(); //use como root
-    else
-        root = "./"; //caso cntari defna root como diretoio atual
+std::string Response::httpGet(Request &request, SocketS &server, Response *this_response){
+    std::string root;
+	std::string indexPage;
+
+	root = server.getRoot();
+	// ACIMA: não é preciso também ver se tem um ROOT ESPECIFICO DO LOCATION? (e, caso tenha,
+	// utilizá-lo como referencia?)
 
     std::map<std::string, LocationDirective> serverLocations = server.getLocations(); //obtenho informações das loalizacores d drtivas
     std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI()); //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
     std::map<std::string, std::vector< std::string > > locationDirectives; //cria map p armzenar dirtivas de localizacao
+	// tem que ver se, caso seja um diretorio... daí tem toda
+	// a questão do autoindex
+	// se não for um diretorio (nao termina com '/')
+	// ou: se for um arquivo, tem extensão?
 
     if (it != serverLocations.end()){ // s enconra as dirtivas
         std::cout << "Directives from this Location found!" << std::endl;
@@ -470,30 +469,42 @@ static std::string httpGet(Request &request, SocketS &server, Response *this_res
          std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
         if (itRoot != locationDirectives.end())
             root = itRoot->second[0]; // se tem root atualiza os valores especificados
-            
+
         std::cout << "Directives from this Location found!" << std::endl; //o mesmo para Index
         locationDirectives = it->second.getDirectives();
          std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
         if (itIndex != locationDirectives.end()){ //se tiver a diret index
             std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
-            
-            // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
-            setPath(root + itIndex->second[0]); //isso deveria atualizar o valor do path com o root mais a index
-            std::string bodyHTML = readFileToString(getPath()); //declara o corpo do HTML
-        
-            
-            //std::cout << "---- DEU PRA LER HTML ------";
-            //std::cout << bodyHTML << std::endl;
-            _body = bodyHTML;
-            
-            //std::cout << "-----------------------------------" << std::endl;
-            std::cout << "----------- CUMEÇA AQUI O: -----------------------------" << std::endl;
-            std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + _body;
-            setResponse(response);
-            return response;
-        } else {
-            std::cout << "Index not found!" << std::endl;
-        }
+			indexPage = itIndex->second[0];
+		}
+		else
+			indexPage = server.getIndexFile();
+		// tem que testar pra validar que esse caminho existe...
+		// se não dá o que? server error?! --> como o nginx lida com isso?
+		// ele valida nesse ponto aqui mesmo, no momento da requisição
+		// se o arquivo NÃO EXISTE, ele retorna um 404 (not found)
+
+
+        // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
+        this_response->setPath(root + indexPage); //isso deveria atualizar o valor do path com o root mais a index
+        std::string bodyHTML = readFileToString(this_response->getPath()); //declara o corpo do HTML
+		struct stat info;
+		if (stat(this_response->getPath().c_str(), &info) != 0)
+		{
+			// retorna pagina de erro (o caminho pra pagina nao existe)
+			
+		}
+        this_response->_body = bodyHTML;
+        std::cout << "----------- CONSTRUÇÃO DA RESPONSE DO HTTPGET COMEÇA AQUI O: -----------------------------" << std::endl;
+		std::string response;
+		std::cout << "REQUEST URI: " << request.getURI() << std::endl;
+		if (request.getURI().find("styles") != std::string::npos)
+			response = "HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\r\n" + this_response->_body;
+        else
+			response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
+			// response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
+        this_response->setResponse(response);
+        return response;
     } else {
         std::cout << "This server doesnt have this location!!" << std::endl;
         std::string errorFilePath = root + "Error404.html";
@@ -504,13 +515,13 @@ static std::string httpGet(Request &request, SocketS &server, Response *this_res
             while (std::getline(fileStream, line))
                 errorHtml += line;
             std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorHtml;
-            setResponse(response);
+            this_response->setResponse(response);
             return response;
         } else {
             // Se o arquivo de erro personalizado não existir, use uma mensagem de erro padrão
             std::string errorMessage = "<html><head></head><body><h1>Error 404</h1></body></html>";
             std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorMessage;
-            setResponse(response);
+            this_response->setResponse(response);
             return response;
         }
         
@@ -544,8 +555,8 @@ static std::string httpGet(Request &request, SocketS &server, Response *this_res
         // juntar as strings
         // cabçalho e o body 
         
-        setResponse(response);
-        return response;    
+        // this_response->setResponse(response);
+        // return response;    
     }
     return "DEU MERDA JOHNSONS";
 }
@@ -579,40 +590,10 @@ std::string Response::buildResponse(Request &request, SocketS &server)
     if (found) {
         // método é permitido pra esse servidor. Continua...
 		std::cout << "Encontramos o método permitido!" << std::endl;
-		std::string resposta = methodsFunctions[requestMethod](request, server, this);
+		std::string resposta = _methodsFunctions[requestMethod](request, server, this);
 		setResponse(resposta);
 		std::cout << "A resposta é:::: " << getResponse() << std::endl;
     	return resposta;
-
-		// isso ficará na FUNÇÃO DE MÉTODO GET !!!! -------------------------------
-        // temos que verificar se o servidor está apto a lidar com esse recurso (ver os
-        // locations...)
-        // std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-        // std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI());
-// 
-        // std::map<std::string, std::vector< std::string > > locationDirectives;
-        // if (it != serverLocations.end()) {
-            // std::cout << "Directives from this Location found!" << std::endl;
-            // locationDirectives = it->second.getDirectives();
-            //  std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-// 
-            // if (itIndex != locationDirectives.end()) {
-                // std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
-                // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
-                // std::string bodyHTML = readFileToString(itIndex->second[0]);
-                // std::cout << "---- DEU PRA LER HTML ------";
-                // std::cout << bodyHTML << std::endl;
-                // _body = bodyHTML;
-                // std::cout << "-----------------------------------" << std::endl;
-            // } else {
-                // std::cout << "Index not found!" << std::endl;
-            // }
-        // } else {
-            // std::cout << "This server doesnt have this location!!" << std::endl;
-            // std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
-            // setResponse(response);
-            // return response;    
-        // }                
     }
     else
     {
@@ -624,8 +605,6 @@ std::string Response::buildResponse(Request &request, SocketS &server)
         setResponse(response);
         return response;    
     }
-    //////////
-
     std::string fullResponse;
     
     // Construa os cabeçalhos aqui, usando os dados em _headers

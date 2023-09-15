@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/12 12:24:19 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/14 22:31:52 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,15 @@ int main(int argc, char **argv){
 	if (argc == 1)
 		filename = "./src/config.txt";
     else if (argc == 2)
+	{
+		struct stat info;
+		 if (stat(argv[1], &info) != 0)
+		 {
+			std::cerr << "Error: Config file doesn't exist!" << std::endl;
+			exit(EXIT_FAILURE);
+		 }
 		filename = argv[1];
+	}
     if(argc != 2){
         std::cerr << "Error: Too many arguments" << std::endl;
         exit(EXIT_FAILURE);
