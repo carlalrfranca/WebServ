@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/13 23:11:34 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 13:14:19 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +41,12 @@ class SocketS
         std::vector<std::string> getMethods(void) const;
         void setRoot(std::string root);
         const std::string& getRoot(void)const;
+		const std::string& getIndexFile(void) const;
+		void setIndexFile(std::string index);
         
     private:
         
+		std::string		_indexFile;
         int             _webServSocket; //FD
         std::string     _root;
         std::string     _portNumber;
