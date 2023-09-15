@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 13:11:07 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 13:29:56 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ ConfigParser::ConfigParser()
     _hasDirAllowMethods = false;
     _hasDirMaxBodySize = false;
     _hasDirReturn = false;
+	_indexFile = "";
 
 	// configurando por padrão os paths das paginas de erro (se o arquivo personalizar alguma, vai sobrescrever na hora em que estiver processando a diretiva de error_page)
 	_errorPage["404"] = "./web/error/Error404.html";
@@ -69,8 +70,9 @@ void ConfigParser::resetConfig()
     _path = "";
     _root = "";
     _hasRoot = true;
+	_indexFile = "";
 
-	_indexFiles.clear();
+	// _indexFiles.clear();
 	_locationsMap.clear();
 	_locations.clear();
 }
@@ -503,6 +505,11 @@ const std::string& ConfigParser::getIndexFile(void) const
 	return _indexFile;
 }
 
+void ConfigParser::setIndexFile(std::string index)
+{
+	_indexFile = index;
+}
+
 void ConfigParser::processIndex(std::string &line)
 {
 	std::vector<std::string>            _indexFiles;
@@ -519,15 +526,6 @@ void ConfigParser::processIndex(std::string &line)
 		if (_indexFiles[0] != "index")
 			throw ErrorException("Syntax Error: Correct Format: [directive] [value]");
 		_indexFile = _indexFiles[1];
-		// tem que DEPOIS (check_mandatory?) verificar a existencia do index file:
-		/*
-			se tiver root no nivel do server, formar o caminho root/index e verificar se existe e é acessível
-			se nao tiver root...
-			* Quando que verifica isso? Agora ou durante a execução do server?
-		*/
-		// std::cout << std::endl;
-		// _indexFiles.erase(_indexFiles.begin());
-		// std::cout << _indexFiles[0] << std::endl;
     }
     _hasDirIndex = true;
 }
@@ -685,14 +683,6 @@ const std::string& ConfigParser::getPort(void)const{
 
 const std::string& ConfigParser::getAddress(void)const{
     return _ipAddress;
-}
-
-const std::vector<std::string>& ConfigParser::getIndexFiles(void)const{
-    return _indexFiles;
-}
-
-void ConfigParser::setIndexFiles(std::string index){
-    _indexFiles.push_back(index);
 }
 
 void ConfigParser::setRoot(std::string root){

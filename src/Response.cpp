@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 13:19:31 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 13:44:29 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -477,15 +477,19 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 			indexPage = server.getIndexFile();
 		// tem que testar pra validar que esse caminho existe...
 		// se não dá o que? server error?! --> como o nginx lida com isso?
-		// é antes de fazer o server funcionar e exita (exceção)
-		// ou ele roda servidores e daí esse em particular dá erro 505? (falha de servidor?)
+		// ele valida nesse ponto aqui mesmo, no momento da requisição
+		// se o arquivo NÃO EXISTE, ele retorna um 404 (not found)
 
 
         // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
         this_response->setPath(root + indexPage); //isso deveria atualizar o valor do path com o root mais a index
         std::string bodyHTML = readFileToString(this_response->getPath()); //declara o corpo do HTML
-
-
+		struct stat info;
+		if (stat(this_response->getPath().c_str(), &info) != 0)
+		{
+			// retorna pagina de erro (o caminho pra pagina nao existe)
+			
+		}
         //std::cout << "---- DEU PRA LER HTML ------";
         //std::cout << bodyHTML << std::endl;
         this_response->_body = bodyHTML;
@@ -588,36 +592,6 @@ std::string Response::buildResponse(Request &request, SocketS &server)
 		setResponse(resposta);
 		std::cout << "A resposta é:::: " << getResponse() << std::endl;
     	return resposta;
-
-		// isso ficará na FUNÇÃO DE MÉTODO GET !!!! -------------------------------
-        // temos que verificar se o servidor está apto a lidar com esse recurso (ver os
-        // locations...)
-        // std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-        // std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI());
-// 
-        // std::map<std::string, std::vector< std::string > > locationDirectives;
-        // if (it != serverLocations.end()) {
-            // std::cout << "Directives from this Location found!" << std::endl;
-            // locationDirectives = it->second.getDirectives();
-            //  std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-// 
-            // if (itIndex != locationDirectives.end()) {
-                // std::cout << "Index found! Value: " << itIndex->second[0] << std::endl;
-                // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
-                // std::string bodyHTML = readFileToString(itIndex->second[0]);
-                // std::cout << "---- DEU PRA LER HTML ------";
-                // std::cout << bodyHTML << std::endl;
-                // _body = bodyHTML;
-                // std::cout << "-----------------------------------" << std::endl;
-            // } else {
-                // std::cout << "Index not found!" << std::endl;
-            // }
-        // } else {
-            // std::cout << "This server doesnt have this location!!" << std::endl;
-            // std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
-            // setResponse(response);
-            // return response;    
-        // }                
     }
     else
     {
@@ -629,8 +603,6 @@ std::string Response::buildResponse(Request &request, SocketS &server)
         setResponse(response);
         return response;    
     }
-    //////////
-
     std::string fullResponse;
     
     // Construa os cabeçalhos aqui, usando os dados em _headers
