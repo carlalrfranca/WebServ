@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/14 23:47:29 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 12:30:56 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,73 +158,131 @@ void ConfigParser::processListen(std::string &line){
 	size_t	posInit;
 	size_t	_semicolonIndex;
 
+	// esse if impede a duplicação (tirar depois?)
     if(_hasDirListen == true)
         throw ErrorException("Error: The Directive Listen has been duplicated.");
-    _directive = line.find("listen");
-    if(line == "listen"){
-        _ipAddress = "0.0.0.0";
-        _portNumber = "80";
-        std::cout << "\n-----[PRIMEIRO] TESTE DEFAULT-----";
-        // std::cout << "IP Address: " << _ipAddress << std::endl;
-        // std::cout << "Port: " << _portNumber << std::endl;
-        //std::cout << std::endl;
-        return ;
-    }
-    _semicolonIndex = line.find_first_of(";");
-    if(_semicolonIndex != std::string::npos && _semicolonIndex == (line.length() - 1)){
-        line = line.substr(0, (line.length() - 1));
-    }
-    if(_directive != std::string::npos){
-        _directive += std::string("listen ").length();
-        posInit = line.find("://", _directive);
-        if(posInit != std::string::npos){
-            _ipAddress = line.substr(_directive, (line.length() - (_directive)));
-            size_t _delimiter = line.find_last_of(":");
-            if(_delimiter != posInit){
-                _portNumber = line.substr(_delimiter + 1, line.length() - (_delimiter + 1));
-                size_t portIndex = _ipAddress.find_last_of(":");
-                _ipAddress = _ipAddress.substr(0, portIndex);
-            }else
-                _portNumber = "80";
-            std::cout << "\n-----[SEGUNDO] TESTE DE HTTP E HTTPS  COM E SEM PORTA-----" << std::endl;
-            // std::cout << "IP Address: " << _ipAddress << std::endl;
-            // std::cout << "Port: " << _portNumber << std::endl;
-            //std::cout << std::endl;
-        }
-        else
-        { // sem protocolo http ou https // trata primeiro com :
-            posInit = line.find(":", _directive);
-            if (posInit != std::string::npos){// std::cout << "Posição dos ':' >> " << _posInit << std::endl;
-                _ipAddress = line.substr(_directive, posInit - _directive);
-                _portNumber = line.substr(posInit + 1, line.length());
-            }
-            else if(line.find(".", _directive) != std::string::npos){// significa que tem ipAddress (port será default)
-               _ipAddress = line.substr(_directive);
-               _portNumber = "80"; //a gente vai usar o default como? porque 8080 e 80 ele nao deixa (sera que na VM deixa?
-            }
-            else{
-				std::cout << "Ou SÓ TEM PORTA ou SÓ TEM IP" << std::endl;
-				// tem que verificar se é a porta ou o ipadress (e se estiver escrito "localhost" apenas?)
-                std::string listenValue = line.substr(_directive);
-				 if (contemApenasNumeros(listenValue))
-				 {
-					_portNumber = listenValue;
-                	_ipAddress = "localhost"; // isso ou 'localhost?'
-				 }
-				 else if (contemApenasLetras(listenValue))
-				 {
-					_ipAddress = listenValue;
-					// _portNumber = "4005"; //a gente vai usar o default como? porque 8080 e 80 ele nao deixa (sera que na VM deixa?)
-				 }
-				//  mas um else, pro caso das duas funções darem falso -> erro de sintaxe, pessoa pode ter misturado letra e numero e daí dá exceção
-            }
-            std::cout << "\n-----[TERCEIRO] TESTE SEM HTTP E HTTPS -----\n";
-            // std::cout << "IP: " << _ipAddress << std::endl;
-            // std::cout << "Porta: " << _portNumber << std::endl;
-            //std::cout << std::endl;
-        }
+	// tem que extrair o ;
+	if (line[line.length() - 1] == ';')
+		line = line.substr(0, line.length() - 1);
+	// vamos splitar essa linha
+	std::istringstream listen_values(line);
+	std::string palavra;
+    std::vector<std::string> palavras;
+
+	while (listen_values >> palavra)
+       	palavras.push_back(palavra);
+	if (palavras.size() != 2)
+		throw ErrorException("Syntax Error: Only ONE value by listen directive.");
+	if (palavras[0] != "listen")
+		throw ErrorException("Syntax Error: Format of line: [directive] [value] ...");
+	/*
+		localhost:2000
+		5005
+		127.0.0.1:5002
+		
+	*/
+	posInit = palavras[1].find("https");
+	if (posInit != std::string::npos)
+		throw ErrorException("Configuration Error: Can't configure https protocol.");
+	posInit = palavras[1].find("://");
+	if (posInit != std::string::npos)
+	{
+		posInit += 3;
+		palavras[1] = palavras[1].substr(posInit);
+		std::cout << "Valor da listen sem '://' >> " << palavras[1] << std::endl;
+	}
+	// agora vemos se tem ':'
+	posInit = palavras[1].find(":");
+	if (posInit != std::string::npos)
+	{
+		// quer dizer que é combo ip + porta
+		_ipAddress = palavras[1].substr(0, posInit);
+		_portNumber = palavras[1].substr(posInit + 1);
+		// **** tem que verificar que a porta SÃO APENAS NUMEROS
+		// **** e verificar o FORMATO DO IPADDRESS
+		if (!contemApenasNumeros(_portNumber))
+			throw ErrorException("Syntax Error: Port must be ONLY numbers.");
+		std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
+	}
+	else
+	{
+		// quer dizer que ou é só ipAddress ou é só porta
+		// se for só ipAddress -> não aceitamos (?) -> pode ter apenas porta, mas não apenas o ipAddress.. porque nós não
+		// colocamos nenhuma porta por default no nosso server...
+		if (contemApenasNumeros(palavras[1]))
+		{
+			_portNumber = palavras[1];
+			_ipAddress = "localhost";
+			std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
+		}
+		else
+			throw ErrorException("Configuration Error: You must configure a PORT NUMBER!");
+	}
+    // _directive = line.find("listen");
+    // if(line == "listen"){
+    //     _ipAddress = "0.0.0.0";
+    //     _portNumber = "80";
+    //     std::cout << "\n-----[PRIMEIRO] TESTE DEFAULT-----";
+    //     // std::cout << "IP Address: " << _ipAddress << std::endl;
+    //     // std::cout << "Port: " << _portNumber << std::endl;
+    //     //std::cout << std::endl;
+    //     return ;
+    // }
+    // _semicolonIndex = line.find_first_of(";");
+    // if(_semicolonIndex != std::string::npos && _semicolonIndex == (line.length() - 1)){
+    //     line = line.substr(0, (line.length() - 1));
+    // }
+    // if(_directive != std::string::npos){
+    //     _directive += std::string("listen ").length();
+    //     posInit = line.find("://", _directive);
+    //     if(posInit != std::string::npos){
+    //         _ipAddress = line.substr(_directive, (line.length() - (_directive)));
+    //         size_t _delimiter = line.find_last_of(":");
+    //         if(_delimiter != posInit){
+    //             _portNumber = line.substr(_delimiter + 1, line.length() - (_delimiter + 1));
+    //             size_t portIndex = _ipAddress.find_last_of(":");
+    //             _ipAddress = _ipAddress.substr(0, portIndex);
+    //         }else
+    //             _portNumber = "80";
+    //         std::cout << "\n-----[SEGUNDO] TESTE DE HTTP E HTTPS  COM E SEM PORTA-----" << std::endl;
+    //         // std::cout << "IP Address: " << _ipAddress << std::endl;
+    //         // std::cout << "Port: " << _portNumber << std::endl;
+    //         //std::cout << std::endl;
+    //     }
+    //     else
+    //     { // sem protocolo http ou https // trata primeiro com :
+    //         posInit = line.find(":", _directive);
+    //         if (posInit != std::string::npos){// std::cout << "Posição dos ':' >> " << _posInit << std::endl;
+    //             _ipAddress = line.substr(_directive, posInit - _directive);
+    //             _portNumber = line.substr(posInit + 1, line.length());
+    //         }
+    //         else if(line.find(".", _directive) != std::string::npos){// significa que tem ipAddress (port será default)
+    //            _ipAddress = line.substr(_directive);
+    //            _portNumber = "80"; //a gente vai usar o default como? porque 8080 e 80 ele nao deixa (sera que na VM deixa?
+    //         }
+    //         else{
+	// 			std::cout << "Ou SÓ TEM PORTA ou SÓ TEM IP" << std::endl;
+	// 			// tem que verificar se é a porta ou o ipadress (e se estiver escrito "localhost" apenas?)
+    //             std::string listenValue = line.substr(_directive);
+	// 			 if (contemApenasNumeros(listenValue))
+	// 			 {
+	// 				_portNumber = listenValue;
+    //             	_ipAddress = "localhost"; // isso ou 'localhost?'
+	// 			 }
+	// 			 else if (contemApenasLetras(listenValue))
+	// 			 {
+	// 				_ipAddress = listenValue;
+	// 				// _portNumber = "4005"; //a gente vai usar o default como? porque 8080 e 80 ele nao deixa (sera que na VM deixa?)
+	// 			 }
+	// 			//  mas um else, pro caso das duas funções darem falso -> erro de sintaxe, pessoa pode ter misturado letra e numero e daí dá exceção
+    //         }
+    //         std::cout << "\n-----[TERCEIRO] TESTE SEM HTTP E HTTPS -----\n";
+    //         // std::cout << "IP: " << _ipAddress << std::endl;
+    //         // std::cout << "Porta: " << _portNumber << std::endl;
+    //         //std::cout << std::endl;
+    //     }
 		// std::cout << "Que diabo...?" << std::endl;
-    }
+    // }
     _hasDirListen = true;
 }
 
