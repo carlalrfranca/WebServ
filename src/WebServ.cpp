@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/13 23:06:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/14 23:11:53 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,12 +66,14 @@ WebServ::WebServ(std::string filename){
             }
             else if(isInsideServerBlock){
     			if (line.find("location") != std::string::npos || isLocationBlock == true){
-                    if (line.find("}") != std::string::npos){
+                    if (line.find("location") != std::string::npos && isLocationBlock == true)
+						throw ErrorException("Configuration Error: Can't have location block inside of another location block");
+					if (line.find("}") != std::string::npos){
                         isLocationBlock = false;
     					continue;
     				}
-                    isLocationBlock = true;
                     _configParser.processLocation(line);
+                    isLocationBlock = true;
                 } // configSocket(index);
                 else if (line.find("listen") != std::string::npos){
                     _configParser.processListen(line);
@@ -81,8 +83,6 @@ WebServ::WebServ(std::string filename){
                     _configParser.processRoot(line);
                 }else if (line.find("index") != std::string::npos){
                     _configParser.processIndex(line);
-    			}else if (line.find("ssl on") != std::string::npos){
-    				_configParser.processSSL(line);
     			}else if (line.find("allow_methods") != std::string::npos){
     				_configParser.processAllowMethods(line);
     			}else if (line.find("client_max_body_size") != std::string::npos){

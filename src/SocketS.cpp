@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/13 19:20:36 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/14 22:43:26 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@ SocketS::SocketS(){
     _portNumber = "";
     _ipAddress = "";
     _response = "";
-    _cssContent = "";
     _webServSocket = 0;
     _root = "";
 }
