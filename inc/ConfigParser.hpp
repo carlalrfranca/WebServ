@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 13:29:20 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 14:03:04 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,9 @@ class ConfigParser
         std::string     _root;
         std::string     _currentLocationPathOnMap;
         size_t          _directive;
-        bool            _hasRoot;
+        size_t			_maxBodySize;
+		
+		bool            _hasRoot;
         bool            _hasDirListen;
         bool            _hasDirLocation;
         bool            _hasDirServerName;

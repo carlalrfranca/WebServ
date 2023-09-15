@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 13:29:56 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 14:07:25 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ ConfigParser::ConfigParser()
     _hasDirMaxBodySize = false;
     _hasDirReturn = false;
 	_indexFile = "";
+	_maxBodySize = 1024;
 
 	// configurando por padrão os paths das paginas de erro (se o arquivo personalizar alguma, vai sobrescrever na hora em que estiver processando a diretiva de error_page)
 	_errorPage["404"] = "./web/error/Error404.html";
@@ -59,6 +60,7 @@ void ConfigParser::resetConfig()
 	_hasDirMaxBodySize = false;
 	_hasDirReturn = false;
 	_hasDirServerName = false;
+	_maxBodySize = 1024;
 
 	//
 	// tinha algo aqui dando problema antes.... ver onde essas var comentadas estao sendo usadas e avaliar
@@ -586,8 +588,10 @@ void ConfigParser::processAllowMethods(std::string &line)
 
 void ConfigParser::processClientMaxBodySize(std::string &line)
 {
+	if (line == "client_max_body_size")
+		throw ErrorException("Syntax Error: The Directive Client Max Body Size need a value.");
     if(_hasDirMaxBodySize == true)
-        throw ErrorException("Error: The Directive Client Max Body Size has been duplicated.");
+        throw ErrorException("Configuration Error: The Directive Client Max Body Size has been duplicated.");
     std::string directive = "client_max_body_size";
     std::size_t pos = line.find(directive);
     if (pos != std::string::npos)
@@ -598,6 +602,7 @@ void ConfigParser::processClientMaxBodySize(std::string &line)
             if (end_pos != std::string::npos) {
                 std::string size_str = line.substr(pos, end_pos - pos);
                 std::cout << "client_max_body_size: " << size_str << std::endl;
+				_maxBodySize = atoi(size_str.c_str());
             }
         }
     }
@@ -621,7 +626,10 @@ void ConfigParser::processAutoIndex(std::string &line)
                 while ((entry = readdir(directory)) != NULL)
                     fileList.push_back(std::string(entry->d_name));
                 for (size_t i = 0; i < fileList.size(); ++i)
+				{
+					// aqui tá só listando, mas vamos precisar gerar um html com isso
                     std::cout << fileList[i] << std::endl;
+				}
                 closedir(directory);
             } else {
                 throw std::runtime_error("Error when open directory.");

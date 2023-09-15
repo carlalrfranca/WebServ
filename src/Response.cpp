@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 13:44:29 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 15:41:47 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -458,6 +458,10 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
     std::map<std::string, LocationDirective> serverLocations = server.getLocations(); //obtenho informações das loalizacores d drtivas
     std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI()); //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
     std::map<std::string, std::vector< std::string > > locationDirectives; //cria map p armzenar dirtivas de localizacao
+	// tem que ver se, caso seja um diretorio... daí tem toda
+	// a questão do autoindex
+	// se não for um diretorio (nao termina com '/')
+	// ou: se for um arquivo, tem extensão?
 
     if (it != serverLocations.end()){ // s enconra as dirtivas
         std::cout << "Directives from this Location found!" << std::endl;
@@ -490,8 +494,6 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 			// retorna pagina de erro (o caminho pra pagina nao existe)
 			
 		}
-        //std::cout << "---- DEU PRA LER HTML ------";
-        //std::cout << bodyHTML << std::endl;
         this_response->_body = bodyHTML;
         std::cout << "----------- CONSTRUÇÃO DA RESPONSE DO HTTPGET COMEÇA AQUI O: -----------------------------" << std::endl;
 		std::string response;

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 13:16:02 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 15:56:35 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,13 +158,19 @@ void WebServ::configSocket(size_t serverIndex)
 		_configParser.setAddress("localhost"); //ver se isso já não está sendo resolvendo no processListen
 	//definir index, caso não tenha encontrado (e armazenar o que é encontrado no processIndex na classe)
 	// verificar tambem se o arquivo desse index existe e é acessivel
-	if (_configParser.getIndexFiles().size() == 0)
-		_configParser.setIndexFiles("index.html");
+	if (_configParser.getIndexFile().empty())
+		_configParser.setIndexFile("index.html");
 	if (_configParser.getPort().empty())
 		throw ErrorException("Configuration Error: Port not found!");
 	// tem que setar as errorPages e verificar a existencia e acessibilidade delas...
 	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server, a gente vai definir um padrão? (ou deixar sem?)
 
+
+	// verificar se esse server teve mais de um listen (ip e porta)...
+	// se sim, cria um socket pra cada, cada um escutando em sua respectiva
+	// porta, mas com o resto das configurações semelhantes...
+	// ** ATENÇÃO: a MESMA porta não pode ter sido configurada DUAS VEZES (testar
+	// pra ver se escutar na porta 5005 no ip 127.0.0.1 e na mesma porta do ip 128.??? consegue bindar)
 
 	// passagem do conteudo do configParser pro temp_socket
     SocketS temp_socket;
@@ -184,7 +190,12 @@ void WebServ::configSocket(size_t serverIndex)
 	// iterar o map do Locations pra verificar os valores
 	std::map<std::string, LocationDirective>::iterator it = _serverSocket.back().getLocations().begin();
 	int size_locations =  _serverSocket.back().getLocations().size();
-    //cria socket -----> deixa isso em outra função pra daí poder avaliar se tem server escutando no msmo ip:port e só fazer bind de um e replicar o fd pro outro?
+    
+	
+	// colocar esse prcesso de criação de socket num outro método
+	// quando já tiver o vetor de sockets
+	// e daí ir validando e criando (sem bindar o mesmo ip:port duas vezes)
+	//cria socket -----> deixa isso em outra função pra daí poder avaliar se tem server escutando no msmo ip:port e só fazer bind de um e replicar o fd pro outro?
     _serverSocket[serverIndex].setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));//int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(_serverSocket[serverIndex].getWebServSocket() == -1){
         throw ErrorException("Socket Error: Failed to create socket!");
@@ -341,6 +352,7 @@ void WebServ::mainLoop(){
             } else { //quarta: temos que ldiar com as requests pra GET e provavelmente fazer um objeto pro client - guardando informação de em que server ele está bindando... (pesquisar mais com o chat)
                 int clientSocket = events[index].data.fd;
                 char buffer[1024];
+				// incluir o processamento de chunks aqui... como?
                 ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
                 if(bytesRead <= 0) {
                     std::cerr << "Erro ao receber solicitação do client " << std::endl;
