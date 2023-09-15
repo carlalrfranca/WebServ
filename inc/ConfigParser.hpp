@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 13:11:05 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 13:29:20 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ class ConfigParser
 		void removeComments(std::string &line);
 	    void validateFile(std::ifstream& fileToParse);
 		const std::string& getIndexFile(void) const;
+		void setIndexFile(std::string index);
 	    // bool getHasDirLocation(void)const;
 	    // bool getHasDirListen(void)const;
         // bool getHasDirServerName(void)const;
