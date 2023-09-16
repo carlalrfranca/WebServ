@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 21:46:28 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/16 00:40:45 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ class Response{
         // void setContentLength(size_t length);
         void setResponse(const std::string& response);
         int  selectServer(Request& stringDomain, std::vector<SocketS> serverSocket);
+        std::string generateResponse(int statusCode, const Request& request, const std::string& root, const std::string& filePath);
         
         //std::string httpPost(Request &request, SocketS &server);
         //std::string httpDelete(Request &request, SocketS &server);
@@ -53,7 +54,7 @@ class Response{
         std::string readHtmlFile(const std::string& filePath);
         std::string buildResponse(Request &request, SocketS &server);
         bool contains(const std::vector<std::string>& vec, const std::string& content);
-
+        std::string createHTTPResponse200(int statusCode, SocketS &server);
         void reset(); //implementa a redefinição de resposta, limpando cabeçalhos e corpo
         void httpError(std::string errorCode, const std::string &errorMessage);
 		
@@ -61,7 +62,6 @@ class Response{
 		//acho ue dariamuito errado por ser uma const...se bem que eu pderia apenas tirar isso
 		
         void errorPage(Request &response, std::string &root);
-        
         
 		std::string errorCodeHtml(int statusCode, SocketS &server);
 

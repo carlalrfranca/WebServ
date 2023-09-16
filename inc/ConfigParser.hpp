@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 14:03:04 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 23:44:51 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ class ConfigParser
 	    void validateFile(std::ifstream& fileToParse);
 		const std::string& getIndexFile(void) const;
 		void setIndexFile(std::string index);
+		bool getAutoIndex(void) const;
 	    // bool getHasDirLocation(void)const;
 	    // bool getHasDirListen(void)const;
         // bool getHasDirServerName(void)const;
@@ -90,7 +91,8 @@ class ConfigParser
         std::string     _currentLocationPathOnMap;
         size_t          _directive;
         size_t			_maxBodySize;
-		
+		bool			_autoIndexOn;
+
 		bool            _hasRoot;
         bool            _hasDirListen;
         bool            _hasDirLocation;
@@ -99,6 +101,7 @@ class ConfigParser
         bool            _hasDirAllowMethods;
         bool            _hasDirMaxBodySize;
         bool            _hasDirReturn;
+		bool			_hasAutoIndex;
 
         
         std::vector<std::string> _methods;
