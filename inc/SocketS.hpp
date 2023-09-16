@@ -40,10 +40,14 @@ class SocketS
         void setMethods(std::vector<std::string>methods);
         std::vector<std::string> getMethods() const;
         void setRoot(std::string root);
-        const std::string& getRoot()const;
+        const std::string& getRoot(void)const;
+		const std::string& getIndexFile(void) const;
+		void setIndexFile(std::string index);
+
         
     private:
         
+		std::string		_indexFile;
         int             _webServSocket; //FD
         std::string     _root;
         std::string     _portNumber;
