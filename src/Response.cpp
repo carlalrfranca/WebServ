@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/14 17:32:10 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/15 21:47:30 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ Response::Response() : _headers(), _methodsFunctions(){
     _response = ""; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
     _code = "";
     _path = "";
+    _statusMessages = StatusMessages();
 }
 
 Response::~Response()
@@ -451,9 +452,54 @@ std::string readFileToString(const std::string& filename) {
     file.close();
     return content;
 }
+/*
+
+        //error404Html(response, root);
+        
+        // std::string errorFilePath = root + "Error404.html";
+        // std::string errorHtml = readFileToString(errorFilePath);
+        // if (!errorHtml.empty()){ // deucertinho?
+        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorHtml;
+        //     setResponse(response);
+        //     return response;
+        // } else {
+        //     // se na tiver o .htm aprece uma msg
+        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorFilePath;
+        //     setResponse(response);
+        //     return response;
+        // }
+        
+        
+        // error405Html(response, root);
+        // error500Html(response, root);
+        // error503Html(response, root);
+        // error505Html(response, root);
+        
+*/
+        
+
+std::string Response::errorCodeHtml(int statusCode, SocketS &server, const std::string& codeMessage){
+
+        std::string errorFileName;
+        std::string errorDefault;
+
+        errorFileName = server.getErrorPage(statusCode); //caminho
+        errorDefault = _statusMessages.getMessage(statusCode); //mensagm
+        
+        //le o arquivo
+        //monta as headers
+        // concatena o arquivo com as headers
+        std::string errorHtml = readFileToString(errorFileName);
+        std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + errorDefault + "\r\nContent-Type: text/html\r\n\r\n" + errorHtml;
+        setResponse(response);
+        return response;
+
+}
 
 
-static std::string httpGet(Request &request, SocketS &server, Response *this_response){
+
+
+std::string Response::httpGet(Request &request, SocketS &server, Response *this_response){
     std::string root; //root para caminho do servidor
     if(server.getRoot().size() > 0) //se o root tiver uma raiz defind
         root = server.getRoot(); //use como root
@@ -479,6 +525,8 @@ static std::string httpGet(Request &request, SocketS &server, Response *this_res
             
             // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
             setPath(root + itIndex->second[0]); //isso deveria atualizar o valor do path com o root mais a index
+            
+            
             std::string bodyHTML = readFileToString(getPath()); //declara o corpo do HTML
         
             
@@ -496,23 +544,27 @@ static std::string httpGet(Request &request, SocketS &server, Response *this_res
         }
     } else {
         std::cout << "This server doesnt have this location!!" << std::endl;
-        std::string errorFilePath = root + "Error404.html";
-        std::ifstream fileStream(errorFilePath.c_str());
-        if (fileStream) { // deucertinho?
-            std::string errorHtml;
-            std::string line;
-            while (std::getline(fileStream, line))
-                errorHtml += line;
-            std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorHtml;
-            setResponse(response);
-            return response;
-        } else {
-            // Se o arquivo de erro personalizado não existir, use uma mensagem de erro padrão
-            std::string errorMessage = "<html><head></head><body><h1>Error 404</h1></body></html>";
-            std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorMessage;
-            setResponse(response);
-            return response;
-        }
+        errorCodeHtml(404, server);
+        //error404Html(response, root);
+        
+        // std::string errorFilePath = root + "Error404.html";
+        // std::string errorHtml = readFileToString(errorFilePath);
+        // if (!errorHtml.empty()){ // deucertinho?
+        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorHtml;
+        //     setResponse(response);
+        //     return response;
+        // } else {
+        //     // se na tiver o .htm aprece uma msg
+        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorFilePath;
+        //     setResponse(response);
+        //     return response;
+        // }
+        
+        
+        // error405Html(response, root);
+        // error500Html(response, root);
+        // error503Html(response, root);
+        // error505Html(response, root);
         
         /*
         
@@ -542,10 +594,7 @@ static std::string httpGet(Request &request, SocketS &server, Response *this_res
         // soma  body que leio da pagina
         // std::string bodyHTML = readFileToString(getPath());
         // juntar as strings
-        // cabçalho e o body 
-        
-        setResponse(response);
-        return response;    
+        // cabçalho e o body    
     }
     return "DEU MERDA JOHNSONS";
 }
