@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/14 22:48:51 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 21:46:28 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "HeadersLibs.hpp"
 #include "SocketS.hpp"
 #include "CGI.hpp"
+#include "StatusMessages.hpp"
 
 class SocketS;
 class Request;
@@ -22,8 +23,7 @@ class ValidGet;
 class Response;
 typedef std::string (*Funcao)(Request &request, SocketS &server, Response *this_response);
 
-class Response
-{
+class Response{
 
     public:
     
@@ -34,26 +34,36 @@ class Response
         
         //getters and setters
         const std::string& getHeader(const std::string& header)const; // busca pelo campo de cabeçalho na lista de cabeçalhos
-        
+        const std::string getPath()const;
+        std::string getResponse()const;//foi criado outro metodo, precisa ajustar .cpp
+		std::string getDate()const;
+		
+        void setPath(const std::string& allPath); 
         void setStatusCode(const std::string& statusCode);
         void setContentType(const std::string& contentType);
         void setDateAndTime();
-		std::string getDate() const;
         // void setContentLength(size_t length);
         void setResponse(const std::string& response);
         int  selectServer(Request& stringDomain, std::vector<SocketS> serverSocket);
-        bool contains(const std::vector<std::string>& vec, const std::string& content);
         
-        std::string getResponse()const;//foi criado outro metodo, precisa ajustar .cpp
         //std::string httpPost(Request &request, SocketS &server);
         //std::string httpDelete(Request &request, SocketS &server);
         
         //response methods
         std::string readHtmlFile(const std::string& filePath);
         std::string buildResponse(Request &request, SocketS &server);
+        bool contains(const std::vector<std::string>& vec, const std::string& content);
 
         void reset(); //implementa a redefinição de resposta, limpando cabeçalhos e corpo
         void httpError(std::string errorCode, const std::string &errorMessage);
+		
+		//tá eu inicalizei dentro so .hpp, sei lá se isso pod o nao, mas se jogasse no construor or algum motivo
+		//acho ue dariamuito errado por ser uma const...se bem que eu pderia apenas tirar isso
+		
+        void errorPage(Request &response, std::string &root);
+        
+        
+		std::string errorCodeHtml(int statusCode, SocketS &server);
 
 		// method for each method
 		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
@@ -62,9 +72,6 @@ class Response
 		// static std::string getMethod(Request &request, SocketS &server, Response *this_response);
         static std::string httpGet(Request &request, SocketS &server, Response *this_response);
         
-        void setPath(const std::string& allPath); 
-        const std::string getPath()const;
-    
     private:
     
         std::map<std::string, std::string>  _headers;
@@ -73,7 +80,28 @@ class Response
         std::string                         _code;
         std::string                         _path;
         SocketS                             *_chosenSocket;
+        StatusMessages                      _statusMessages;
 		std::map<std::string, Funcao>		_methodsFunctions;
+
+        class ErrorException: public std::exception
+        {
+            public:
+        
+                ErrorException(const char* errorMessage) : _msg(errorMessage){}
+                virtual const char* what()const throw(){
+                
+                    return _msg;
+                }
+            
+            private:
+            
+                const char* _msg;
+        };
+};
+
+#endif 
+
+// std::ostream& operator<<(std::ostream& out, Response const& rhs);
         /*
             ------------------------------------------- LETICIA DEIXOU ANOTADO ----------------------------------------------
             criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
@@ -89,18 +117,3 @@ class Response
          precisa devolver essa string de alguma forma (get?) pra mainLoop
          pra que ela possa fazer send() dessa response pro clientSocket
         */
-
-        class ResponseException: public std::exception
-        {
-            public:
-                virtual const char* what() const throw()
-                {
-                    return "\nError: An error occurred while processing the response.\n";
-                }
-        };
-    
-};
-// std::ostream& operator<<(std::ostream& out, Response const& rhs);
-
-#endif 
-

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 13:30:01 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 16:35:09 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,18 +31,19 @@ class SocketS
         void setAddress(std::string ipAddress);
         void setWebServSocket(int webServSocket);
         void setServerName(std::vector<std::string> serverName);
-        std::vector<std::string> getServerName(void)const;
-        const std::string& getPort(void)const;
-        const std::string& getAddress(void)const;
-        const int& getWebServSocket(void)const;
+        std::vector<std::string> getServerName()const;
+        const std::string& getPort()const;
+        const std::string& getAddress()const;
+        const int& getWebServSocket()const;
 		std::map<std::string, LocationDirective> getLocations(void) const;
 		void setLocations(std::map<std::string, LocationDirective> locations);
         void setMethods(std::vector<std::string>methods);
-        std::vector<std::string> getMethods(void) const;
+        std::vector<std::string> getMethods() const;
         void setRoot(std::string root);
         const std::string& getRoot(void)const;
 		const std::string& getIndexFile(void) const;
 		void setIndexFile(std::string index);
+
         
     private:
         
@@ -61,6 +62,7 @@ class SocketS
         
         class SocketSException: public std::exception{
         public:
+        
             SocketSException(const char* errorMessage) : message(errorMessage){}
             virtual const char* what()const throw(){
                 return message;
