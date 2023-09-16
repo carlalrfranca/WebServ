@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 21:47:30 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/16 00:42:31 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -472,7 +472,7 @@ std::string readFileToString(const std::string& filename) {
 */
         
 
-std::string Response::errorCodeHtml(int statusCode, SocketS &server, const std::string& codeMessage){
+std::string Response::errorCodeHtml(int statusCode, SocketS &server){
 
         std::string errorFileName;
         std::string errorDefault;
@@ -484,14 +484,43 @@ std::string Response::errorCodeHtml(int statusCode, SocketS &server, const std::
         //monta as headers
         // concatena o arquivo com as headers
         std::string errorHtml = readFileToString(errorFileName);
-        std::string response = "HTTP/1.1 " + std::to_string(statusCode) + " " + errorDefault + "\r\nContent-Type: text/html\r\n\r\n" + errorHtml;
-        setResponse(response);
+		size_t content_length = errorHtml.size();
+		std::string response;
+        response += "HTTP/1.1 " + std::to_string(statusCode) + " " + errorDefault + "\r\n";
+        response += "Content-Type: text/html\r\n";
+		response += "Content-Length: " + std::to_string(content_length) + "\r\n";
+		response += "Connection: close\r\n\r\n" + errorHtml;
+		setResponse(response);
         return response;
 
 }
 
+std::string Response::generateResponse(int statusCode, const Request& request, const std::string& root, const std::string& filePath){
 
+    std::string contentType;
+    std::string content = readFileToString(root + filePath);
+    std::string response;
+    
+    if(request.getURI().find("css"))
+        contentType = "text/css";
+    else if(request.getURI().find("jpg") || request.getURI().find("jpeg"))
+        contentType = "image/jpeg";
+    else if(request.getURI().find("png"))
+        contentType = "image/png";
+    else if(request.getURI().find("gif"))
+        contentType = "image/gif";
+    else
+        contentType = "text/html";
+    response += "HTTP/1.1 " + std::to_string(statusCode) + " OK\r\n";
+    response += "Content-Type: " + contentType + "\r\n";
+    response += "Content-Length: " + std::to_string(content.length()) + "\r\n";
+    response += "Connection: Keep-Alive\r\n";
+    response += "\r\n"; // Linha em branco indica o fim dos cabeçalhos
+    response += content;
+    setResponse(response);
+    return response;
 
+}
 
 std::string Response::httpGet(Request &request, SocketS &server, Response *this_response){
     std::string root;
@@ -550,11 +579,11 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 			// response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
         this_response->setResponse(response);
         return response;
-    } else {
-        std::cout << "This server doesnt have this location!!" << std::endl;
-        this_response->errorCodeHtml(404, server);
-        //error404Html(response, root);
-        
+    	} else {
+    	    std::cout << "This server doesnt have this location!!" << std::endl;
+    	    this_response->errorCodeHtml(404, server);
+    	    //error404Html(response, root);
+		}
         // std::string errorFilePath = root + "Error404.html";
         // std::string errorHtml = readFileToString(errorFilePath);
         // if (!errorHtml.empty()){ // deucertinho?
@@ -567,7 +596,7 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
         //     setResponse(response);
         //     return response;
         // }
-        }
+        // }
         
         /*
         
@@ -600,8 +629,7 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
         // cabçalho e o body 
         
         // this_response->setResponse(response);
-        // return response;    
-    }
+        // return response;
     return "DEU MERDA JOHNSONS";
 }
 

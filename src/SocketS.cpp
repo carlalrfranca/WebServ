@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 13:14:21 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/15 23:08:29 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ SocketS::SocketS(){
     _response = "";
     _webServSocket = 0;
     _root = "";
+    _statusCode = 80;
 }
 
 
@@ -43,20 +44,15 @@ SocketS::~SocketS(){}
 
 // getter e setter do locations
 
-std::map<std::string, LocationDirective> SocketS::getLocations(void) const
-{
+std::map<std::string, LocationDirective> SocketS::getLocations() const {
 	return _locations;
 }
 
-void SocketS::setLocations(std::map<std::string, LocationDirective> locations)
-{
+void SocketS::setLocations(std::map<std::string, LocationDirective> locations){
 	_locations = locations;
-}
-
-// 
+} 
 
 const int& SocketS::getFD()const{
-
     return _webServSocket;
 }
 
@@ -71,12 +67,10 @@ void SocketS::setPort(std::string portNumber){
         if(!std::isdigit(portNumber[i]))
             throw SocketSException("Error: Worng Syntax: port");
     }
-    // port = stoi(portNumber);
 	port = atoi(portNumber.c_str());
     if(port < 1 || port > 65636)
         throw SocketSException("Error: Worng Syntax: port");
     this->_portNumber = portNumber;
-    
 }
 
 void SocketS::setAddress(std::string ipAddress){
@@ -87,15 +81,22 @@ void SocketS::setWebServSocket(int webServSocket){
     this->_webServSocket = webServSocket;
 }
 
-const std::string& SocketS::getPort(void)const{
+const std::string& SocketS::getPort()const{
     return _portNumber;
 }
 
-const std::string& SocketS::getAddress(void)const{
+const std::string& SocketS::getAddress()const{
     return _ipAddress;
 }
 
-const int& SocketS::getWebServSocket(void)const{
+const std::string SocketS::getErrorPage(int statusCode)const{
+	std::map<std::string, std::string>::const_iterator it = _errorPage.find(std::to_string(statusCode));
+	if (it != _errorPage.end())
+		return it->second;
+	return "";
+}
+
+const int& SocketS::getWebServSocket()const{
     return _webServSocket;
 }
 
@@ -103,7 +104,7 @@ void SocketS::setServerName(std::vector<std::string> serverName){
      this->_serverName = serverName;
 }
 
-std::vector<std::string> SocketS::getServerName(void)const{
+std::vector<std::string> SocketS::getServerName()const{
     return _serverName;
 }
  
@@ -111,27 +112,31 @@ void SocketS::setMethods(std::vector<std::string> methods){
     _methods = methods;
 }
 
-std::vector<std::string> SocketS::getMethods(void) const{
+std::vector<std::string> SocketS::getMethods() const{
     return _methods;
 }
 
 void SocketS::setRoot(std::string root){
     _root = root;
 }
-const std::string& SocketS::getRoot(void)const{
+
+const std::string& SocketS::getRoot()const{
     return _root;
 }
 
-const std::string& SocketS::getIndexFile(void) const
-{
+const std::string& SocketS::getIndexFile() const{
 	return _indexFile;
 }
 
-void SocketS::setIndexFile(std::string index)
-{
+void SocketS::setIndexFile(std::string index){
 	_indexFile = index;
 }
-     
+
+void SocketS::setErrorPage(std::map<std::string, std::string> errorPages)
+{
+	_errorPage = errorPages;
+}
+
 // int SocketS::bindSocketListenConnections(){
 // 
     // try{

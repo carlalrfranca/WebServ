@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 15:56:35 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/16 00:42:36 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ WebServ::WebServ(std::string filename){
 					if (line.find("}") != std::string::npos){
                         isLocationBlock = false;
     					continue;
-    				}
+    				}         
                     _configParser.processLocation(line);
                     isLocationBlock = true;
                 } // configSocket(index);
@@ -352,15 +352,39 @@ void WebServ::mainLoop(){
             } else { //quarta: temos que ldiar com as requests pra GET e provavelmente fazer um objeto pro client - guardando informação de em que server ele está bindando... (pesquisar mais com o chat)
                 int clientSocket = events[index].data.fd;
                 char buffer[1024];
+				// variavel pra solução pra leitura de requisição que vem em chunks
+				std::string requestString;
+				// loop para receber e acumular os chunks da solicitação
+				while(true)
+				{
+					ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+                	if(bytesRead <= 0) {
+                    	if (bytesRead == 0)
+							std::cerr << "Client closed connection." << std::endl;
+						else
+							std::cerr << "Error during reading of client request." << std::endl;
+						break;
+                	}
+					// Adicionar dados lido ao final da string de request
+					requestString.append(buffer, bytesRead);
+					// Verificar se solicitação está completa (por exemplo, se termina com uma sequência específica)
+					if (requestString.find("\r\n\r\n") != std::string::npos) {
+						// A solicitação está completa, portanto podemos sair do loop de recepção de chunks
+						break;
+					}
+				}
+				// Agora temos a solicitação completa em requestString e podemos processá-la
+				
 				// incluir o processamento de chunks aqui... como?
-                ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-                if(bytesRead <= 0) {
-                    std::cerr << "Erro ao receber solicitação do client " << std::endl;
-                    continue;
-                }
-                std::string requestString(buffer, bytesRead);
+                // ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+                // if(bytesRead <= 0) {
+                //     std::cerr << "Erro ao receber solicitação do client " << std::endl;
+                //     continue;
+                // }
+                // std::string requestString(buffer, bytesRead);
                 printRequest(requestString);
-                handleRequest(clientSocket, buffer, bytesRead, requestString);
+				handleRequest(clientSocket, buffer, requestString.length(), requestString);
+                // handleRequest(clientSocket, buffer, bytesRead, requestString);
                 std::cout << "\n---------------------------------------" << std::endl;
                 std::cout <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << std::endl;
                 std::cout << "-----------------------------------------" << std::endl;

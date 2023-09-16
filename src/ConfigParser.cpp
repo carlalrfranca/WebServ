@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 14:07:25 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/16 00:23:47 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,14 @@ void ConfigParser::resetConfig()
 	// _indexFiles.clear();
 	_locationsMap.clear();
 	_locations.clear();
+
+	// resetar as paginas de erro padrão
+	_errorPage["503"] = "./web/error/Error503.html";
+	_errorPage["400"] = "./web/error/Error400.html";
+	_errorPage["403"] = "./web/error/Error403.html";
+	_errorPage["405"] = "./web/error/Error405.html";
+	_errorPage["505"] = "./web/error/Error505.html";
+	_errorPage["500"] = "./web/error/Error500.html";
 }
 
 
@@ -363,6 +371,9 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &line){
 		if (values[0].find("listen") != std::string::npos || values[0].find("server_name") != std::string::npos
 			|| values[0].find("location") != std::string::npos)
 			throw ErrorException("Configuration Error: CANNOT have 'listen', 'server_name' or an internal 'location' in location block");
+		// if (values[0] != "index" || values[0] != "auto_index" || values[0] != "root" || values[0] != "error_page" || values[0] != "return")
+			// throw ErrorException("Configuration Error: Prohibited directives in location block."); --> tem que distinguir locations normais da de cgi...
+		
 		// precisa verificar se essa diretiva JA EXISTE no location tambem...
 		std::map<std::string, std::vector<std::string> >::iterator directiveIt = it->second.getDirectives().find(values[0]);
 		if (directiveIt != it->second.getDirectives().end())
@@ -609,11 +620,36 @@ void ConfigParser::processClientMaxBodySize(std::string &line)
     _hasDirMaxBodySize = true;
 }
 
+bool ConfigParser::getAutoIndex(void) const
+{
+	return _autoIndexOn;
+}
+
 // eu acho que isso é na hora de executar o autoindexamento, nao agora
 // agora é só pra armazenar essa informação no objeto configparser, que depois passa pro server
 void ConfigParser::processAutoIndex(std::string &line)
 {
-    try
+	if (_hasAutoIndex)
+		throw ErrorException("Configuration Error: AutoIndex directive duplicated.");
+	std::vector<std::string> autoIndexLine;
+    std::istringstream iss(line);
+    std::string value;
+    while (iss >> value)
+        autoIndexLine.push_back(value);
+	if (autoIndexLine.size() != 2)
+		throw ErrorException("Syntax Error: AutoIndex directive must have ONE VALUE.");
+	if (autoIndexLine[0] != "auto_index")
+		throw ErrorException("Syntax Error: AutoIndex directive.");
+	if (autoIndexLine[1] == "on")
+		_autoIndexOn = true;
+	else if (autoIndexLine[1] == "off")
+		_autoIndexOn = false;
+	else
+		throw ErrorException("Syntax Error: AutoIndex directive has wrong value. Value must be only ON | OFF");
+	_hasAutoIndex = true;
+    /*
+	passar essa função pra parte de execução do autoIndex:
+	try
     {
         if (line == "on")
         {
@@ -641,7 +677,7 @@ void ConfigParser::processAutoIndex(std::string &line)
         }
     } catch (const std::exception &e) {
         std::cout << "Error: " << e.what() << std::endl;
-    }
+    }*/
 }
 
 void ConfigParser::processReturn(std::string &line)

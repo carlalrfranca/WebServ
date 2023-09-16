@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 16:35:09 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/15 22:54:20 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,36 +24,43 @@ class SocketS
         
         SocketS();
         ~SocketS();
-        const int& getFD()const;
         void loadConfiguration();
         
+
         void setPort(std::string portNumber);
         void setAddress(std::string ipAddress);
         void setWebServSocket(int webServSocket);
         void setServerName(std::vector<std::string> serverName);
-        std::vector<std::string> getServerName()const;
+		void setIndexFile(std::string index);
+        void setRoot(std::string root);
+        void setMethods(std::vector<std::string>methods);
+		void setLocations(std::map<std::string, LocationDirective> locations);
+        
+        const int& getFD()const;
+        const int& getWebServSocket()const;
         const std::string& getPort()const;
         const std::string& getAddress()const;
-        const int& getWebServSocket()const;
-		std::map<std::string, LocationDirective> getLocations(void) const;
-		void setLocations(std::map<std::string, LocationDirective> locations);
-        void setMethods(std::vector<std::string>methods);
+        const std::string& getRoot()const;
+		const std::string& getIndexFile() const;
+        const std::string& getErrorPage()const;
+        
+        std::vector<std::string> getServerName()const;
         std::vector<std::string> getMethods() const;
-        void setRoot(std::string root);
-        const std::string& getRoot(void)const;
-		const std::string& getIndexFile(void) const;
-		void setIndexFile(std::string index);
-
+		std::map<std::string, LocationDirective> getLocations() const;
+		const std::string getErrorPage(int statusCode)const;
+		void setErrorPage(std::map<std::string, std::string> errorPages);
         
     private:
         
-		std::string		_indexFile;
         int             _webServSocket; //FD
+        std::string     _statusCode;
+		std::string		_indexFile;
         std::string     _root;
         std::string     _portNumber;
         std::string     _ipAddress;
         std::string     _response; //talvez na response class
         // std::string     _cssContent;
+		std::map<std::string, std::string>  _errorPage;
         std::vector<std::string> _serverName;
         std::vector<std::string> _methods;
         // struct sockaddr_in _socketAddress;
