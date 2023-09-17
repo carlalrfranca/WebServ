@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 23:08:29 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/16 15:18:01 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,10 @@ const std::string& SocketS::getAddress()const{
 }
 
 const std::string SocketS::getErrorPage(int statusCode)const{
-	std::map<std::string, std::string>::const_iterator it = _errorPage.find(std::to_string(statusCode));
+	std::stringstream toConvertToStr;
+    toConvertToStr << statusCode;
+    std::string statusCodeStr = toConvertToStr.str();
+	std::map<std::string, std::string>::const_iterator it = _errorPage.find(statusCodeStr);
 	if (it != _errorPage.end())
 		return it->second;
 	return "";

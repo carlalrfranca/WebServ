@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/16 00:42:31 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/16 23:04:37 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -446,38 +446,86 @@ std::string readFileToString(const std::string& filename) {
     file.close();
     return content;
 }
-/*
 
-        //error404Html(response, root);
-        
-        // std::string errorFilePath = root + "Error404.html";
-        // std::string errorHtml = readFileToString(errorFilePath);
-        // if (!errorHtml.empty()){ // deucertinho?
-        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorHtml;
-        //     setResponse(response);
-        //     return response;
-        // } else {
-        //     // se na tiver o .htm aprece uma msg
-        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorFilePath;
-        //     setResponse(response);
-        //     return response;
-        // }
-        
-        
-        // error405Html(response, root);
-        // error500Html(response, root);
-        // error503Html(response, root);
-        // error505Html(response, root);
-        
-*/
+void Response::listFilesAndGenerateHtml(){
+
+	//passar essa função pra parte de execução do autoIndex:
+    std::string path = getPath();
+	try {
+        if (path == "on") {
+            const char *directoryPath = ".";
+            DIR *directory = opendir(directoryPath);
+            if (directory){
+                struct dirent *entry;
+                std::vector<std::string> fileList;
+                while ((entry = readdir(directory)) != NULL)
+                    fileList.push_back(std::string(entry->d_name));
+                for (size_t i = 0; i < fileList.size(); ++i){
+					// aqui tá só listando, mas vamos precisar gerar um html com isso
+                    std::cout << fileList[i] << std::endl;
+				}
+                closedir(directory);
+            } else {
+                throw std::runtime_error("Error when open directory.");
+            }
+        } else if (path == "off") {
+            std::cout << "Autoindex is on." << std::endl;
+        } else {
+            throw std::runtime_error("Invalid value to autoindex.");
+        }
+    } catch (const std::exception &e) {
+        std::cout << "Error: " << e.what() << std::endl;
+    }
+    
+}
+
+void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList){
+
+    std::string html;
+
+    html += "<html>\n";
+    html += "<head><title></title></head>\n";
+    html += "<body>\n";
+    html += "<h1>File List</h1>\n";
+    html += "<ul>\n";
+
+    //add nomes na lista
+    for(size_t i = 0; fileList.size(); ++i){
+        html += "<li>" + fileList[i] + "</li>\n";
+    }
+    html += "</ul>\n";
+    html += "</body>\n";
+    html += "</html>\n";
+
+    //fazer as headers
+
+    std::string headers;
+	std::string contentType = "text/html";
+	size_t content_length = html.size();
+	std::stringstream contentLengthToString;
+    contentLengthToString << content_length;
+    std::string contentLengthStr = contentLengthToString.str();
+	std::string statusCodeStr = "200";
+
+    headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
+    headers += "Content-Type: " + contentType + "\r\n";
+    headers += "Content-Length: " + contentLengthStr + "\r\n";
+    headers += "\r\n";
+    //junta os dois e seta a response
+
+    std::string response = headers + html;
+    setResponse(response);
+}
+
         
 
-std::string Response::errorCodeHtml(int statusCode, SocketS &server){
+void Response::errorCodeHtml(int statusCode, SocketS &server){
 
         std::string errorFileName;
         std::string errorDefault;
 
         errorFileName = server.getErrorPage(statusCode); //caminho
+		std::cout << "Error File Name Path: " << errorFileName << std::endl;
         errorDefault = _statusMessages.getMessage(statusCode); //mensagm
         
         //le o arquivo
@@ -486,40 +534,83 @@ std::string Response::errorCodeHtml(int statusCode, SocketS &server){
         std::string errorHtml = readFileToString(errorFileName);
 		size_t content_length = errorHtml.size();
 		std::string response;
-        response += "HTTP/1.1 " + std::to_string(statusCode) + " " + errorDefault + "\r\n";
+		std::stringstream toConvertToString;
+    	toConvertToString << statusCode;
+    	std::string statusCodeStr = toConvertToString.str();
+        std::stringstream contentLengthToString;
+    	contentLengthToString << content_length;
+    	std::string contentLengthStr = contentLengthToString.str();
+		response += "HTTP/1.1 " + statusCodeStr + " " + errorDefault + "\r\n";
         response += "Content-Type: text/html\r\n";
-		response += "Content-Length: " + std::to_string(content_length) + "\r\n";
-		response += "Connection: close\r\n\r\n" + errorHtml;
+		response += "Content-Length: " + contentLengthStr + "\r\n";
+		// response += "Connection: close\r\n\r\n" + errorHtml;
+		response += "\r\n" + errorHtml;
 		setResponse(response);
-        return response;
-
+        // return response;
 }
 
-std::string Response::generateResponse(int statusCode, const Request& request, const std::string& root, const std::string& filePath){
+void Response::generateResponse(int statusCode, const Request& request){
 
     std::string contentType;
-    std::string content = readFileToString(root + filePath);
+    std::string content = readFileToString(getPath());
     std::string response;
     
-    if(request.getURI().find("css"))
+	std::cout << " -------------------------------------- URI ------------------------ " << request.getURI() << std::endl;
+    if(request.getURI().find("css") != std::string::npos)
         contentType = "text/css";
-    else if(request.getURI().find("jpg") || request.getURI().find("jpeg"))
+    else if(request.getURI().find("jpg" ) != std::string::npos || request.getURI().find("jpeg") != std::string::npos)
         contentType = "image/jpeg";
-    else if(request.getURI().find("png"))
+    else if(request.getURI().find("png") != std::string::npos)
         contentType = "image/png";
-    else if(request.getURI().find("gif"))
+    else if(request.getURI().find("gif") != std::string::npos)
         contentType = "image/gif";
     else
         contentType = "text/html";
-    response += "HTTP/1.1 " + std::to_string(statusCode) + " OK\r\n";
+	
+	std::stringstream toConvertToString;
+    toConvertToString << statusCode;
+    std::string statusCodeStr = toConvertToString.str();
+
+	std::stringstream toConvertToStr;
+    toConvertToStr << content.length();
+    std::string contentLenStr = toConvertToStr.str();
+    response += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
     response += "Content-Type: " + contentType + "\r\n";
-    response += "Content-Length: " + std::to_string(content.length()) + "\r\n";
-    response += "Connection: Keep-Alive\r\n";
+    response += "Content-Length: " + contentLenStr + "\r\n";
+    // response += "Connection: Keep-Alive\r\n";
     response += "\r\n"; // Linha em branco indica o fim dos cabeçalhos
     response += content;
     setResponse(response);
-    return response;
+    // return response;
 
+}
+
+bool isDirectory(const std::string& path) {
+    struct stat fileStat;
+    if (stat(path.c_str(), &fileStat) != 0) {
+        // Erro ao obter informações do arquivo
+        return false;
+    }
+
+    return S_ISDIR(fileStat.st_mode);
+}
+
+// Função para dividir uma string com base no caractere "/"
+std::vector<std::string> splitString(const std::string& input, char delimiter) {
+    std::vector<std::string> tokens;
+    size_t start = 0;
+    size_t end = input.find(delimiter);
+
+    while (end != std::string::npos) {
+        tokens.push_back(input.substr(start, end - start));
+        start = end + 1;
+        end = input.find(delimiter, start);
+    }
+
+    // Adicione a última parte da string
+    tokens.push_back(input.substr(start));
+
+    return tokens;
 }
 
 std::string Response::httpGet(Request &request, SocketS &server, Response *this_response){
@@ -532,27 +623,211 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 
     std::map<std::string, LocationDirective> serverLocations = server.getLocations(); //obtenho informações das loalizacores d drtivas
     std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI()); //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
+	std::string uri = request.getURI();
+	if (it == serverLocations.end())
+	{
+		// casos em que nao tem literalmente o que vem na URI nos location (tipo /styles/styles.css ou /about.html)
+		for(std::map<std::string, LocationDirective>::iterator locFind = serverLocations.begin(); locFind != serverLocations.end(); ++locFind) //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
+		{
+			if (locFind->first != "/")
+			{
+					// std::cout << "O PRIMEIRO LOCATION É O HOOOME" << std::endl;
+		        if(uri == locFind->first || uri.find(locFind->first + "/") != std::string::npos || uri.find(locFind->first) != std::string::npos){
+					std::cout << "TESTE PRO CSS ********************" << std::endl;
+	                it = locFind;
+					std::cout << "Novo it::::: " << it->first << std::endl;
+	                break;
+	            }
+			}
+	    }
+	}
     std::map<std::string, std::vector< std::string > > locationDirectives; //cria map p armzenar dirtivas de localizacao
-	// tem que ver se, caso seja um diretorio... daí tem toda
+    
+    
+    // tem que ver se, caso seja um diretorio... daí tem toda
 	// a questão do autoindex
 	// se não for um diretorio (nao termina com '/')
 	// ou: se for um arquivo, tem extensão?
 
     if (it != serverLocations.end()){ // s enconra as dirtivas
-        std::cout << "Directives from this Location found!" << std::endl;
+        std::cout << "Location found! >> " << it->first << std::endl;
         locationDirectives = it->second.getDirectives(); //obtem a diretia de localizcao
-         std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
-        if (itRoot != locationDirectives.end())
+        std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
+        
+		if (itRoot != locationDirectives.end())
+		{
             root = itRoot->second[0]; // se tem root atualiza os valores especificados
+			// como tem um root especifico, junta com o location excluindo as partes "em comum" se tiver
+			// exemplo: root = web/pages e o uri ser /pages/index.html (tem que juntar, mantendo apenas um /pages/)
+			// Find the common substring
+			///////////////////////////////////////
+			// std::string commonSubstring = "";
+			// size_t minlen = std::min(root.length(), uri.length());
+			// size_t j = 0;
+    		// for (size_t i = 0; i < minlen; ++i) {
+    		//     if (root[i] == uri[j]) {
+    		//         commonSubstring += root[i];
+			// 		j++;
+    		//     }
+    		// }
+			// std::cout << "-- PARTE EM COMUM: " << commonSubstring << std::endl;
+			// // retirar a commonSubstring do uri e juntar?
+			// std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
+			// std::string caminhoCompleto = root + uriSemParteEmComum;
+			// std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
+			// if (isDirectory(caminhoCompleto)) {
+    		//     std::cout << caminhoCompleto << " é um diretório." << std::endl;
+    		// } else {
+    		//     std::cout << caminhoCompleto << " é um arquivo." << std::endl;
+    		// }
+			// testa aqui se é um diretorio ou arquivo que tá apontando...
+			// se for um diretorio e não tiver index -> aponta pro index geral
+			// se for um diretorio e TIVER INDEX -> vai juntar com o index
+			// se NÃO FOR um diretorio - se for um arquivo -> usa ele como caminho final, mesmo que tenha index
+		}
+		// okay.. defini qual é o root (se é ./ ou o web/pages)
+		// agora.. se o que chegou foi /styles/styles.css, a gente precisa deixar apenas styles.css e juntar com o root
+		// mas se o que chegou foi o arquivo -> about.html, por exemplo.. é só juntar com o root
+		// se o que chegou foi o proprio location (/about) por exemplo.. daí é só ver se tem index
+		std::vector<std::string> parts_uri = splitString(uri, '/');
 
-        std::cout << "Directives from this Location found!" << std::endl; //o mesmo para Index
-        locationDirectives = it->second.getDirectives();
-         std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-        if (itIndex != locationDirectives.end()){ //se tiver a diret index
-			    indexPage = itIndex->second[0];
-		      }
-		    else
-			    indexPage = server.getIndexFile();
+		if (parts_uri[0].empty())
+		{
+			std::cout << "Esse tá vaziooo" << std::endl;
+			parts_uri.erase(parts_uri.begin());
+		}
+		
+
+		if (parts_uri.size() > 1)
+		{
+			std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
+			std::cout << parts_uri[0] << " - " << parts_uri[0].size() << " e " << parts_uri[1] << std::endl;
+			std::string this_location = it->first;
+			std::string commonSubstring = "";
+			size_t minlen = std::min(this_location.length(), uri.length());
+			size_t j = 0;
+    		for (size_t i = 0; i < minlen; ++i) {
+    		    if (this_location[i] == uri[j]) {
+    		        commonSubstring += this_location[i];
+					j++;
+    		    }
+    		}
+			std::cout << "-- PARTE EM COMUM: " << commonSubstring << std::endl;
+			// retirar a commonSubstring do uri e juntar?
+			std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
+			std::string caminhoCompleto = "";
+			if (uri != "/")
+				caminhoCompleto = root + uriSemParteEmComum;
+			else
+				caminhoCompleto = root;
+			std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
+			if (isDirectory(caminhoCompleto)) {
+    	    std::cout << caminhoCompleto << " é um diretório." << std::endl;
+			locationDirectives = it->second.getDirectives();
+        	 std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+        	if (itIndex != locationDirectives.end()){ //se tiver a diret index
+				indexPage = itIndex->second[0];
+			}
+			else
+				indexPage = server.getIndexFile();
+			caminhoCompleto += indexPage;
+			this_response->setPath(caminhoCompleto);
+    		} else {
+    		    std::cout << caminhoCompleto << " é um arquivo." << std::endl;
+				this_response->setPath(caminhoCompleto);
+    		}
+		}
+		else
+		{
+			std::cout << "Tem só o arquivo de caminho ou só diretorio" << std::endl;
+			std::cout << parts_uri[0] << std::endl;
+			std::cout << "Location: " << it->first << std::endl;
+			std::string path;
+			if (uri == it->first)
+				path = root;
+			else	
+				path = root + parts_uri[0];
+			if (isDirectory(path)) {
+    	    	std::cout << path << " é um diretório." << std::endl;
+				locationDirectives = it->second.getDirectives();
+        		 std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+        		if (itIndex != locationDirectives.end()){ //se tiver a diret index
+					indexPage = itIndex->second[0];
+				}
+				else
+					indexPage = server.getIndexFile();
+				path += indexPage;
+				this_response->setPath(path);
+				}
+			else
+			{
+				std::cout << path << " é um arquivo" << std::endl;
+				this_response->setPath(path);
+			}
+			// Domingo: testar auto_index on com o /assets!!!!!!!!!!
+		}
+		// std::string this_location = it->first;
+		// std::string commonSubstring = "";
+		// size_t minlen = std::min(this_location.length(), uri.length());
+		// size_t j = 0;
+    	// for (size_t i = 0; i < minlen; ++i) {
+    	//     if (this_location[i] == uri[j]) {
+    	//         commonSubstring += this_location[i];
+		// 		j++;
+    	//     }
+    	// }
+		// /*
+		// 	root web/styles/
+		// 		uri1: /styles/stylesError.css
+		// */
+		// std::vector<std::string> parts_root = splitString(root, '/');
+		// std::string wholePath;
+		// int i = 0;
+		// while (i < parts_root.size() && i < parts_uri.size() && parts_root[i] == parts_uri[i]) {
+        // 	i++;
+    	// }
+
+		// std::cout << "-- PARTE EM COMUM: " << commonSubstring << std::endl;
+		// // retirar a commonSubstring do uri e juntar?
+		// std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
+		// std::string caminhoCompleto = "";
+		// if (uri != "/")
+		// 	caminhoCompleto = root + uriSemParteEmComum;
+		// else
+		// 	caminhoCompleto = root;
+		// std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
+		// if (isDirectory(caminhoCompleto)) {
+    	//     std::cout << caminhoCompleto << " é um diretório." << std::endl;
+		// 	locationDirectives = it->second.getDirectives();
+        // 	 std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+        // 	if (itIndex != locationDirectives.end()){ //se tiver a diret index
+		// 		indexPage = itIndex->second[0];
+		// 	}
+		// 	else
+		// 		indexPage = server.getIndexFile();
+		// 	caminhoCompleto += indexPage;
+		// 	this_response->setPath(caminhoCompleto);
+    	// } else {
+    	//     std::cout << caminhoCompleto << " é um arquivo." << std::endl;
+		// 	this_response->setPath(caminhoCompleto);
+    	// }
+        
+        // locationDirectives = it->second.getDirectives();
+        //  std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+        // if (itIndex != locationDirectives.end()){ //se tiver a diret index
+		// 	indexPage = itIndex->second[0];
+		// }
+		// else
+		// 	indexPage = server.getIndexFile();
+		// se o location nao tem um index especifico,
+		// só atribui o index geral se o location for de um diretorio
+		// qual a função que verifica se é um diretorio?? (tambem verifica se é arquivo)
+		//  --> junta root com o location (subtraindo parte em comum) e verifica se é um
+		//      diretorio --> se for, e o location nao tiver index, atribui o index geral
+		//                    se for e tiver index, só atribuir o valor do index especifico
+		// 				  -> se NÃO FOR DIRETORIO e for arquivo -> junta com o root respectivo (subtraindo partes em comum)
+
+		
 		// tem que testar pra validar que esse caminho existe...
 		// se não dá o que? server error?! --> como o nginx lida com isso?
 		// ele valida nesse ponto aqui mesmo, no momento da requisição
@@ -560,80 +835,29 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 
 
         // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
-        this_response->setPath(root + indexPage); //isso deveria atualizar o valor do path com o root mais a index
+        // this_response->setPath(root + indexPage); //isso deveria atualizar o valor do path com o root mais a index
+		std::cout << "CAMINHO COMPLETO DO RECURSO: " << this_response->getPath() << std::endl;
         std::string bodyHTML = readFileToString(this_response->getPath()); //declara o corpo do HTML
 		struct stat info;
 		if (stat(this_response->getPath().c_str(), &info) != 0)
 		{
 			// retorna pagina de erro (o caminho pra pagina nao existe)
-			
+			this_response->errorCodeHtml(404, server);
+			return this_response->getResponse();
 		}
-        this_response->_body = bodyHTML;
-        std::cout << "----------- CONSTRUÇÃO DA RESPONSE DO HTTPGET COMEÇA AQUI O: -----------------------------" << std::endl;
-		std::string response;
-		std::cout << "REQUEST URI: " << request.getURI() << std::endl;
-		if (request.getURI().find("styles") != std::string::npos)
-			response = "HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\r\n" + this_response->_body;
-        else
-			response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
-			// response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
-        this_response->setResponse(response);
-        return response;
-    	} else {
+		this_response->generateResponse(200, request);
+    	}
+		else
+		{
     	    std::cout << "This server doesnt have this location!!" << std::endl;
     	    this_response->errorCodeHtml(404, server);
+			return this_response->getResponse();
     	    //error404Html(response, root);
 		}
-        // std::string errorFilePath = root + "Error404.html";
-        // std::string errorHtml = readFileToString(errorFilePath);
-        // if (!errorHtml.empty()){ // deucertinho?
-        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorHtml;
-        //     setResponse(response);
-        //     return response;
-        // } else {
-        //     // se na tiver o .htm aprece uma msg
-        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorFilePath;
-        //     setResponse(response);
-        //     return response;
-        // }
-        // }
-        
-        /*
-        
-            else {
-            std::cout << "This server doesnt have this location!!" << std::endl;
-            std::string errorFilePath = root + "error404.html"; // Caminho para o arquivo HTML de erro 404
-
-            if (fileExists(errorFilePath)) {
-            std::string bodyHTML = readFileToString(errorFilePath);
-            std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + bodyHTML;
-            setResponse(response);
-            return response;
-            } else {
-            // Se o arquivo de erro personalizado não existir, use uma mensagem de erro padrão
-            std::string errorMessage = "<html><head></head><body><h1>Error 404</h1></body></html>";
-            std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorMessage;
-            setResponse(response);
-            return response;
-            }
-        }
-        
-        
-        
-        */
-        
-        //std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
-        // soma  body que leio da pagina
-        // std::string bodyHTML = readFileToString(getPath());
-        // juntar as strings
-        // cabçalho e o body 
-        
-        // this_response->setResponse(response);
-        // return response;
-    return "DEU MERDA JOHNSONS";
+		return this_response->getResponse();
 }
 
-std::string Response::buildResponse(Request &request, SocketS &server)
+void Response::buildResponse(Request &request, SocketS &server)
 {
     
     //////////    
@@ -663,9 +887,7 @@ std::string Response::buildResponse(Request &request, SocketS &server)
         // método é permitido pra esse servidor. Continua...
 		std::cout << "Encontramos o método permitido!" << std::endl;
 		std::string resposta = _methodsFunctions[requestMethod](request, server, this);
-		setResponse(resposta);
 		std::cout << "A resposta é:::: " << getResponse() << std::endl;
-    	return resposta;
     }
     else
     {
@@ -675,16 +897,7 @@ std::string Response::buildResponse(Request &request, SocketS &server)
         std::cout << "This server doesnt have this location!!" << std::endl;
         std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
         setResponse(response);
-        return response;    
     }
-    std::string fullResponse;
-    
-    // Construa os cabeçalhos aqui, usando os dados em _headers
-    
-    fullResponse += "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"; // Carla não esquece de adds uma linha em branco entre cabeçalhos e corpo
-    fullResponse += _body;  // Adicione o corpo da resposta
-    setResponse(fullResponse);
-    return fullResponse;
 }
 
 

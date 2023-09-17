@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/16 00:23:47 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/16 19:06:23 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -365,7 +365,7 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &line){
 			values.push_back(singleValue);
 		}
 		if (values.size() < 2)
-			throw ErrorException("Syntax Error: Missing values to directive in location block"); 
+			throw ErrorException("Syntax Error: Missing values to directive in location block");
 
 		// nao pode ter nem "listen" nem "server_name" dentro de um bloco location...
 		if (values[0].find("listen") != std::string::npos || values[0].find("server_name") != std::string::npos
@@ -625,6 +625,11 @@ bool ConfigParser::getAutoIndex(void) const
 	return _autoIndexOn;
 }
 
+
+
+
+
+
 // eu acho que isso é na hora de executar o autoindexamento, nao agora
 // agora é só pra armazenar essa informação no objeto configparser, que depois passa pro server
 void ConfigParser::processAutoIndex(std::string &line)
@@ -647,7 +652,10 @@ void ConfigParser::processAutoIndex(std::string &line)
 	else
 		throw ErrorException("Syntax Error: AutoIndex directive has wrong value. Value must be only ON | OFF");
 	_hasAutoIndex = true;
+    
+
     /*
+
 	passar essa função pra parte de execução do autoIndex:
 	try
     {
@@ -677,7 +685,9 @@ void ConfigParser::processAutoIndex(std::string &line)
         }
     } catch (const std::exception &e) {
         std::cout << "Error: " << e.what() << std::endl;
-    }*/
+    }
+    
+    */
 }
 
 void ConfigParser::processReturn(std::string &line)
@@ -737,9 +747,6 @@ const std::string& ConfigParser::getRoot(void)const{
     return _root;
 }
 
-const std::string ConfigParser::getErrorPage(int statusCode)const{
-    std::map<int, std::string>::const_iterator it = _errorPages.find(statusCode);
-        if (it != _errorPages.end())
-            return it->second;
-        return "";
+std::map<std::string, std::string> ConfigParser::getErrorPage(void)const{
+        return _errorPage;
 }

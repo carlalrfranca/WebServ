@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 23:44:51 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/16 18:59:36 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ class ConfigParser
 		void processReturn(std::string &line);
 		void processAllowMethods(std::string &line);
 		void processClientMaxBodySize(std::string &line);
+        void processErrorPage(std::map<std::string, std::string> errorPage);
 
 		// expansao do processamento do location (divisao da funcao)
 		void storeCurrentLocationDirectives(std::string &line);
@@ -44,23 +45,25 @@ class ConfigParser
         void setPort(int portNumber);
         void setAddress(std::string ipAddress);
         void setRoot(std::string root);
+		void setIndexFiles(std::string index);
+		void setLocations(std::map<std::string, LocationDirective>& locations);
+		void setIndexFile(std::string index);
         
-        
+		bool getAutoIndex(void) const;
         const std::string& getRoot(void)const;
         const std::string& getPort(void)const;
         const std::string& getAddress(void)const;
+		const std::string& getIndexFile(void) const;
         const std::vector<std::string>& getMethods(void)const;
         const std::vector<std::string>& getIndexFiles(void)const;
-		void setIndexFiles(std::string index);
-        const std::string getErrorPage(int statusCode)const;
-		std::map<std::string, LocationDirective> getLocations(void) const;
-		void setLocations(std::map<std::string, LocationDirective>& locations);
+        std::map<std::string, std::string> getErrorPage(void)const;
+        std::map<std::string, LocationDirective> getLocations(void) const;
 		void trimWhiteSpace(std::string &line);
 		void removeComments(std::string &line);
 	    void validateFile(std::ifstream& fileToParse);
-		const std::string& getIndexFile(void) const;
-		void setIndexFile(std::string index);
-		bool getAutoIndex(void) const;
+		void resetConfig(void);
+        void hasMandatoryParameters(void);
+        void listFilesAndGenerateHtml(std::string &line);
 	    // bool getHasDirLocation(void)const;
 	    // bool getHasDirListen(void)const;
         // bool getHasDirServerName(void)const;
@@ -69,10 +72,6 @@ class ConfigParser
         // bool getHasDirAllowMethods(void)const;
         // bool getHasDirMaxBodySize(void)const;
         // bool getHasDirReturn(void)const;
-		void resetConfig(void);
-
-        void hasMandatoryParameters(void);
-        void processErrorPage(std::map<std::string, std::string> errorPage);
 		// validar o tipo do ipaddress
 		bool contemApenasLetras(const std::string& str);
 		bool contemApenasNumeros(const std::string& str);

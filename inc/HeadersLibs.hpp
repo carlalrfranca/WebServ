@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/11 23:54:24 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/16 16:36:45 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 #include <sys/epoll.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <algorithm>
 
 // DEFINES
 #include <algorithm>

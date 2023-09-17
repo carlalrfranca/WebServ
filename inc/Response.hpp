@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/16 00:40:45 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/16 19:24:20 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ class Response{
         Response();
         ~Response();
         Response(Request request); //precisa desses dois
-        //Response &operator=(Response const &other);
         
         //getters and setters
         const std::string& getHeader(const std::string& header)const; // busca pelo campo de cabeçalho na lista de cabeçalhos
@@ -38,39 +37,31 @@ class Response{
         std::string getResponse()const;//foi criado outro metodo, precisa ajustar .cpp
 		std::string getDate()const;
 		
+        int  selectServer(Request& stringDomain, std::vector<SocketS> serverSocket);
         void setPath(const std::string& allPath); 
         void setStatusCode(const std::string& statusCode);
         void setContentType(const std::string& contentType);
         void setDateAndTime();
-        // void setContentLength(size_t length);
         void setResponse(const std::string& response);
-        int  selectServer(Request& stringDomain, std::vector<SocketS> serverSocket);
-        std::string generateResponse(int statusCode, const Request& request, const std::string& root, const std::string& filePath);
-        
-        //std::string httpPost(Request &request, SocketS &server);
-        //std::string httpDelete(Request &request, SocketS &server);
         
         //response methods
         std::string readHtmlFile(const std::string& filePath);
-        std::string buildResponse(Request &request, SocketS &server);
+        void buildResponse(Request &request, SocketS &server);
         bool contains(const std::vector<std::string>& vec, const std::string& content);
-        std::string createHTTPResponse200(int statusCode, SocketS &server);
+        void generateResponse(int statusCode, const Request& request);
         void reset(); //implementa a redefinição de resposta, limpando cabeçalhos e corpo
         void httpError(std::string errorCode, const std::string &errorMessage);
-		
-		//tá eu inicalizei dentro so .hpp, sei lá se isso pod o nao, mas se jogasse no construor or algum motivo
-		//acho ue dariamuito errado por ser uma const...se bem que eu pderia apenas tirar isso
-		
         void errorPage(Request &response, std::string &root);
-        
-		std::string errorCodeHtml(int statusCode, SocketS &server);
+		void errorCodeHtml(int statusCode, SocketS &server);
+        void listFilesAndGenerateHtml();
+        void generateHtmlFromFiles(const std::vector<std::string>& fileList);
 
 		// method for each method
-		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
-		// static std::string postMethod(Request &request, SocketS &server);
-		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
-		// static std::string getMethod(Request &request, SocketS &server, Response *this_response);
         static std::string httpGet(Request &request, SocketS &server, Response *this_response);
+		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
+		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
+		// static std::string postMethod(Request &request, SocketS &server);
+		// static std::string getMethod(Request &request, SocketS &server, Response *this_response);
         
     private:
     
@@ -100,6 +91,17 @@ class Response{
 };
 
 #endif 
+
+        //Response &operator=(Response const &other);
+        //std::string createHTTPResponse200(int statusCode, SocketS &server);
+		//tá eu inicalizei dentro so .hpp, sei lá se isso pod o nao, mas se jogasse no construor or algum motivo
+		//acho ue dariamuito errado por ser uma const...se bem que eu pderia apenas tirar isso
+        // void setContentLength(size_t length);
+        //std::string httpPost(Request &request, SocketS &server);
+        //std::string httpDelete(Request &request, SocketS &server);
+
+
+
 
 // std::ostream& operator<<(std::ostream& out, Response const& rhs);
         /*

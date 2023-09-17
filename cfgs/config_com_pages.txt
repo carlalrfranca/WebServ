@@ -1,5 +1,5 @@
 server{
-    listen localhost:2002;
+    listen localhost:2005;
     server_name example.com;
 	allow_methods GET
     root web/pages/;
@@ -8,7 +8,8 @@ server{
 		index index.html
 	}
 
-	location /styles.css {
+	location /assets {
+		root web/assets/
 		index styles.css
 	}
 
