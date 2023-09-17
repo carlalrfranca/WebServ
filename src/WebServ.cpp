@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/16 15:18:07 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 09:08:52 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -328,9 +328,9 @@ void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, s
 
 
 void WebServ::mainLoop(){
-    std::cout << "-----------------------------------------" << std::endl;
-    std::cout << "Servidor iniciado. Aguardando conexões..." << std::endl;
-    std::cout << "-----------------------------------------\n" << std::endl;
+    std::cout << BLUE << "-----------------------------------------" << END << std::endl;
+    std::cout << BLUE << "Servidor iniciado. Aguardando conexões..." << END << std::endl;
+    std::cout << BLUE << "-----------------------------------------\n" << END << std::endl;
     _epollS.addServersToEpoll(_serverSocket);
     int epollFd = _epollS.getEpollFd();
     if (epollFd == -1 || epollFd == -2)

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/16 19:06:23 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 09:22:36 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,38 +96,6 @@ std::map<std::string, LocationDirective> ConfigParser::getLocations(void) const{
 void ConfigParser::setLocations(std::map<std::string, LocationDirective>& locations){
 	_locations = locations;
 }
-
-// bool ConfigParser::getHasDirLocation(void)const{
-//     return _hasDirLocation;
-// }
-
-// bool ConfigParser::getHasDirListen(void)const{
-//     return _hasDirListen;
-// }
-
-// bool ConfigParser::getHasDirServerName(void)const{
-//     return _hasDirServerName;
-// }
-
-// bool ConfigParser::getHasDirRoot(void)const{
-//     return _hasDirRoot;
-// }
-
-// bool ConfigParser::getHasDirIndex(void)const{
-//     return _hasDirIndex;
-// }
-
-// bool ConfigParser::getHasDirAllowMethods(void)const{
-//     return _hasDirAllowMethods;
-// }
-
-// bool ConfigParser::getHasDirMaxBodySize(void)const{
-//     return _hasDirMaxBodySize;
-// }
-
-// bool ConfigParser::getHasDirReturn(void)const{
-//     return _hasDirReturn;
-// }
 
 bool ConfigParser::contemApenasLetras(const std::string& str) {
     for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
@@ -346,59 +314,51 @@ bool ConfigParser::processRoot(std::string &line){
     return _hasRoot;
 }
 
-void ConfigParser::storeCurrentLocationDirectives(std::string &line){
-	std::string directiveName = _currentLocationPathOnMap;
+void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
+	std::string currentLocation = _currentLocationPathOnMap;
 
-	std::map<std::string, LocationDirective>::iterator it = _locations.find(directiveName);
+	std::map<std::string, LocationDirective>::iterator it = _locations.find(currentLocation);
 	if (it != _locations.end())
 	{
 		// acessa o método atraves do iterador second.método()
 		// mas antes tem que extrair o nome da diretiva e o valor (splitar e colocar num vetor?)
 		// tambem contar quantos itens resultam do split porque isso quer dizer que a diretiva tem mais de um valor...
 		// primeiro, splitamos a linha da diretiva para poder separar o nome da diretiva de seus valores
-		std::istringstream iss(line);
-		std::vector<std::string> values;
+		std::istringstream iss(directiveLine);
+		std::vector<std::string> splittedLine;
 		std::string singleValue;
-
 		while (iss >> singleValue)
-		{
-			values.push_back(singleValue);
-		}
-		if (values.size() < 2)
+			splittedLine.push_back(singleValue);
+		
+		if (splittedLine.size() < 2)
 			throw ErrorException("Syntax Error: Missing values to directive in location block");
 
 		// nao pode ter nem "listen" nem "server_name" dentro de um bloco location...
-		if (values[0].find("listen") != std::string::npos || values[0].find("server_name") != std::string::npos
-			|| values[0].find("location") != std::string::npos)
+		if (splittedLine[0].find("listen") != std::string::npos || splittedLine[0].find("server_name") != std::string::npos
+			|| splittedLine[0].find("location") != std::string::npos)
 			throw ErrorException("Configuration Error: CANNOT have 'listen', 'server_name' or an internal 'location' in location block");
-		// if (values[0] != "index" || values[0] != "auto_index" || values[0] != "root" || values[0] != "error_page" || values[0] != "return")
+		// if (splittedLine[0] != "index" || splittedLine[0] != "auto_index" || splittedLine[0] != "root" || splittedLine[0] != "error_page" || splittedLine[0] != "return")
 			// throw ErrorException("Configuration Error: Prohibited directives in location block."); --> tem que distinguir locations normais da de cgi...
 		
 		// precisa verificar se essa diretiva JA EXISTE no location tambem...
-		std::map<std::string, std::vector<std::string> >::iterator directiveIt = it->second.getDirectives().find(values[0]);
+		std::map<std::string, std::vector<std::string> >::iterator directiveIt = it->second.getDirectives().find(splittedLine[0]);
 		if (directiveIt != it->second.getDirectives().end())
 			throw ErrorException("Syntax Error: Duplicated directive in location block"); 
 		// ------------------------------
 		// com os argumentos splitados e num vetor, vamos inserir a key no objeto
-		it->second.addDirective(values[0], values[1]);
-		// std::cout << "Diretiva: " << values[0] << std::endl;
-		// std::cout << "Valor: " << values[1] << std::endl;
-		// agora vamos verificar se tem mais valores a serem inseridos para essa
+		it->second.addDirective(splittedLine[0], splittedLine[1]);
 		// diretiva (se há mais itens)
-		if (values.size() > 2)
+		if (splittedLine.size() > 2)
 		{
-			size_t totalValues = values.size();
-			// std::cout << "Size values: " << values.size() << std::endl;
+			size_t totalValues = splittedLine.size();
 			size_t currentIndex = 2;
 			while (currentIndex < totalValues)
 			{
-				it->second.addDirective(values[0], values[currentIndex]);
-				// std::cout << "Valor: " << values[currentIndex] << std::endl;
+				it->second.addDirective(splittedLine[0], splittedLine[currentIndex]);
 				std::cout << currentIndex << std::endl;
 				currentIndex++;
 			}
 		}
-		// std::cout << "TAMANHO DO LOCATIONS: " << _locations.size() << std::endl;
 	}
 }
 
@@ -438,14 +398,7 @@ void ConfigParser::validateFile(std::ifstream& fileToParse){
     if(fileSize <= 0)
         throw ErrorException("File is empty");
 }
-/*
-void ConfigParser::processErrorPages(std::map<std::string, std::string> errorPages){
 
-    errorPages = _errorPages;
-    
-    //vai ter que ser um mapa
-    // apenasvai setar
-}*/
 /*
 
 void ConfigParser::hasMandatoryParameters(){
@@ -468,16 +421,8 @@ void ConfigParser::hasMandatoryParameters(){
 }*/
 
 /*
-    DIRETIVA DUPLICADA OK
-    VER SE JÁ ESTA PREENCHIDO OK
-    ESTA ARMAZENANDO NO ConfigParser OK
-    ANTES DE PARSEAR VERIFICAR SE O ATRIBUTO NA QUAL SE ARMAZENA JA ESTA PREENCHIDO OK
-*/
-
-/*
-    EM CADA METODO PROCESS PRECISO ANTES VERIFICAR SE A
     NO CASOS DAS PORTAS PRECISO VER O RANGE DE PORTAS PERMITIDAS 
-    FORA DISSO DA ERRO  EXCEÇÃO
+    FORA DISSO DA ERRO EXCEÇÃO
 */
 
 void ConfigParser::processLocation(std::string &line)
@@ -625,13 +570,6 @@ bool ConfigParser::getAutoIndex(void) const
 	return _autoIndexOn;
 }
 
-
-
-
-
-
-// eu acho que isso é na hora de executar o autoindexamento, nao agora
-// agora é só pra armazenar essa informação no objeto configparser, que depois passa pro server
 void ConfigParser::processAutoIndex(std::string &line)
 {
 	if (_hasAutoIndex)
@@ -652,42 +590,6 @@ void ConfigParser::processAutoIndex(std::string &line)
 	else
 		throw ErrorException("Syntax Error: AutoIndex directive has wrong value. Value must be only ON | OFF");
 	_hasAutoIndex = true;
-    
-
-    /*
-
-	passar essa função pra parte de execução do autoIndex:
-	try
-    {
-        if (line == "on")
-        {
-            const char *directoryPath = ".";
-            DIR *directory = opendir(directoryPath);
-            if (directory)
-            {
-                struct dirent *entry;
-                std::vector<std::string> fileList;
-                while ((entry = readdir(directory)) != NULL)
-                    fileList.push_back(std::string(entry->d_name));
-                for (size_t i = 0; i < fileList.size(); ++i)
-				{
-					// aqui tá só listando, mas vamos precisar gerar um html com isso
-                    std::cout << fileList[i] << std::endl;
-				}
-                closedir(directory);
-            } else {
-                throw std::runtime_error("Error when open directory.");
-            }
-        } else if (line == "off") {
-            std::cout << "Autoindex is on." << std::endl;
-        } else {
-            throw std::runtime_error("Invalid value to autoindex.");
-        }
-    } catch (const std::exception &e) {
-        std::cout << "Error: " << e.what() << std::endl;
-    }
-    
-    */
 }
 
 void ConfigParser::processReturn(std::string &line)

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/16 23:04:37 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 09:28:35 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -602,13 +602,15 @@ std::vector<std::string> splitString(const std::string& input, char delimiter) {
     size_t end = input.find(delimiter);
 
     while (end != std::string::npos) {
-        tokens.push_back(input.substr(start, end - start));
-        start = end + 1;
         end = input.find(delimiter, start);
+		std::string part = input.substr(start, end - start);
+		if (!part.empty())
+        	tokens.push_back(part);
+        start = end + 1;
     }
 
     // Adicione a última parte da string
-    tokens.push_back(input.substr(start));
+    // tokens.push_back(input.substr(start));
 
     return tokens;
 }
@@ -627,15 +629,16 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 	if (it == serverLocations.end())
 	{
 		// casos em que nao tem literalmente o que vem na URI nos location (tipo /styles/styles.css ou /about.html)
+		// vamos ter que encontrar o location que lida com esse tipo de URI. No caso do 'styles/styles.css', tem que ser o location 'styles/'
+		// e no caso do '/about.html', tem que ser o location 'about'
 		for(std::map<std::string, LocationDirective>::iterator locFind = serverLocations.begin(); locFind != serverLocations.end(); ++locFind) //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
 		{
 			if (locFind->first != "/")
 			{
-					// std::cout << "O PRIMEIRO LOCATION É O HOOOME" << std::endl;
+				// nao pode tirar as duas primeiras condições? só deixar a terceira?
 		        if(uri == locFind->first || uri.find(locFind->first + "/") != std::string::npos || uri.find(locFind->first) != std::string::npos){
-					std::cout << "TESTE PRO CSS ********************" << std::endl;
 	                it = locFind;
-					std::cout << "Novo it::::: " << it->first << std::endl;
+					std::cout << YELLOW << "LOCATION que se ENCAIXA nessa URI >>>>> " << it->first << END << std::endl;
 	                break;
 	            }
 			}
@@ -656,30 +659,7 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
         
 		if (itRoot != locationDirectives.end())
 		{
-            root = itRoot->second[0]; // se tem root atualiza os valores especificados
-			// como tem um root especifico, junta com o location excluindo as partes "em comum" se tiver
-			// exemplo: root = web/pages e o uri ser /pages/index.html (tem que juntar, mantendo apenas um /pages/)
-			// Find the common substring
-			///////////////////////////////////////
-			// std::string commonSubstring = "";
-			// size_t minlen = std::min(root.length(), uri.length());
-			// size_t j = 0;
-    		// for (size_t i = 0; i < minlen; ++i) {
-    		//     if (root[i] == uri[j]) {
-    		//         commonSubstring += root[i];
-			// 		j++;
-    		//     }
-    		// }
-			// std::cout << "-- PARTE EM COMUM: " << commonSubstring << std::endl;
-			// // retirar a commonSubstring do uri e juntar?
-			// std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
-			// std::string caminhoCompleto = root + uriSemParteEmComum;
-			// std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
-			// if (isDirectory(caminhoCompleto)) {
-    		//     std::cout << caminhoCompleto << " é um diretório." << std::endl;
-    		// } else {
-    		//     std::cout << caminhoCompleto << " é um arquivo." << std::endl;
-    		// }
+            root = itRoot->second[0];
 			// testa aqui se é um diretorio ou arquivo que tá apontando...
 			// se for um diretorio e não tiver index -> aponta pro index geral
 			// se for um diretorio e TIVER INDEX -> vai juntar com o index
@@ -691,7 +671,7 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 		// se o que chegou foi o proprio location (/about) por exemplo.. daí é só ver se tem index
 		std::vector<std::string> parts_uri = splitString(uri, '/');
 
-		if (parts_uri[0].empty())
+		if (parts_uri.size() > 1 && parts_uri[0].empty())
 		{
 			std::cout << "Esse tá vaziooo" << std::endl;
 			parts_uri.erase(parts_uri.begin());
@@ -740,7 +720,8 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 		else
 		{
 			std::cout << "Tem só o arquivo de caminho ou só diretorio" << std::endl;
-			std::cout << parts_uri[0] << std::endl;
+			if (parts_uri.size() > 0)
+				std::cout << parts_uri[0] << std::endl;
 			std::cout << "Location: " << it->first << std::endl;
 			std::string path;
 			if (uri == it->first)
@@ -766,74 +747,6 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 			}
 			// Domingo: testar auto_index on com o /assets!!!!!!!!!!
 		}
-		// std::string this_location = it->first;
-		// std::string commonSubstring = "";
-		// size_t minlen = std::min(this_location.length(), uri.length());
-		// size_t j = 0;
-    	// for (size_t i = 0; i < minlen; ++i) {
-    	//     if (this_location[i] == uri[j]) {
-    	//         commonSubstring += this_location[i];
-		// 		j++;
-    	//     }
-    	// }
-		// /*
-		// 	root web/styles/
-		// 		uri1: /styles/stylesError.css
-		// */
-		// std::vector<std::string> parts_root = splitString(root, '/');
-		// std::string wholePath;
-		// int i = 0;
-		// while (i < parts_root.size() && i < parts_uri.size() && parts_root[i] == parts_uri[i]) {
-        // 	i++;
-    	// }
-
-		// std::cout << "-- PARTE EM COMUM: " << commonSubstring << std::endl;
-		// // retirar a commonSubstring do uri e juntar?
-		// std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
-		// std::string caminhoCompleto = "";
-		// if (uri != "/")
-		// 	caminhoCompleto = root + uriSemParteEmComum;
-		// else
-		// 	caminhoCompleto = root;
-		// std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
-		// if (isDirectory(caminhoCompleto)) {
-    	//     std::cout << caminhoCompleto << " é um diretório." << std::endl;
-		// 	locationDirectives = it->second.getDirectives();
-        // 	 std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-        // 	if (itIndex != locationDirectives.end()){ //se tiver a diret index
-		// 		indexPage = itIndex->second[0];
-		// 	}
-		// 	else
-		// 		indexPage = server.getIndexFile();
-		// 	caminhoCompleto += indexPage;
-		// 	this_response->setPath(caminhoCompleto);
-    	// } else {
-    	//     std::cout << caminhoCompleto << " é um arquivo." << std::endl;
-		// 	this_response->setPath(caminhoCompleto);
-    	// }
-        
-        // locationDirectives = it->second.getDirectives();
-        //  std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-        // if (itIndex != locationDirectives.end()){ //se tiver a diret index
-		// 	indexPage = itIndex->second[0];
-		// }
-		// else
-		// 	indexPage = server.getIndexFile();
-		// se o location nao tem um index especifico,
-		// só atribui o index geral se o location for de um diretorio
-		// qual a função que verifica se é um diretorio?? (tambem verifica se é arquivo)
-		//  --> junta root com o location (subtraindo parte em comum) e verifica se é um
-		//      diretorio --> se for, e o location nao tiver index, atribui o index geral
-		//                    se for e tiver index, só atribuir o valor do index especifico
-		// 				  -> se NÃO FOR DIRETORIO e for arquivo -> junta com o root respectivo (subtraindo partes em comum)
-
-		
-		// tem que testar pra validar que esse caminho existe...
-		// se não dá o que? server error?! --> como o nginx lida com isso?
-		// ele valida nesse ponto aqui mesmo, no momento da requisição
-		// se o arquivo NÃO EXISTE, ele retorna um 404 (not found)
-
-
         // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
         // this_response->setPath(root + indexPage); //isso deveria atualizar o valor do path com o root mais a index
 		std::cout << "CAMINHO COMPLETO DO RECURSO: " << this_response->getPath() << std::endl;
@@ -859,42 +772,37 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 
 void Response::buildResponse(Request &request, SocketS &server)
 {
-    
-    //////////    
-    // Implementação para construir a resposta completa, incluindo cabeçalho e corpo
-    // Incluir os cabeçalhos necessários, como Content-Length e outros
-    // Retorne a resposta completa construída
-    //////////
+    /*
+    	Implementação para construir a resposta completa, incluindo cabeçalho e corpo
+    	Incluir os cabeçalhos necessários, como Content-Length e outros
+    	Retorne a resposta completa construída
+    */
 
-    
-	std::cout << "----> CHEGAMOS AO BUILD RESPONSE -----" << std::endl;
+	std::cout << YELLOW << "-------> CHEGAMOS AO BUILD RESPONSE <--------" << END << std::endl;
     // verificar se o método requisitado pela solicitação é permitido pra esse servidor
     std::vector<std::string> allowed_methods = server.getMethods();
     std::string requestMethod = request.getMethod();
     
-    bool found = false;
+    bool isAllowedMethod = false;
 
     for (std::vector<std::string>::iterator it = allowed_methods.begin(); it != allowed_methods.end(); ++it) {
         if (strcmp(it->c_str(), requestMethod.c_str()) == 0) {
-            found = true;
+            isAllowedMethod = true;
             break;
         }
     }
 
     std::string hasRoot;
 
-    if (found) {
-        // método é permitido pra esse servidor. Continua...
-		std::cout << "Encontramos o método permitido!" << std::endl;
+    if (isAllowedMethod) {
 		std::string resposta = _methodsFunctions[requestMethod](request, server, this);
-		std::cout << "A resposta é:::: " << getResponse() << std::endl;
+		std::cout << BLUE << " ***** A resposta é *****\n" << getResponse() << END << std::endl;
     }
     else
     {
         //constrói resposta de erro porque esse método não é permitido
         // e retorna
         std::cout << "MÉTODO NÃO PERMITIDO!";
-        std::cout << "This server doesnt have this location!!" << std::endl;
         std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
         setResponse(response);
     }

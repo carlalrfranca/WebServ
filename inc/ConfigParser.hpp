@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/16 18:59:36 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 09:16:35 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class ConfigParser
         void processErrorPage(std::map<std::string, std::string> errorPage);
 
 		// expansao do processamento do location (divisao da funcao)
-		void storeCurrentLocationDirectives(std::string &line);
+		void storeCurrentLocationDirectives(std::string &directiveLine);
         void processErrorPage(std::string &line);
 		void processRewrite(std::string &line);
         void processAutoIndex(std::string &line);
