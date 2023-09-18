@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/18 00:00:58 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/18 12:41:24 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -654,25 +654,20 @@ bool isDirectory(const std::string& path)
 //     return tokens;
 // }
 
-std::string Response::httpGet(Request &request, SocketS &server, Response *this_response){
-    std::string root;
-	std::string indexPage;
-
-	root = server.getRoot();
-	// ACIMA: não é preciso também ver se tem um ROOT ESPECIFICO DO LOCATION? (e, caso tenha,
-	// utilizá-lo como referencia?)
-
-    std::map<std::string, LocationDirective> serverLocations = server.getLocations(); //obtenho informações das loalizacores d drtivas
+std::map<std::string, LocationDirective>::iterator findRequestedLocation(Request &request, SocketS &server, std::map<std::string, LocationDirective>& serverLocations)
+{
+	 //obtenho informações das loalizacores d drtivas
     std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI()); //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
 	std::string uri = request.getURI();
 	if (it == serverLocations.end())
 	{
+		bool canBeRootLoc = false;
 		// casos em que nao tem literalmente o que vem na URI nos location (tipo /styles/styles.css ou /about.html)
 		// vamos ter que encontrar o location que lida com esse tipo de URI. No caso do 'styles/styles.css', tem que ser o location 'styles/'
 		// e no caso do '/about.html', tem que ser o location 'about'
 		for(std::map<std::string, LocationDirective>::iterator locFind = serverLocations.begin(); locFind != serverLocations.end(); ++locFind) //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
 		{
-			bool canBeRootLoc = false;
+			// bool canBeRootLoc = false;
 			if (locFind->first == "/")
 				canBeRootLoc = true;
 			if (locFind->first != "/")
@@ -681,22 +676,212 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 		        if(uri == locFind->first || uri.find(locFind->first + "/") != std::string::npos || uri.find(locFind->first) != std::string::npos){
 	                it = locFind;
 					std::cout << YELLOW << "LOCATION que se ENCAIXA nessa URI >>>>> " << it->first << END << std::endl;
-	                break;
+	                return it;
 	            }
 			}
-			if (it == serverLocations.end() && canBeRootLoc == true)
-				it = serverLocations.find("/");
 	    }
+		if (it == serverLocations.end() && canBeRootLoc == true) //caso nao haja um location mais especifico, o location '/' vai responder pela requisição
+			it = serverLocations.find("/");
 	}
-    std::map<std::string, std::vector< std::string > > locationDirectives; //cria map p armzenar dirtivas de localizacao
-    
-    
-    // tem que ver se, caso seja um diretorio... daí tem toda
-	// a questão do autoindex
-	// se não for um diretorio (nao termina com '/')
-	// ou: se for um arquivo, tem extensão?
+	std::cout << YELLOW << "LOCATION que se ENCAIXA >> " << it->first << END << std::endl;
+	return it;
+}
 
-    if (it != serverLocations.end()){ // s enconra as dirtivas
+/*
+	Quebrar a parte de CONSTRUÇÃO DO PATH:
+	1) buildPathToResource() que chamará:
+	  -> 
+*/
+
+bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it, std::string indexPage)
+{
+	// std::cout << path << " é um diretório." << std::endl;
+	locationDirectives = it->second.getDirectives();
+       std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+    if (itIndex != locationDirectives.end()){ //não é o oposto? primeiro ve que se tem autoindex, se nao tiver (ou tiver off?) ve se tem index e serve se tiver? (ou gera pagina de erro se nao?)
+		indexPage = itIndex->second[0];
+	}
+	else
+	{
+		// verificar se tem o autoindex, se não -> retorna pagina de erro
+		std::cout << YELLOW << "Aqui teria que produzir o autoindex" << END << std::endl;
+		// vê se tem auto_index on, se nao, dá erro, se sim, produzir o autoindex
+		std::map<std::string, std::vector< std::string > >::iterator itAutoIndex = locationDirectives.find("auto_index");
+		if (itAutoIndex != locationDirectives.end())
+		{
+			std::cout << BLUE << itAutoIndex->second[0] << END << std::endl;
+			std::cout << BLUE << "Tamanho AUTOINDEX: " << itAutoIndex->second.size() << END << std::endl;
+			if (itAutoIndex->second[0] == "on")
+			{
+				setPath(path);
+				listFilesAndGenerateHtml();
+				return true;
+			}
+			else
+			{
+				errorCodeHtml(403, server);
+				return true;
+			}
+		}
+		else
+		{
+			errorCodeHtml(404, server);
+			return true;
+		}
+		// this_response->setPath(path); // nesse caso, o root desse location
+		// indexPage = server.getIndexFile();
+	}
+	// se nao tiver index, na verdade, ver se o auto_index está on e preparar isso como resposta
+	path += indexPage;
+	setPath(path);
+	return false;
+}
+
+std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
+{
+	std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
+	std::cout << parts_uri[0] << " - " << parts_uri[0].size() << " e " << parts_uri[1] << std::endl;
+	std::string this_location = it->first;
+	std::string commonSubstring = "";
+	size_t minlen = std::min(this_location.length(), uri.length());
+	size_t j = 0;
+    for (size_t i = 0; i < minlen; ++i) {
+        if (this_location[i] == uri[j]) {
+            commonSubstring += this_location[i];
+			j++;
+        }
+    }
+	std::cout << "-- PARTE EM COMUM: " << commonSubstring << std::endl;
+	// retirar a commonSubstring do uri e juntar?
+	std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
+	std::string caminhoCompleto = "";
+	if (uri != "/")
+		caminhoCompleto = root + uriSemParteEmComum; // isso ja vai adicionar todo o caminho que vem da uri, se tiver?
+	else
+		caminhoCompleto = root;
+	// std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
+	return caminhoCompleto;
+}
+
+bool Response::buildPathToResource(std::string root, Request &request, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it)
+{
+	std::string indexPage;
+	std::string uri = request.getURI();
+	std::vector<std::string> parts_uri = _utils.splitString(uri, '/');
+
+	if (parts_uri.size() > 1) // a uri teve várias partes, exemplo: styles/styles.css, ou seja, precisamos ver se a uri tem algo de comum com o root usado pra remover do path final, e juntar o resto
+	{
+		// extract
+		std::string pathToResource = extractUriAndBuildPathToResource(root, parts_uri, uri, it);
+		std::cout << YELLOW << "Caminho completo quando tem ROOT ESPECIFICA: " << pathToResource << END << std::endl;
+		
+		// dividir isso pra outra função chamada aqui (ou na buildPath)
+		if (isDirectory(pathToResource)) {
+			bool isErrorPageOrAutoIndexPage = isResponseADirectoryListingOrErrorPage(pathToResource, server, locationDirectives, it, indexPage);
+			if (isErrorPageOrAutoIndexPage == true)
+				return true;
+        	// std::cout << pathToResource << " é um diretório." << std::endl;
+			// locationDirectives = it->second.getDirectives();
+       		//  std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+       		// if (itIndex != locationDirectives.end()){ //se tiver a diret index
+			// 	indexPage = itIndex->second[0];
+			// }
+			// else
+			// {
+			// 	// verificar se tem o autoindex, se não -> retorna pagina de erro
+			// 	std::cout << YELLOW << "Aqui teria que produzir o autoindex" << END << std::endl;
+			// 	indexPage = server.getIndexFile();
+			// }
+			// pathToResource += indexPage;
+			// // caso a requisição seja para um diretório e não tenha index, ver se o autoindex está ativado e chamar nesse caso
+			// setPath(pathToResource);
+    	} else {
+    	    std::cout << YELLOW << pathToResource << " é um arquivo." << END << std::endl;
+			setPath(pathToResource);
+    	}
+	}
+	else // a uri NÃO teve várias partes, exemplo: about.html ou /images/ | /images (ou seja, não precisa identificar e extrair alguma parte da uri, ou a uri é igual à location - e daí é só usar o root, ou basta juntá-la com o root)
+	{
+		std::cout << "Tem só o arquivo de caminho ou só diretorio" << std::endl;
+		// if (parts_uri.size() > 0)
+			// std::cout << parts_uri[0] << std::endl;
+		std::cout << "Location: " << it->first << std::endl;
+		std::string path;
+		if (uri == it->first || uri + '/' == it->first || it->first + '/' == uri) //essa terceira condição vai ferrar outros casos do site?
+			path = root;
+		else
+			path = root + parts_uri[0];
+		std::cout << "Caminho completo >>> " << path << std::endl;
+		// dividir isso pra outra função chamada aqui (ou na buildPath)
+		
+		if (isDirectory(path)) {
+			bool isErrorPageOrAutoIndexPage = isResponseADirectoryListingOrErrorPage(path, server, locationDirectives, it, indexPage);
+			if (isErrorPageOrAutoIndexPage == true)
+				return true;
+        	// std::cout << path << " é um diretório." << std::endl;
+			// locationDirectives = it->second.getDirectives();
+       		// std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+       		// if (itIndex != locationDirectives.end()){ //se tiver a diret index
+			// 	indexPage = itIndex->second[0];
+			// }
+			// else
+			// {
+			// 	// verificar se tem o autoindex, se não -> retorna pagina de erro
+			// 	std::cout << YELLOW << "Aqui teria que produzir o autoindex" << END << std::endl;
+			// 	// vê se tem auto_index on, se nao, dá erro, se sim, produzir o autoindex
+			// 	std::map<std::string, std::vector< std::string > >::iterator itAutoIndex = locationDirectives.find("auto_index");
+			// 	if (itAutoIndex != locationDirectives.end())
+			// 	{
+			// 		std::cout << BLUE << itAutoIndex->second[0] << END << std::endl;
+			// 		std::cout << BLUE << "Tamanho AUTOINDEX: " << itAutoIndex->second.size() << END << std::endl;
+			// 		if (itAutoIndex->second[0] == "on")
+			// 		{
+			// 			setPath(path);
+			// 			listFilesAndGenerateHtml();
+			// 			return true;
+			// 		}
+			// 		else
+			// 		{
+			// 			errorCodeHtml(403, server);
+			// 			return true;
+			// 		}
+			// 	}
+			// 	else
+			// 	{
+			// 		errorCodeHtml(404, server);
+			// 		return true;
+			// 	}
+			// 	// this_response->setPath(path); // nesse caso, o root desse location
+			// 	// indexPage = server.getIndexFile();
+			// }
+			// // se nao tiver index, na verdade, ver se o auto_index está on e preparar isso como resposta
+			// path += indexPage;
+			// setPath(path);
+		}
+		else
+		{
+			std::cout << path << " é um arquivo" << std::endl;
+			setPath(path);
+		}
+		// Domingo: testar auto_index on com o /assets!!!!!!!!!!
+	}
+	return false;
+}
+
+std::string Response::httpGet(Request &request, SocketS &server, Response *this_response){
+    std::string root;
+	// std::string indexPage;
+
+	root = server.getRoot();
+	// ACIMA: não é preciso também ver se tem um ROOT ESPECIFICO DO LOCATION? (e, caso tenha,
+	// utilizá-lo como referencia?)
+
+	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+	std::map<std::string, LocationDirective>::iterator it = findRequestedLocation(request, server, serverLocations);
+	std::string uri = request.getURI();
+    std::map<std::string, std::vector< std::string > > locationDirectives; //cria map p armazenar diretivas de localizacao
+
+    if (it != serverLocations.end()){ // se encontrou uma location pra responder à requisição
         std::cout << "Location found! >> " << it->first << std::endl;
         locationDirectives = it->second.getDirectives(); //obtem a diretia de localizcao
         std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
@@ -713,117 +898,19 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 		// agora.. se o que chegou foi /styles/styles.css, a gente precisa deixar apenas styles.css e juntar com o root
 		// mas se o que chegou foi o arquivo -> about.html, por exemplo.. é só juntar com o root
 		// se o que chegou foi o proprio location (/about) por exemplo.. daí é só ver se tem index
-		std::vector<std::string> parts_uri = this_response->_utils.splitString(uri, '/');
+		// ------------------------------------------- //
+		// faz um método buildPath que vai ter esse if/else e retorna
+		// nao uma string, mas verdadeiro ou falso pra continuar (nos "returns", devolve falso, e  daí essa função aqui
+		// verifica que, se for falso, é só retornar direto (no caso, aqui, a string response como tá fazendo))
+		// senão só continua...
+		// tem que definir se a uri tem varias partes separadas por '/' ou apenas uma //
 
-		if (parts_uri.size() > 1 && parts_uri[0].empty())
-		{
-			std::cout << "Esse tá vaziooo" << std::endl;
-			parts_uri.erase(parts_uri.begin());
-		}
-		if (parts_uri.size() > 1)
-		{
-			// extract
-			std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
-			std::cout << parts_uri[0] << " - " << parts_uri[0].size() << " e " << parts_uri[1] << std::endl;
-			std::string this_location = it->first;
-			std::string commonSubstring = "";
-			size_t minlen = std::min(this_location.length(), uri.length());
-			size_t j = 0;
-    		for (size_t i = 0; i < minlen; ++i) {
-    		    if (this_location[i] == uri[j]) {
-    		        commonSubstring += this_location[i];
-					j++;
-    		    }
-    		}
-			std::cout << "-- PARTE EM COMUM: " << commonSubstring << std::endl;
-			// retirar a commonSubstring do uri e juntar?
-			std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
-			std::string caminhoCompleto = "";
-			if (uri != "/")
-				caminhoCompleto = root + uriSemParteEmComum; // isso ja vai adicionar todo o caminho que vem da uri, se tiver?
-			else
-				caminhoCompleto = root;
-			std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
-			if (isDirectory(caminhoCompleto)) {
-    	    	std::cout << caminhoCompleto << " é um diretório." << std::endl;
-				locationDirectives = it->second.getDirectives();
-        		 std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-        		if (itIndex != locationDirectives.end()){ //se tiver a diret index
-					indexPage = itIndex->second[0];
-				}
-				else
-				{
-					// verificar se tem o autoindex, se não -> retorna pagina de erro
-					std::cout << YELLOW << "Aqui teria que produzir o autoindex" << END << std::endl;
-					indexPage = server.getIndexFile();
-				}
-				caminhoCompleto += indexPage;
-				// caso a requisição seja para um diretório e não tenha index, ver se o autoindex está ativado e chamar nesse caso
-				this_response->setPath(caminhoCompleto);
-    		} else {
-    		    std::cout << caminhoCompleto << " é um arquivo." << std::endl;
-				this_response->setPath(caminhoCompleto);
-    		}
-		}
-		else
-		{
-			std::cout << "Tem só o arquivo de caminho ou só diretorio" << std::endl;
-			if (parts_uri.size() > 0)
-				std::cout << parts_uri[0] << std::endl;
-			std::cout << "Location: " << it->first << std::endl;
-			std::string path;
-			if (uri == it->first || uri + '/' == it->first || it->first + '/' == uri) //essa terceira condição vai ferrar outros casos do site?
-				path = root;
-			else
-				path = root + parts_uri[0];
-			if (isDirectory(path)) {
-    	    	std::cout << path << " é um diretório." << std::endl;
-				locationDirectives = it->second.getDirectives();
-        		std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-        		if (itIndex != locationDirectives.end()){ //se tiver a diret index
-					indexPage = itIndex->second[0];
-				}
-				else
-				{
-					// verificar se tem o autoindex, se não -> retorna pagina de erro
-					std::cout << YELLOW << "Aqui teria que produzir o autoindex" << END << std::endl;
-					// vê se tem auto_index on, se nao, dá erro, se sim, produzir o autoindex
-					std::map<std::string, std::vector< std::string > >::iterator itAutoIndex = locationDirectives.find("auto_index");
-					if (itAutoIndex != locationDirectives.end())
-					{
-						std::cout << BLUE << itAutoIndex->second[0] << END << std::endl;
-						std::cout << BLUE << "Tamanho AUTOINDEX: " << itAutoIndex->second.size() << END << std::endl;
-						if (itAutoIndex->second[0] == "on")
-						{
-							this_response->setPath(path);
-							this_response->listFilesAndGenerateHtml();
-							return this_response->getResponse();
-						}
-						else
-						{
-							this_response->errorCodeHtml(403, server);
-							return this_response->getResponse();
-						}
-					}
-					else
-					{
-						this_response->errorCodeHtml(404, server);
-						return this_response->getResponse();
-					}
-					// this_response->setPath(path); // nesse caso, o root desse location
-					// indexPage = server.getIndexFile();
-				}
-				// se nao tiver index, na verdade, ver se o auto_index está on e preparar isso como resposta
-				path += indexPage;
-				this_response->setPath(path);
-			}
-			else
-			{
-				std::cout << path << " é um arquivo" << std::endl;
-				this_response->setPath(path);
-			}
-			// Domingo: testar auto_index on com o /assets!!!!!!!!!!
-		}
+		// 	// Domingo: testar auto_index on com o /assets!!!!!!!!!!
+		// }
+		bool isErrorPageOrAutoIndexPage = this_response->buildPathToResource(root, request, server, locationDirectives, it);
+		if (isErrorPageOrAutoIndexPage == true)
+			return this_response->getResponse();
+		// ------------------------------------------- //
         // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
         // this_response->setPath(root + indexPage); //isso deveria atualizar o valor do path com o root mais a index
 		std::cout << "CAMINHO COMPLETO DO RECURSO: " << this_response->getPath() << std::endl;
