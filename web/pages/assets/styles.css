@@ -17,6 +17,10 @@ h1 {
   font-family: "Montserrat", sans-serif;
 }
 
+h2 {
+	color: #f6f4e6;
+}
+
 
 body {
   background: #272727;
@@ -251,3 +255,100 @@ footer {
 
 
 /*  */
+
+/* form */
+
+#myForm {
+	display: flex;
+	flex-direction: column;
+	color: white;
+	width: 35%;
+	min-width: 250px;
+}
+
+#myForm input {
+	padding: 0.5rem;
+}
+
+.form-button {
+	border: 1px solid #3b3b3b;
+	background-color: #3b3b3b;
+	color: #bb9b49;
+	cursor: pointer;
+	padding: 0.75rem;
+	transition: 0.3s;
+	/* position: absolute;
+	bottom: 2rem; */
+}
+
+.form-button:hover {
+	background-color: #272727;
+	border: 1px solid #bb9b49;
+}
+
+.form-info {
+	color: #bb9b49;
+	display: flex;
+	flex-direction: row;
+	gap: 1rem;
+	font-family: "Montserrat", sans-serif;
+}
+
+.field {
+	text-transform: capitalize;
+}
+
+.submitted-info {
+	gap: 0.75rem;
+	flex-direction: column;
+	padding: 0.25rem;
+	border: 1px solid #756d6d;
+	color:#756d6d;
+}
+
+#choose-image {
+	display: flex;
+	flex-direction: column;
+	width: 55%;
+	gap: 1rem;
+}
+
+#image {
+	width: 300px;
+	height: 300px;
+	border: 1px solid #bb9b49;
+}
+
+.upload-container {
+	width: 55%;
+}
+
+.upload-span {
+	color: #756d6d;
+}
+
+.custom-file {
+	display: none;
+}
+
+#fileUpload {
+	color: #bb9b49;
+	background-color: #3b3b3b;
+	padding: 0.25rem;
+}
+
+#fileUpload,
+#submit-image {
+	padding: 0.25rem;
+	cursor: pointer;
+	border: 1px solid #3b3b3b;
+	background-color: #3b3b3b;
+	color: #bb9b49;
+	transition: 0.3s;
+}
+
+#fileUpload:hover,
+#submit-image:hover {
+	background-color: #272727;
+	border: 1px solid #bb9b49;
+}

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/11 23:54:24 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 17:18:30 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,19 +14,20 @@
 #define _HEADERS_LIBS_HPP_
 
 // C++ LIBRARIES
-
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/epoll.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <algorithm>
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
 #include <fcntl.h>
 #include <netdb.h>
-#include <sys/epoll.h>
+#include <stdio.h>
 #include <time.h>
-#include <sys/stat.h>
 
 // DEFINES
 #include <algorithm>

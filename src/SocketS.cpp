@@ -6,14 +6,15 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 23:08:29 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 19:39:11 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/SocketS.hpp"
 
-SocketS::SocketS(){
+SocketS::SocketS()
+{
     _portNumber = "";
     _ipAddress = "";
     _response = "";
@@ -23,44 +24,29 @@ SocketS::SocketS(){
 }
 
 
-    // aqui vão ser chamados os métodos (que serão criados ainda)
-    // pra parseamento do arquivo de configuração
-    // e armazenamento de seus dados importantes
-
-    /*cria socket
-    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if(server_socket == -1){
-        std::cerr << "Erro ao criar socket: " << std::endl;
-        return 1;
-    }
-    //configura endereço do servidor e inicializa os campos da estrutura com 0
-    struct sockaddr_in server_address = {0};
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(8080); 
-    server_address.sin_addr.s_addr = INADDR_ANY;
-    */
-
 SocketS::~SocketS(){}
 
 // getter e setter do locations
 
-std::map<std::string, LocationDirective> SocketS::getLocations() const {
+std::map<std::string, LocationDirective> SocketS::getLocations() const
+{
 	return _locations;
 }
 
-void SocketS::setLocations(std::map<std::string, LocationDirective> locations){
+void SocketS::setLocations(std::map<std::string, LocationDirective> locations)
+{
 	_locations = locations;
 } 
 
-const int& SocketS::getFD()const{
+const int& SocketS::getFD()const
+{
     return _webServSocket;
 }
 
 void SocketS::loadConfiguration(){}
 
-
-void SocketS::setPort(std::string portNumber){
-
+void SocketS::setPort(std::string portNumber)
+{
     unsigned int port = 0;
 
     for(size_t i = 0; i < portNumber.length(); ++i){
@@ -73,62 +59,79 @@ void SocketS::setPort(std::string portNumber){
     this->_portNumber = portNumber;
 }
 
-void SocketS::setAddress(std::string ipAddress){
+void SocketS::setAddress(std::string ipAddress)
+{
     this->_ipAddress = ipAddress;
 }
 
-void SocketS::setWebServSocket(int webServSocket){
+void SocketS::setWebServSocket(int webServSocket)
+{
     this->_webServSocket = webServSocket;
 }
 
-const std::string& SocketS::getPort()const{
+const std::string& SocketS::getPort()const
+{
     return _portNumber;
 }
 
-const std::string& SocketS::getAddress()const{
+const std::string& SocketS::getAddress()const
+{
     return _ipAddress;
 }
 
-const std::string SocketS::getErrorPage(int statusCode)const{
-	std::map<std::string, std::string>::const_iterator it = _errorPage.find(std::to_string(statusCode));
+const std::string SocketS::getErrorPage(int statusCode)const
+{
+	std::stringstream toConvertToStr;
+    toConvertToStr << statusCode;
+    std::string statusCodeStr = toConvertToStr.str();
+	std::map<std::string, std::string>::const_iterator it = _errorPage.find(statusCodeStr);
 	if (it != _errorPage.end())
 		return it->second;
 	return "";
 }
 
-const int& SocketS::getWebServSocket()const{
+const int& SocketS::getWebServSocket()const
+{
     return _webServSocket;
 }
 
-void SocketS::setServerName(std::vector<std::string> serverName){
+void SocketS::setServerName(std::vector<std::string> serverName)
+{
      this->_serverName = serverName;
 }
 
-std::vector<std::string> SocketS::getServerName()const{
+std::vector<std::string> SocketS::getServerName()const
+{
     return _serverName;
 }
  
-void SocketS::setMethods(std::vector<std::string> methods){
+void SocketS::setMethods(std::vector<std::string> methods)
+{
     _methods = methods;
 }
 
-std::vector<std::string> SocketS::getMethods() const{
+std::vector<std::string> SocketS::getMethods()const
+{
     return _methods;
 }
 
-void SocketS::setRoot(std::string root){
+void SocketS::setRoot(std::string root)
+{
     _root = root;
 }
 
-const std::string& SocketS::getRoot()const{
+const std::string& SocketS::getRoot()const
+{
     return _root;
 }
 
-const std::string& SocketS::getIndexFile() const{
+const std::string& SocketS::getIndexFile()const
+{
 	return _indexFile;
 }
 
-void SocketS::setIndexFile(std::string index){
+void SocketS::setIndexFile(std::string index)
+{
 	_indexFile = index;
 }
 
@@ -181,4 +184,21 @@ void SocketS::setErrorPage(std::map<std::string, std::string> errorPages)
     
     
     
+
+    // aqui vão ser chamados os métodos (que serão criados ainda)
+    // pra parseamento do arquivo de configuração
+    // e armazenamento de seus dados importantes
+
+    /*cria socket
+    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if(server_socket == -1){
+        std::cerr << "Erro ao criar socket: " << std::endl;
+        return 1;
+    }
+    //configura endereço do servidor e inicializa os campos da estrutura com 0
+    struct sockaddr_in server_address = {0};
+    server_address.sin_family = AF_INET;
+    server_address.sin_port = htons(8080); 
+    server_address.sin_addr.s_addr = INADDR_ANY;
+    */
  

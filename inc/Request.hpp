@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/05 16:14:10 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/17 17:31:02 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define _REQUEST_HPP_
 
 #include "HeadersLibs.hpp"
+#include "Utils.hpp"
 
 class Request
 {
@@ -21,23 +22,22 @@ class Request
     public:
 
         Request(const std::string& request); //criar instancia
-        ~Request(void);
+        ~Request();
         
-        void setRequest(const std::string& request);
-		std::string getRequest(void) const;
-        void printRequest(void);
-        bool isFirstLineValid(void);
-        bool validateRequest(void);
-        
+        void printRequest();
+        bool isFirstLineValid();
+        bool validateRequest();
         void setHasError(bool hasError);
-        bool getHasError(void)const;
+        void setRequest(const std::string& request);
         
-        std::string getDomainRequest(void)const;
-        std::string getPortRequest(void)const;
-        void trimSpaces(std::string &s);
-        const std::string& getMethod(void) const;
-        const std::string& getURI(void) const;
-        const std::string& getVersion(void) const;
+        bool getHasError()const;
+        std::string getDomainRequest()const;
+		std::string getRequest() const;
+        std::string getPortRequest()const;
+        const std::string& getMethod() const;
+        const std::string& getURI() const;
+        const std::string& getVersion() const;
+        //void trimSpaces(std::string &s);
     
     private:
     
@@ -52,16 +52,19 @@ class Request
         std::string         _uri;
         std::string         _version;
         bool                _hasError;
+        Utils               _utils;
         
     
-        class RequestException: public std::exception {
+    class ErrorException: public std::exception
+    {
         public:
+    
+            virtual const char* what() const throw()
+            {
+                return "\nError: Invalid request detected.\n";
+            }
         
-            virtual const char* what() const throw(){
-            return "\nError: Invalid request detected.\n";
-        }
-            
-    }; 
+    };
 };
 
 std::ostream& operator<<(std::ostream& output, const Request& rhs);

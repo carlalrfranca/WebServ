@@ -6,16 +6,14 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/16 00:42:31 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/18 12:59:04 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/HeadersLibs.hpp"
 #include "../inc/Response.hpp"
-#include "../inc/Request.hpp"
-#include "../inc/HttpGet.hpp"
 
-Response::Response() : _headers(), _methodsFunctions(){
+Response::Response() : _headers(), _methodsFunctions()
+{
     _chosenSocket = NULL;
 	_methodsFunctions["GET"] = &Response::httpGet;
 	_methodsFunctions["POST"] = &Response::postMethod;
@@ -27,8 +25,7 @@ Response::Response() : _headers(), _methodsFunctions(){
     _statusMessages = StatusMessages();
 }
 
-Response::~Response()
-{}
+Response::~Response(){}
 
 Response::Response(Request request)
 {
@@ -61,7 +58,8 @@ Nginx will not perform any image processing or special handling of the uploaded 
 In summary, without a specific location directive to handle POST requests, Nginx will treat the uploaded image as a file upload and save it to the server.
 */
 
-std::string Response::postMethod(Request &request, SocketS &server, Response *this_response) {
+std::string Response::postMethod(Request &request, SocketS &server, Response *this_response)
+{
     // return "Resposta para POST";
 
 	// se for "POST", ele chama essa função... daí???
@@ -104,6 +102,16 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	// agora vamos ver se tem o location do CGI (se nao tiver, ir pro caminho "padrão" do server (vai ser apenas uma postagem no diretorio do server (faz um metodo pra isso?)))
 	// /cgi-bin/
 	root_for_response = "./";
+	std::cout << RED << "Esta é a URI DESSE POST::: " << request.getURI() << END << std::endl;
+	// precisa usar o find de acordo com a URI -> definir se ele é pro /process_data.cgi OU pro /images/
+	// daí cada um tem um fluxo
+	/*
+		PARA ISSO, PRECISA FAZER UM CAMINHO SIMILAR AO DO GET:
+		1 - procurar o location adequado (nesse caso, o do cgi ou do /images/)
+		2 - ver o root (se tiver, senao, usa o default)
+		3 - ver se tem algum allow_methods interno impedindo o POST (ou isso pode ser feito antes)
+		4 - 
+	*/
 
 	size_t found = request.getRequest().find("/process_data.cgi");
 	if (found == std::string::npos)
@@ -171,6 +179,10 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 					// NÃO SE ESQUEÇA DE IMPLEMENTAR O LOOP DE CHUNCKS TAMBEM
 
 					script.handleCGIRequest(request);
+
+					std::cout << RED << "RESPONSE DO CGI" << END << std::endl;
+					std::cout << RED << script.getResponse() << END << std::endl;
+					this_response->setResponse(script.getResponse());
 					return script.getResponse(); // retorna a response
 				}
 				else
@@ -218,11 +230,10 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	return response_error;
 }
 
-std::string Response::deleteMethod(Request &request, SocketS &server, Response *this_response) {
+std::string Response::deleteMethod(Request &request, SocketS &server, Response *this_response)
+{
     return "Resposta para DELETE";
 }
-
-
 
 //metodo para ler o conteudo do html
 std::string Response::readHtmlFile(const std::string& filePath)
@@ -238,15 +249,18 @@ std::string Response::readHtmlFile(const std::string& filePath)
     return content;
 }
 
-void Response::setStatusCode(const std::string& statusCode){
+void Response::setStatusCode(const std::string& statusCode)
+{
     _headers["Status"] = statusCode;
 }
 
-void Response::setContentType(const std::string& contentType){
+void Response::setContentType(const std::string& contentType)
+{
     _headers["Content-Type"] = contentType;
 }
 
-void Response::setDateAndTime(){
+void Response::setDateAndTime()
+{
     char buffer[80];
     time_t rawTime;
     struct tm *timeInfo;
@@ -259,7 +273,8 @@ void Response::setDateAndTime(){
     _headers["Date"] = buffer;
 }
 
-std::string Response::getDate(void)const{
+std::string Response::getDate()const
+{
 	std::map<std::string, std::string >::const_iterator it = _headers.find("Date");
 	if (it != _headers.end())
 		return it->second;
@@ -271,7 +286,8 @@ std::string Response::getDate(void)const{
 //     _headers["Content-Length"] = to_string(length); //***   contentLength(_response.length());
 // }
 
-void Response::setResponse(const std::string& response){
+void Response::setResponse(const std::string& response)
+{
     _response = response;
 }
 
@@ -285,15 +301,16 @@ const std::string& Response::getHeader(const std::string& header)const
     return emptyHeader;
 }
 
-bool Response::contains(const std::vector<std::string>& vec , const std::string& content)
-{
-    for(size_t i = 0; i < vec.size(); ++i)
-    {
-        if(vec[i] == content)
-            return true;
-    }
-    return false;
-}
+//bool Response::contains(const std::vector<std::string>& vec , const std::string& content)
+//bool Response::isInVector(const std::vector<std::string>& vec , const std::string& content)
+//{
+//    for(size_t i = 0; i < vec.size(); ++i)
+//    {
+//        if(vec[i] == content)
+//            return true;
+//    }
+//    return false;
+//}
 
 // void Response::setPath(const std::string& allPath){
 //     _path = allPath;
@@ -420,271 +437,459 @@ int Response::selectServer(Request& stringDomain, std::vector<SocketS> serverSoc
 */
 }
 
-std::string Response::getResponse()const{
+std::string Response::getResponse()const
+{
     return _response; //Retorna o corpo da resposta
 }
 
-const std::string Response::getPath()const{
+const std::string Response::getPath()const
+{
     return _path;
 }
 
-void Response::setPath(const std::string& allPath){
+void Response::setPath(const std::string& allPath)
+{
     _path = allPath;
 }
 
-std::string readFileToString(const std::string& filename) {
+std::string readFileToString(const std::string& filename)
+{
     std::ifstream file(filename.c_str());
-    if (!file.is_open()) {
+    if (!file.is_open())
+	{
         std::cout << "Não deu pra abrir o html" << std::endl;
         return ""; // Retorna uma string vazia se não for possível abrir o arquivo
     }
     std::string content;
     std::string line;
-    while (std::getline(file, line)) {
+    while (std::getline(file, line))
         content += line + "\n"; // Adiciona cada linha ao conteúdo da string
-    }
     file.close();
     return content;
 }
-/*
 
-        //error404Html(response, root);
-        
-        // std::string errorFilePath = root + "Error404.html";
-        // std::string errorHtml = readFileToString(errorFilePath);
-        // if (!errorHtml.empty()){ // deucertinho?
-        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorHtml;
-        //     setResponse(response);
-        //     return response;
-        // } else {
-        //     // se na tiver o .htm aprece uma msg
-        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorFilePath;
-        //     setResponse(response);
-        //     return response;
+void Response::listFilesAndGenerateHtml()
+{
+
+	//passar essa função pra parte de execução do autoIndex:
+    std::string path = getPath();
+	try
+	{
+        // if (path == "on")
+		// {
+            // const char *directoryPath = ".";
+            // DIR *directory = opendir(directoryPath);
+			std::cout << "PATH> " << path << std::endl;
+			DIR *directory = opendir(path.c_str());
+            if (directory){
+                struct dirent *entry;
+                std::vector<std::string> fileList;
+                while ((entry = readdir(directory)) != NULL)
+				{
+                    fileList.push_back(std::string(entry->d_name));
+				}
+                closedir(directory);
+				std::cout << "Tamanho da Lista de Itens do Diretório > " << fileList.size() << std::endl;
+                for (size_t i = 0; i < fileList.size(); ++i){
+					// aqui tá só listando, mas vamos precisar gerar um html com isso
+                    std::cout << i << " - " << fileList[i] << std::endl;
+				}
+				std::cout << BLUE << "cabo listagem..." << END << std::endl;
+				generateHtmlFromFiles(fileList);
+				std::cout << BLUE << "Passou do generate HTML com base na lista" << END << std::endl;
+            } else 
+			{
+                throw std::runtime_error("Error when open directory.");
+            }
+        // } else if (path == "off")
+		// {
+        //     std::cout << "Autoindex is on." << std::endl;
+        // } else
+		// {
+        //     throw std::runtime_error("Invalid value to autoindex.");
         // }
-        
-        
-        // error405Html(response, root);
-        // error500Html(response, root);
-        // error503Html(response, root);
-        // error505Html(response, root);
-        
-*/
-        
-
-std::string Response::errorCodeHtml(int statusCode, SocketS &server){
-
-        std::string errorFileName;
-        std::string errorDefault;
-
-        errorFileName = server.getErrorPage(statusCode); //caminho
-        errorDefault = _statusMessages.getMessage(statusCode); //mensagm
-        
-        //le o arquivo
-        //monta as headers
-        // concatena o arquivo com as headers
-        std::string errorHtml = readFileToString(errorFileName);
-		size_t content_length = errorHtml.size();
-		std::string response;
-        response += "HTTP/1.1 " + std::to_string(statusCode) + " " + errorDefault + "\r\n";
-        response += "Content-Type: text/html\r\n";
-		response += "Content-Length: " + std::to_string(content_length) + "\r\n";
-		response += "Connection: close\r\n\r\n" + errorHtml;
-		setResponse(response);
-        return response;
-
+    } catch (const std::exception &e)
+	{
+        std::cout << "Error: " << e.what() << std::endl;
+		// produz a pagina de erro 403 Forbidden (ou 404?)
+    }
+	std::cout << BLUE << "Depois do try catch mas ainda na função" << END << std::endl;
 }
 
-std::string Response::generateResponse(int statusCode, const Request& request, const std::string& root, const std::string& filePath){
+void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList){
 
+    std::string html;
+
+    html += "<html>\n";
+    html += "<head><title></title></head>\n";
+    html += "<body>\n";
+    html += "<h1>File List</h1>\n";
+    html += "<ul>\n";
+	std::cout << BLUE << "cabo listagem...2" << END << std::endl;
+	// se é um arquivo, será um li
+	// se é um diretorio, tem que ser um link, e esse link tem que começar com /images
+	//    -> porque ele substitui pelo root do location, que é web/images (e daí teria que completar com o resto do uri,
+	// 		 e se estiver sem '/' final, tem que incluir)
+    for(size_t i = 0; i < fileList.size(); ++i)
+	{
+        html += "<li>" + fileList[i] + "</li>\n";
+    }
+	std::cout << BLUE << "cabo listagem...3" << END << std::endl;
+    html += "</ul>\n";
+    html += "</body>\n";
+    html += "</html>\n";
+
+    std::string headers;
+	std::string contentType = "text/html";
+	size_t content_length = html.size();
+	std::stringstream contentLengthToString;
+    contentLengthToString << content_length;
+    std::string contentLengthStr = contentLengthToString.str();
+	std::string statusCodeStr = "200";
+
+    headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
+    headers += "Content-Type: " + contentType + "\r\n";
+    headers += "Content-Length: " + contentLengthStr + "\r\n";
+    headers += "\r\n";
+    //junta os dois e seta a response
+
+    std::string response = headers + html;
+    setResponse(response);
+}
+
+void Response::errorCodeHtml(int statusCode, SocketS &server)
+{
+
+    std::string errorFileName;
+    std::string errorDefault;
+    errorFileName = server.getErrorPage(statusCode); //caminho
+	std::cout << "Error File Name Path: " << errorFileName << std::endl;
+    errorDefault = _statusMessages.getMessage(statusCode); //mensagm
+    
+    //le o arquivo
+    //monta as headers
+    // concatena o arquivo com as headers
+    std::string errorHtml = readFileToString(errorFileName);
+	size_t content_length = errorHtml.size();
+	std::string response;
+	std::stringstream toConvertToString;
+    toConvertToString << statusCode;
+    std::string statusCodeStr = toConvertToString.str();
+    std::stringstream contentLengthToString;
+    contentLengthToString << content_length;
+    std::string contentLengthStr = contentLengthToString.str();
+
+	response += "HTTP/1.1 " + statusCodeStr + " " + errorDefault + "\r\n";
+    response += "Content-Type: text/html\r\n";
+	response += "Content-Length: " + contentLengthStr + "\r\n";
+	// response += "Connection: close\r\n\r\n" + errorHtml;
+	response += "\r\n" + errorHtml;
+	setResponse(response);
+    // return response;
+}
+
+void Response::generateResponse(int statusCode, const Request& request)
+{
     std::string contentType;
-    std::string content = readFileToString(root + filePath);
+    std::string content = readFileToString(getPath());
     std::string response;
     
-    if(request.getURI().find("css"))
+	std::cout << " -------------------------------------- URI ------------------------ " << request.getURI() << std::endl;
+    if(request.getURI().find("css") != std::string::npos)
         contentType = "text/css";
-    else if(request.getURI().find("jpg") || request.getURI().find("jpeg"))
+    else if(request.getURI().find("jpg" ) != std::string::npos || request.getURI().find("jpeg") != std::string::npos)
         contentType = "image/jpeg";
-    else if(request.getURI().find("png"))
+    else if(request.getURI().find("png") != std::string::npos)
         contentType = "image/png";
-    else if(request.getURI().find("gif"))
+    else if(request.getURI().find("gif") != std::string::npos)
         contentType = "image/gif";
     else
         contentType = "text/html";
-    response += "HTTP/1.1 " + std::to_string(statusCode) + " OK\r\n";
+	
+	std::stringstream toConvertToString;
+    toConvertToString << statusCode;
+    std::string statusCodeStr = toConvertToString.str();
+	std::stringstream toConvertToStr;
+    toConvertToStr << content.length();
+    std::string contentLenStr = toConvertToStr.str();
+	
+    response += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
     response += "Content-Type: " + contentType + "\r\n";
-    response += "Content-Length: " + std::to_string(content.length()) + "\r\n";
-    response += "Connection: Keep-Alive\r\n";
+    response += "Content-Length: " + contentLenStr + "\r\n";
+    // response += "Connection: Keep-Alive\r\n";
     response += "\r\n"; // Linha em branco indica o fim dos cabeçalhos
     response += content;
     setResponse(response);
-    return response;
+    // return response;
 
+}
+
+bool isDirectory(const std::string& path)
+{
+    struct stat fileStat;
+    if (stat(path.c_str(), &fileStat) != 0)
+        // Erro ao obter informações do arquivo
+        return false;
+    return S_ISDIR(fileStat.st_mode);
+}
+
+// Função para dividir uma string com base no caractere "/"
+// foi pra utils
+// std::vector<std::string> splitString(const std::string& input, char delimiter) {
+//     std::vector<std::string> tokens;
+//     size_t start = 0;
+//     size_t end = input.find(delimiter);
+// 
+//     while (end != std::string::npos) {
+//         end = input.find(delimiter, start);
+// 		std::string part = input.substr(start, end - start);
+// 		if (!part.empty())
+//         	tokens.push_back(part);
+//         start = end + 1;
+//     }
+// 
+//     // Adicione a última parte da string
+//     // tokens.push_back(input.substr(start));
+// 
+//     return tokens;
+// }
+
+std::map<std::string, LocationDirective>::iterator findRequestedLocation(Request &request, SocketS &server, std::map<std::string, LocationDirective>& serverLocations)
+{
+	//obtenho informações das loalizacoes
+    std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI()); //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
+	std::string uri = request.getURI();
+	if (it == serverLocations.end())
+	{
+		bool canBeRootLoc = false;
+		// casos em que nao tem literalmente o que vem na URI nos location (tipo /styles/styles.css ou /about.html)
+		// vamos ter que encontrar o location que lida com esse tipo de URI. No caso do 'styles/styles.css', tem que ser o location 'styles/'
+		// e no caso do '/about.html', tem que ser o location 'about'
+		for(std::map<std::string, LocationDirective>::iterator locFind = serverLocations.begin(); locFind != serverLocations.end(); ++locFind) //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
+		{
+			// bool canBeRootLoc = false;
+			if (locFind->first == "/")
+				canBeRootLoc = true;
+			if (locFind->first != "/")
+			{
+				// nao pode tirar as duas primeiras condições? só deixar a terceira?
+		        if(uri == locFind->first || uri.find(locFind->first + "/") != std::string::npos || uri.find(locFind->first) != std::string::npos){
+	                it = locFind;
+					std::cout << YELLOW << "LOCATION que se ENCAIXA nessa URI >>>>> " << it->first << END << std::endl;
+	                return it;
+	            }
+			}
+	    }
+		if (it == serverLocations.end() && canBeRootLoc == true) //caso nao haja um location mais especifico, o location '/' vai responder pela requisição
+			it = serverLocations.find("/");
+	}
+	std::cout << YELLOW << "LOCATION que se ENCAIXA >> " << it->first << END << std::endl;
+	return it;
+}
+
+/*
+	Quebrar a parte de CONSTRUÇÃO DO PATH:
+	1) buildPathToResource() que chamará:
+	  -> 
+*/
+
+bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it, std::string indexPage)
+{
+	// std::cout << path << " é um diretório." << std::endl;
+	locationDirectives = it->second.getDirectives();
+       std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
+    if (itIndex != locationDirectives.end()){ //não é o oposto? primeiro ve que se tem autoindex, se nao tiver (ou tiver off?) ve se tem index e serve se tiver? (ou gera pagina de erro se nao?)
+		indexPage = itIndex->second[0];
+	}
+	else
+	{
+		// verificar se tem o autoindex, se não -> retorna pagina de erro
+		std::cout << YELLOW << "Aqui teria que produzir o autoindex" << END << std::endl;
+		// vê se tem auto_index on, se nao, dá erro, se sim, produzir o autoindex
+		std::map<std::string, std::vector< std::string > >::iterator itAutoIndex = locationDirectives.find("auto_index");
+		if (itAutoIndex != locationDirectives.end())
+		{
+			std::cout << BLUE << itAutoIndex->second[0] << END << std::endl;
+			std::cout << BLUE << "Tamanho AUTOINDEX: " << itAutoIndex->second.size() << END << std::endl;
+			if (itAutoIndex->second[0] == "on")
+			{
+				setPath(path);
+				listFilesAndGenerateHtml();
+				return true;
+			}
+			else
+			{
+				errorCodeHtml(403, server);
+				return true;
+			}
+		}
+		else
+		{
+			errorCodeHtml(404, server);
+			return true;
+		}
+		// this_response->setPath(path); // nesse caso, o root desse location
+		// indexPage = server.getIndexFile();
+	}
+	// se nao tiver index, na verdade, ver se o auto_index está on e preparar isso como resposta
+	path += indexPage;
+	setPath(path);
+	return false;
+}
+
+std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
+{
+	std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
+	std::cout << parts_uri[0] << " - " << parts_uri[0].size() << " e " << parts_uri[1] << std::endl;
+	std::string this_location = it->first;
+	std::string commonSubstring = "";
+	size_t minlen = std::min(this_location.length(), uri.length());
+	size_t j = 0;
+    for (size_t i = 0; i < minlen; ++i) {
+        if (this_location[i] == uri[j]) {
+            commonSubstring += this_location[i];
+			j++;
+        }
+    }
+	std::cout << "-- PARTE A EXTRAIR PRA FORMAR O CAMINHO REAL: " << commonSubstring << std::endl;
+	// retirar a commonSubstring do uri e juntar?
+	std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
+	std::string caminhoCompleto = "";
+	if (uri != "/")
+		caminhoCompleto = root + uriSemParteEmComum; // isso ja vai adicionar todo o caminho que vem da uri, se tiver?
+	else
+		caminhoCompleto = root;
+	// std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
+	return caminhoCompleto;
+}
+
+bool Response::buildPathToResource(std::string root, Request &request, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it)
+{
+	std::string indexPage;
+	std::string uri = request.getURI();
+	std::vector<std::string> parts_uri = _utils.splitString(uri, '/');
+
+	if (parts_uri.size() > 1)
+	{
+		// NESSE IF: a uri teve várias partes, exemplo: styles/styles.css, ou seja, precisamos ver se a uri tem algo
+		// de comum com o root usado pra remover do path final, e juntar o resto
+		std::string pathToResource = extractUriAndBuildPathToResource(root, parts_uri, uri, it);
+		std::cout << YELLOW << "Caminho completo quando tem ROOT ESPECIFICA: " << pathToResource << END << std::endl;
+		
+		if (isDirectory(pathToResource)) {
+			bool isErrorPageOrAutoIndexPage = isResponseADirectoryListingOrErrorPage(pathToResource, server, locationDirectives, it, indexPage);
+			if (isErrorPageOrAutoIndexPage == true)
+				return true;
+    	} else {
+    	    std::cout << YELLOW << pathToResource << " é um arquivo." << END << std::endl;
+			setPath(pathToResource);
+    	}
+	}
+	else
+	{
+		// NESSE ELSE: a uri NÃO teve várias partes, exemplo: about.html ou /images/ | /images
+		// (ou seja, não precisa extrair alguma parte da uri, ou a uri é igual à location - e daí é só usar o root, ou basta juntá-la com o root)
+		std::cout << "Tem só o arquivo de caminho ou só diretorio" << std::endl;
+		std::string path;
+		if (uri == it->first || uri + '/' == it->first || it->first + '/' == uri) //essa terceira condição vai ferrar outros casos do site?
+			path = root;
+		else
+			path = root + parts_uri[0];
+		
+		if (isDirectory(path)) {
+			bool isErrorPageOrAutoIndexPage = isResponseADirectoryListingOrErrorPage(path, server, locationDirectives, it, indexPage);
+			if (isErrorPageOrAutoIndexPage == true)
+				return true;
+		}
+		else
+		{
+			std::cout << path << " é um arquivo" << std::endl;
+			setPath(path);
+		}
+		// Domingo: testar auto_index on com o /assets!!!!!!!!!!
+	}
+	return false;
 }
 
 std::string Response::httpGet(Request &request, SocketS &server, Response *this_response){
     std::string root;
-	std::string indexPage;
 
 	root = server.getRoot();
-	// ACIMA: não é preciso também ver se tem um ROOT ESPECIFICO DO LOCATION? (e, caso tenha,
-	// utilizá-lo como referencia?)
 
-    std::map<std::string, LocationDirective> serverLocations = server.getLocations(); //obtenho informações das loalizacores d drtivas
-    std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI()); //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
-    std::map<std::string, std::vector< std::string > > locationDirectives; //cria map p armzenar dirtivas de localizacao
-	// tem que ver se, caso seja um diretorio... daí tem toda
-	// a questão do autoindex
-	// se não for um diretorio (nao termina com '/')
-	// ou: se for um arquivo, tem extensão?
+	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+	std::map<std::string, LocationDirective>::iterator it = findRequestedLocation(request, server, serverLocations);
+	std::string uri = request.getURI();
+    std::map<std::string, std::vector< std::string > > locationDirectives; //cria map p armazenar diretivas de localizacao
 
-    if (it != serverLocations.end()){ // s enconra as dirtivas
-        std::cout << "Directives from this Location found!" << std::endl;
-        locationDirectives = it->second.getDirectives(); //obtem a diretia de localizcao
-         std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
-        if (itRoot != locationDirectives.end())
-            root = itRoot->second[0]; // se tem root atualiza os valores especificados
-
-        std::cout << "Directives from this Location found!" << std::endl; //o mesmo para Index
-        locationDirectives = it->second.getDirectives();
-         std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-        if (itIndex != locationDirectives.end()){ //se tiver a diret index
-			    indexPage = itIndex->second[0];
-		      }
-		    else
-			    indexPage = server.getIndexFile();
-		// tem que testar pra validar que esse caminho existe...
-		// se não dá o que? server error?! --> como o nginx lida com isso?
-		// ele valida nesse ponto aqui mesmo, no momento da requisição
-		// se o arquivo NÃO EXISTE, ele retorna um 404 (not found)
-
-
-        // COMPLETAR O CAMINHO DO ARQUIVO COM O ROOT (daí tem que verificar a diretiva root tambem)
-        this_response->setPath(root + indexPage); //isso deveria atualizar o valor do path com o root mais a index
+    if (it != serverLocations.end()){
+        std::cout << "Location found! >> " << it->first << std::endl;
+        locationDirectives = it->second.getDirectives(); //obtem as diretivas da location
+        std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
+        
+		if (itRoot != locationDirectives.end())
+		{
+            root = itRoot->second[0];
+		}
+		// 	// Domingo: testar auto_index on com o /assets!!!!!!!!!!
+		bool isErrorPageOrAutoIndexPage = this_response->buildPathToResource(root, request, server, locationDirectives, it);
+		if (isErrorPageOrAutoIndexPage == true)
+			return this_response->getResponse();
+		std::cout << "CAMINHO COMPLETO DO RECURSO: " << this_response->getPath() << std::endl;
         std::string bodyHTML = readFileToString(this_response->getPath()); //declara o corpo do HTML
 		struct stat info;
 		if (stat(this_response->getPath().c_str(), &info) != 0)
 		{
 			// retorna pagina de erro (o caminho pra pagina nao existe)
-			
+			this_response->errorCodeHtml(404, server);
+			return this_response->getResponse();
 		}
-        this_response->_body = bodyHTML;
-        std::cout << "----------- CONSTRUÇÃO DA RESPONSE DO HTTPGET COMEÇA AQUI O: -----------------------------" << std::endl;
-		std::string response;
-		std::cout << "REQUEST URI: " << request.getURI() << std::endl;
-		if (request.getURI().find("styles") != std::string::npos)
-			response = "HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\r\n" + this_response->_body;
-        else
-			response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
-			// response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + this_response->_body;
-        this_response->setResponse(response);
-        return response;
-    	} else {
-    	    std::cout << "This server doesnt have this location!!" << std::endl;
-    	    this_response->errorCodeHtml(404, server);
-    	    //error404Html(response, root);
-		}
-        // std::string errorFilePath = root + "Error404.html";
-        // std::string errorHtml = readFileToString(errorFilePath);
-        // if (!errorHtml.empty()){ // deucertinho?
-        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorHtml;
-        //     setResponse(response);
-        //     return response;
-        // } else {
-        //     // se na tiver o .htm aprece uma msg
-        //     std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorFilePath;
-        //     setResponse(response);
-        //     return response;
-        // }
-        // }
-        
-        /*
-        
-            else {
-            std::cout << "This server doesnt have this location!!" << std::endl;
-            std::string errorFilePath = root + "error404.html"; // Caminho para o arquivo HTML de erro 404
-
-            if (fileExists(errorFilePath)) {
-            std::string bodyHTML = readFileToString(errorFilePath);
-            std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + bodyHTML;
-            setResponse(response);
-            return response;
-            } else {
-            // Se o arquivo de erro personalizado não existir, use uma mensagem de erro padrão
-            std::string errorMessage = "<html><head></head><body><h1>Error 404</h1></body></html>";
-            std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n" + errorMessage;
-            setResponse(response);
-            return response;
-            }
-        }
-        
-        
-        
-        */
-        
-        //std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
-        // soma  body que leio da pagina
-        // std::string bodyHTML = readFileToString(getPath());
-        // juntar as strings
-        // cabçalho e o body 
-        
-        // this_response->setResponse(response);
-        // return response;
-    return "DEU MERDA JOHNSONS";
+		this_response->generateResponse(200, request);
+    }
+	else
+	{
+        std::cout << "This server doesnt have this location!!" << std::endl;
+        this_response->errorCodeHtml(404, server);
+		return this_response->getResponse();
+        //error404Html(response, root);
+	}
+	return this_response->getResponse();
 }
 
-std::string Response::buildResponse(Request &request, SocketS &server)
+void Response::buildResponse(Request &request, SocketS &server)
 {
-    
-    //////////    
-    // Implementação para construir a resposta completa, incluindo cabeçalho e corpo
-    // Incluir os cabeçalhos necessários, como Content-Length e outros
-    // Retorne a resposta completa construída
-    //////////
+    /*
+    	Implementação para construir a resposta completa, incluindo cabeçalho e corpo
+    	Incluir os cabeçalhos necessários, como Content-Length e outros
+    	Retorne a resposta completa construída
+    */
 
-    
-	std::cout << "----> CHEGAMOS AO BUILD RESPONSE -----" << std::endl;
+	std::cout << YELLOW << "-------> CHEGAMOS AO BUILD RESPONSE <--------" << END << std::endl;
     // verificar se o método requisitado pela solicitação é permitido pra esse servidor
     std::vector<std::string> allowed_methods = server.getMethods();
     std::string requestMethod = request.getMethod();
     
-    bool found = false;
+    bool isAllowedMethod = false;
 
     for (std::vector<std::string>::iterator it = allowed_methods.begin(); it != allowed_methods.end(); ++it) {
         if (strcmp(it->c_str(), requestMethod.c_str()) == 0) {
-            found = true;
+            isAllowedMethod = true;
             break;
         }
     }
 
     std::string hasRoot;
 
-    if (found) {
-        // método é permitido pra esse servidor. Continua...
-		std::cout << "Encontramos o método permitido!" << std::endl;
+    if (isAllowedMethod) {
 		std::string resposta = _methodsFunctions[requestMethod](request, server, this);
-		setResponse(resposta);
-		std::cout << "A resposta é:::: " << getResponse() << std::endl;
-    	return resposta;
+		// std::cout << BLUE << " ***** A resposta é *****\n" << getResponse() << END << std::endl;
     }
     else
     {
-        //constrói resposta de erro porque esse método não é permitido
-        // e retorna
         std::cout << "MÉTODO NÃO PERMITIDO!";
-        std::cout << "This server doesnt have this location!!" << std::endl;
-        std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
-        setResponse(response);
-        return response;    
+        // std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
+        // setResponse(response);
+		errorCodeHtml(405, server); // statusCode 405 = "Method Not Allowed"
     }
-    std::string fullResponse;
-    
-    // Construa os cabeçalhos aqui, usando os dados em _headers
-    
-    fullResponse += "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"; // Carla não esquece de adds uma linha em branco entre cabeçalhos e corpo
-    fullResponse += _body;  // Adicione o corpo da resposta
-    setResponse(fullResponse);
-    return fullResponse;
 }
 
 

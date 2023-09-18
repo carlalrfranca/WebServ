@@ -1,24 +1,20 @@
 server{
-    listen localhost:2005;
+    listen localhost:2002;
     server_name example.com;
-	allow_methods GET
+	allow_methods GET POST
     root web/pages/;
 
 	location / {
 		index index.html
 	}
 
-	location /assets {
-		root web/assets/
-		index styles.css
+	location /images {
+		root web/images
+		auto_index on
 	}
 
 	location /about {
-		index about.html
-	}
-
-	location /tour {
-		index tour.html
+		index index.html
 	}
 
 	location cgi-bin {

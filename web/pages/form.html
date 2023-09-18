@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemplo de Formulário CGI</title>
+	<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+	<header>
+		<section class="main-section">
+            <div class="navMenu">
+                <a href="/">return</a>
+                <div class="dot"></div>
+            </div>
+        </section>
+		<h1>Preencha o Formulário</h1>
+	</header>
+	
+	<section class="test-container">
+		<form method="post" id="myForm" action="http://localhost:2002/process_data.cgi">
+			<label for="name">Nome</label>
+			<input id="name" type="text" name="nome"><br>
+			<label for="email">Email</label>
+			<input id="email" type="text" name="email"><br>
+			<input class="form-button" type="submit" value="Enviar">
+		</form>
+	</section>
+</body>
+</html>
+

@@ -6,16 +6,16 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 23:44:51 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 21:49:56 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _HPP_CONFIG_PARSER_
 #define _HPP_CONFIG_PARSER_
 
+#include "Utils.hpp"
 #include "HeadersLibs.hpp"
 #include "LocationDirective.hpp"
-#include <stdio.h>
 
 
 class ConfigParser
@@ -26,42 +26,41 @@ class ConfigParser
         ConfigParser();
         ~ConfigParser();
     
-        void processListen(std::string &line);
-        void processServerName(std::string &line);
         bool processRoot(std::string &line);
-		void processLocation(std::string& line);
 		void processIndex(std::string &line);
+        void processListen(std::string &line);
 		void processReturn(std::string &line);
+		void processRewrite(std::string &line);
+		void processLocation(std::string& line);
+        void processAutoIndex(std::string &line);
+        void processErrorPage(std::string &line);
+        void processServerName(std::string &line);
 		void processAllowMethods(std::string &line);
 		void processClientMaxBodySize(std::string &line);
 
-		// expansao do processamento do location (divisao da funcao)
-		void storeCurrentLocationDirectives(std::string &line);
-        void processErrorPage(std::string &line);
-		void processRewrite(std::string &line);
-        void processAutoIndex(std::string &line);
-        
         void setPort(int portNumber);
-        void setAddress(std::string ipAddress);
         void setRoot(std::string root);
-        
-        
-        const std::string& getRoot(void)const;
-        const std::string& getPort(void)const;
-        const std::string& getAddress(void)const;
-        const std::vector<std::string>& getMethods(void)const;
-        const std::vector<std::string>& getIndexFiles(void)const;
-		void setIndexFiles(std::string index);
-        const std::string getErrorPage(int statusCode)const;
-		std::map<std::string, LocationDirective> getLocations(void) const;
-		void setLocations(std::map<std::string, LocationDirective>& locations);
-		void trimWhiteSpace(std::string &line);
-		void removeComments(std::string &line);
-	    void validateFile(std::ifstream& fileToParse);
-		const std::string& getIndexFile(void) const;
 		void setIndexFile(std::string index);
-		bool getAutoIndex(void) const;
-	    // bool getHasDirLocation(void)const;
+		void setIndexFiles(std::string index);
+        void setAddress(std::string ipAddress);
+		void setLocations(std::map<std::string, LocationDirective>& locations);
+        
+		bool getAutoIndex()const;
+        const std::string& getRoot()const;
+        const std::string& getPort()const;
+        const std::string& getAddress()const;
+		const std::string& getIndexFile() const;
+        const std::vector<std::string>& getMethods()const;
+        const std::vector<std::string>& getIndexFiles()const;
+        std::map<std::string, std::string> getErrorPage()const;
+        std::map<std::string, LocationDirective> getLocations() const;
+
+        void hasMandatoryParameters();
+        void listFilesAndGenerateHtml(std::string &line);
+		void storeCurrentLocationDirectives(std::string &directiveLine);
+        //void processErrorPage(std::map<std::string, std::string> errorPage);
+	    
+        // bool getHasDirLocation(void)const;
 	    // bool getHasDirListen(void)const;
         // bool getHasDirServerName(void)const;
         // bool getHasDirRoot(void)const;
@@ -69,21 +68,22 @@ class ConfigParser
         // bool getHasDirAllowMethods(void)const;
         // bool getHasDirMaxBodySize(void)const;
         // bool getHasDirReturn(void)const;
-		void resetConfig(void);
-
-        void hasMandatoryParameters(void);
-        void processErrorPage(std::map<std::string, std::string> errorPage);
 		// validar o tipo do ipaddress
+
+        
+        //void trimWhiteSpace(std::string &line);
+
+
+		void resetConfig();
+	    void validateFile(std::ifstream& fileToParse);
+		void removeComments(std::string &line);
 		bool contemApenasLetras(const std::string& str);
 		bool contemApenasNumeros(const std::string& str);
 		//acrescentado dia 06.09
         
     private:
         
-        std::string            _indexFile;
-        std::vector<std::string>            _domains; //server_name
-        std::map<std::string, std::string>  _errorPage;
-        // std::string     _rules; //location
+        std::string     _indexFile;
         std::string     _ipAddress;
         std::string     _path;
         std::string     _portNumber;
@@ -92,7 +92,6 @@ class ConfigParser
         size_t          _directive;
         size_t			_maxBodySize;
 		bool			_autoIndexOn;
-
 		bool            _hasRoot;
         bool            _hasDirListen;
         bool            _hasDirLocation;
@@ -102,31 +101,33 @@ class ConfigParser
         bool            _hasDirMaxBodySize;
         bool            _hasDirReturn;
 		bool			_hasAutoIndex;
+        Utils           _utils;
 
         
-        std::vector<std::string> _methods;
-        // abaixo: map e string do path location atual pra guardar os arquivos de locations no config file
-        std::map<std::string, std::vector<std::string> > _locationsMap;
-        //std::vector<std::string> _multipleDomains;
-        //MAP DE OBJETOS DE LOCATION PRA INCORPORAR DEPOIS (tirar o _locationsMap acima):
-		std::map<std::string, LocationDirective> _locations; //vai ser -> "/" com seu objeto location respectivo, daí "cgi-bin" com seu objeto location respectivo (com suas respectivas diretivas)
-        std::map<int, std::string> _errorPages;
+        std::vector<std::string>                            _domains; //server_name
+        std::vector<std::string>                            _methods;
+        std::map<int, std::string>                          _errorPages;
+        std::map<std::string, std::string>                  _errorPage;
+		std::map<std::string, LocationDirective>            _locations;
+        std::map<std::string, std::vector<std::string> >    _locationsMap;
         
         
-        class ErrorException: public std::exception{
-        	public:
-	
-        	    ErrorException(const std::string& message) throw() : _errorMessage(message) {}
-	
-				virtual ~ErrorException() throw() {}
-				
-				virtual const char* what() const throw(){
-        	        return _errorMessage.c_str();
-				}
-        	private:
-        	    std::string _errorMessage;
-	
-        };
+    class ErrorException: public std::exception
+    {
+    	public:
+
+    	    ErrorException(const std::string& message) throw() : _errorMessage(message){}
+			virtual ~ErrorException() throw(){}
+			virtual const char* what() const throw()
+            {
+    	        return _errorMessage.c_str();
+			}
+
+    	private:
+        
+    	    std::string _errorMessage;
+
+    };
 };
 
 #endif

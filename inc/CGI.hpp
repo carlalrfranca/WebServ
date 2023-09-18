@@ -6,35 +6,38 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/03 20:27:13 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 21:49:38 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef _CGI_H
-#define _CGI_H
+#ifndef _CGI_HPP_
+#define _CGI_HPP_
 
 #include "./HeadersLibs.hpp"
 #include "./Request.hpp"
 
-class CGI {
-
+class CGI
+{
 	public:
+
 		CGI();
 		~CGI();
+
 		void executeScript(int *pipefd);
-		// void handleCGIRequest(std::string& request);
 		void handleCGIRequest(Request &request);
-		std::string getResponse(void) const;
+		// void handleCGIRequest(std::string& request);
 	
-		// setters and getters for scripts
 		void setRoot(const std::string& root);
 		void setCommands(std::vector<std::string> commands);
 		void setExtensions(std::vector<std::string> extensions);
-		std::vector<std::string> getCommands(void) const;
-		std::vector<std::string> getExtensions(void) const;
-		const std::string& getRoot(void) const;
+		
+		const std::string& getRoot() const;
+		std::string getResponse() const;
+		std::vector<std::string> getCommands() const;
+		std::vector<std::string> getExtensions() const;
 
 	private:
+
 		std::string _response;
 		std::string _method;
 		std::string _inputFormData;
@@ -46,5 +49,4 @@ class CGI {
 		std::vector<std::string> _scriptExtensions;
 		
 };
-
 #endif
