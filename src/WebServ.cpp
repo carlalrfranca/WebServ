@@ -6,29 +6,25 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 09:08:52 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 22:30:38 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/HeadersLibs.hpp"
 #include "../inc/WebServ.hpp"
-#include "../inc/Response.hpp"
-#include "../inc/CGI.hpp"
-#include "../inc/ConfigParser.hpp"
-
 
 WebServ::WebServ(){}
 
 WebServ::~WebServ(){}
 
-WebServ::WebServ(std::string filename){
-
+WebServ::WebServ(std::string filename)
+{
     std::ifstream fileToParse;
 	size_t index = 0;
     fileToParse.open(filename.c_str());
     char contentFile;
 
-    if(!(fileToParse >> contentFile)){
+    if(!(fileToParse >> contentFile))
+    {
         fileToParse.close();
         throw ErrorException("Configuration Error: empty file!");
     }
@@ -39,12 +35,14 @@ WebServ::WebServ(std::string filename){
         std::string line;
         bool isLocationBlock = false;
         bool isInsideServerBlock = false;
-        while(getline(fileToParse, line)){
-            _configParser.trimWhiteSpace(line); //trima espaços em branco
+
+        while(getline(fileToParse, line))
+        {
+            _utils.trimWhiteSpace(line); //trima espaços em branco
 			size_t startPos = line.find_first_not_of(" \t");
     		if (startPos == std::string::npos) //quer dizer que ou só tem espaço ou tab, nao tem conteudo, entao pode pular pra proxima iteração
 				continue;
-            _configParser.removeComments(line); //remove comentarios
+            _utils.removeComments(line); //remove comentarios
             size_t semicolon = line.find_last_not_of(" \t"); //remove semicolon
             if(semicolon != std::string::npos && line[semicolon] == ';')
                 line = line.substr(0, semicolon);   
@@ -272,15 +270,6 @@ void WebServ::responseError()
     }
 }
 
-bool contains(const std::vector<std::string>& vec, const std::string& content) {
-    for (size_t i = 0; i < vec.size(); ++i) {
-        if (vec[i] == content) {
-            return true;
-        }
-    }
-    return false;
-}
-
 // divisao da mainLoop em 31.08.2023
 
 Epoll& WebServ::getEpollS()
@@ -289,20 +278,25 @@ Epoll& WebServ::getEpollS()
 }
 // fim da divisao da mainLoop em 31.08.2023
 
-bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index) {
+bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index)
+{
     _epollS.setIsServerFdTriggered(false);
-    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex) {
-        if (events[index].data.fd == _serverSocket[serverIndex].getWebServSocket()) {
+    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+    {
+        if (events[index].data.fd == _serverSocket[serverIndex].getWebServSocket())
+        {
             getEpollS().setIsServerFdTriggered(true); // Retorna true se encontrar um socket do servidor
-                break;
+            break;
         }
     }
     return false; // Retorna false se não encontrar nenhum socket do servidor
 }
 
-void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString) {
+void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString)
+{
     Request request(requestString);
-    if (!request.isFirstLineValid()) {
+    if (!request.isFirstLineValid())
+    {
         request.setHasError(true);
         close(clientSocket);
     }
@@ -327,7 +321,8 @@ void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, s
 }
 
 
-void WebServ::mainLoop(){
+void WebServ::mainLoop()
+{
     std::cout << BLUE << "-----------------------------------------" << END << std::endl;
     std::cout << BLUE << "Servidor iniciado. Aguardando conexões..." << END << std::endl;
     std::cout << BLUE << "-----------------------------------------\n" << END << std::endl;
@@ -338,57 +333,54 @@ void WebServ::mainLoop(){
     const int maxEvents = _epollS.getMaxEvents();
     struct epoll_event events[maxEvents];
 
-    while(true) {
+    while(true)
+    {
         _epollS.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
-        if (_epollS.getNumberEvents() == -1) {
+        if (_epollS.getNumberEvents() == -1)
+        {
             perror("Error in epoll_wait");
             return;
         }
-        for (int index = 0; index < _epollS.getNumberEvents(); ++index) {
+        for (int index = 0; index < _epollS.getNumberEvents(); ++index)
+        {
             isEventFromServerSocket(events,index);
-            if (_epollS.getIsServerFdTriggered() == true) {
+            if (_epollS.getIsServerFdTriggered() == true)
+            {
                 int result = _epollS.addNewClientToEpoll(events, index);
                 if (result == -3)
                     continue;
             } else { //quarta: temos que ldiar com as requests pra GET e provavelmente fazer um objeto pro client - guardando informação de em que server ele está bindando... (pesquisar mais com o chat)
                 int clientSocket = events[index].data.fd;
                 char buffer[1024];
-				// variavel pra solução pra leitura de requisição que vem em chunks
-				// std::string requestString;
+				std::string requestString;
 				// loop para receber e acumular os chunks da solicitação
-				// while(true)
-				// {
-				// 	ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-                // 	if(bytesRead <= 0) {
-                //     	if (bytesRead == 0)
-				// 			std::cerr << "Client closed connection." << std::endl;
-				// 		else
-				// 			std::cerr << "Error during reading of client request." << std::endl;
-				// 		break;
-                // 	}
-				// 	// Adicionar dados lido ao final da string de request
-				// 	requestString.append(buffer, bytesRead);
-				// 	// Verificar se solicitação está completa (por exemplo, se termina com uma sequência específica)
-				// 	if (requestString.find("\r\n\r\n") != std::string::npos) {
-				// 		// A solicitação está completa, portanto podemos sair do loop de recepção de chunks
-				// 		break;
-				// 	}
-				// }
+				while(true)
+				{
+					ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+                	if(bytesRead <= 0)
+                    {
+                    	if (bytesRead == 0)
+							std::cerr << "Client closed connection." << std::endl; //tem que tirar o client quando dá esse tipo de erro
+						else
+							std::cerr << "Error during reading of client request." << std::endl; //tem que tirar o client quando dá esse tipo de erro
+						break;
+                	}
+					// Adicionar dados lido ao final da string de request
+					requestString.append(buffer, bytesRead);
+					// Verificar se solicitação está completa (por exemplo, se termina com uma sequência específica)
+					if (requestString.find("\r\n\r\n") != std::string::npos)
+                    {
+						// A solicitação está completa, portanto podemos sair do loop de recepção de chunks
+						break;
+					}
+				}
 				// Agora temos a solicitação completa em requestString e podemos processá-la
-				
-				// incluir o processamento de chunks aqui... como?
-                ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-                if(bytesRead <= 0) {
-                    std::cerr << "Erro ao receber solicitação do client " << std::endl;
-                    continue;
-                }
-                std::string requestString(buffer, bytesRead);
                 printRequest(requestString);
 				handleRequest(clientSocket, buffer, requestString.length(), requestString);
                 // handleRequest(clientSocket, buffer, bytesRead, requestString);
-                std::cout << "\n---------------------------------------" << std::endl;
-                std::cout <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << std::endl;
-                std::cout << "-----------------------------------------" << std::endl;
+                std::cout << BLUE << "\n---------------------------------------" << END << std::endl;
+                std::cout << BLUE <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
+                std::cout << BLUE << "-----------------------------------------" << END << std::endl;
             }
         }
     }

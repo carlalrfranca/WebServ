@@ -12,11 +12,15 @@
 
 #ifndef _WEBSERV_HPP_
 #define _WEBSERV_HPP_
-#include "HeadersLibs.hpp"
-#include "SocketS.hpp"
-#include "Epoll.hpp"
-#include "Request.hpp"
+
 #include "ConfigParser.hpp"
+#include "HeadersLibs.hpp"
+#include "Response.hpp"
+#include "SocketS.hpp"
+#include "Request.hpp"
+#include "Epoll.hpp"
+#include "Utils.hpp"
+#include "CGI.hpp"
 
 class ConfigParser;
 class SocketS;
@@ -24,49 +28,49 @@ class SocketS;
 class WebServ
 {
 
-public:
-    WebServ();
-    WebServ(std::string filename);
-    ~WebServ();
-    void mainLoop();
-    void configSocket(size_t index);
-    void responseError();
-	void checkForDuplicates();
-    void printRequest(const std::string &request);
+    public:
 
-    bool isFirstLineValid(const std::string &request, std::string &_firstLine);
+        WebServ();
+        WebServ(std::string filename);
+        ~WebServ();
+        void mainLoop();
+        void responseError();
+    	void checkForDuplicates();
+        void printRequest(const std::string &request);
+        void configSocket(size_t index);
 
-    // divisao da mainLoop() em 31.08.2023
-    bool isEventFromServerSocket(struct epoll_event *events, int index);
-    Epoll &getEpollS();
-    void handleRequest(int clientSocket, char *buffer, ssize_t bytesRead, std::string &requestString);
-    // fim da divisao da mainLoop() em 31.08.2023
+        Epoll &getEpollS();
+        bool isFirstLineValid(const std::string &request, std::string &_firstLine);
+        bool isEventFromServerSocket(struct epoll_event *events, int index);
+        void handleRequest(int clientSocket, char *buffer, ssize_t bytesRead, std::string &requestString);
 
-private:
-    int						_clientSocket;
-    std::string				_nameConfigFile;
-    ConfigParser			_configParser; // sujeito comentado
-    Epoll					_epollS;
-    std::vector<SocketS>	_serverSocket; // ----vetor criado
-    socklen_t				_clientAddressLength;
-    struct sockaddr_in		clientAddress;
+    private:
+
+        int						_clientSocket;
+        Epoll					_epollS;
+        std::string				_nameConfigFile;
+        ConfigParser			_configParser; // sujeito comentado
+        std::vector<SocketS>	_serverSocket; // ----vetor criado
+        socklen_t				_clientAddressLength;
+        struct sockaddr_in		_clientAddress;
+        Utils                   _utils;
 
     class ErrorException : public std::exception
     {
-      public:      
+        public:
+
             ErrorException(const std::string& message) throw() : _errorMessage(message) {}
-            
-			virtual ~ErrorException() throw() {}
-			
-			virtual const char* what() const throw(){
-                return _errorMessage.c_str();
+    		virtual ~ErrorException() throw() {}
+    		virtual const char* what() const throw()
+            {
+                return  _errorMessage.c_str();
             }
 
         private:
-            std::string _errorMessage;
-		};
 
-};
+            std::string _errorMessage;
+    	};
+    };
 
 #endif
 

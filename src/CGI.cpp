@@ -6,19 +6,17 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/13 19:43:35 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 17:23:38 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/CGI.hpp"
 
 CGI::CGI() : _response(""), _method(""), _inputFormData(""), _scriptOutput("")
-{ }
+{} 
 
 CGI::~CGI()
-{ }
-
-// setters and getters
+{}
 
 void CGI::setRoot(const std::string& root)
 {
@@ -172,7 +170,7 @@ void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber
 				std::cerr << "ERROR creating PIPE" << std::endl;
 				return;
 			}
-			std::cout << "----------- CRIOU O PIPE! -----------" << std::endl;
+			std::cout << YELLOW << "----------- CRIOU O PIPE! -----------" << END << std::endl;
 //
 			executeScript(pipefd);
 			if (_scriptOutput.empty())
@@ -180,6 +178,10 @@ void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber
 				return ;
 			}
 			_response += _scriptOutput;
+			std::cout << RED << "--------------------" << END << std::endl;
+			std::cout << "RESPONSE DO CGI" << std::endl;
+			std::cout << _response << std::endl;
+			
 		}
 		else
 		{

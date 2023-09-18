@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Upload de um arquivo</title>
+	<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+	<header>
+		<div class="navMenu">
+			<a href="/">home</a>
+			<a href="/tour.html">tour</a>
+			<a href="#">tests</a>
+			<div class="dot"></div>
+		</div>
+	</header>
+	<section class="section-container">
+		<div class="upload-container">
+			<h1>Olá! Vamos treinar um pouco com o POST?</h1>
+			<span class="upload-span">
+				Esse projeto exige que seja feito alguns scripts CGI.
+			</span>
+			<span class="upload-span">
+				Nesse caso, Vamos mexer um pouco com a funcionalidade de postar um arquivo de imagem
+				no nosso servidor, e exibir essa imagem aqui.
+			</span>
+		</div>
+		<div class="upload-container">
+			<h2>LEMBRE-SE</h3>
+			<span class="upload-span">Tudo tem limite</span>
+			<span class="upload-span">A imagem submetida precisa ter até - megas. Mais do que isso e o servidor não irá aceitar!</span>
+		</div>
+		<div id="choose-image">
+			<div>
+				<span class="upload-span">Vamos lá? A imagem aparecerá nesse <span class="colored">espaço destacado</span></span>
+				<form action="/images/" method="post" enctype="multipart/form-data">
+					<label for="fileUpload" class="custom-file">Selecione um arquivo:</label>
+					<input type="file" name="fileUpload" id="fileUpload">
+					<input type="submit" value="Enviar Arquivo" id="submit-image">
+				</form>
+			</div>
+			<div id="image">
+				
+			</div>
+		</div>
+	</section>
+</body>
+</html>

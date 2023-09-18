@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/03 21:07:55 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/03 21:18:09 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 19:35:50 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,18 +18,23 @@
 class ValidatePost {
 
 	public:
-		ValidatePost(void);
-		~ValidatePost(void);
+	
+		ValidatePost();
+		~ValidatePost();
 		bool runValidations(std::map<std::string, std::vector< std::string > > &locationDirectives);
 		
-		class ValidatePostException: public std::exception{
+		class ValidatePostException: public std::exception
+		{
         public:
-            virtual const char* what() const throw(){
+
+            virtual const char* what() const throw()
+			{
                 return "\nError: Configuration for POST - CGI - isn't defined correctly\n";
             }
         };
 
 	private:
+
 		bool hasCommandsToScript(std::map<std::string, std::vector< std::string > > &locationDirectives);
 		bool hasExtensionsToScript(std::map<std::string, std::vector< std::string > > &locationDirectives);
 		bool hasAcceptableContentSize(std::map<std::string, std::vector< std::string > > &locationDirectives);

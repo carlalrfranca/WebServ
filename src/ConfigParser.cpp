@@ -6,12 +6,13 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 09:22:36 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 23:28:33 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/ConfigParser.hpp"
+#include "../inc/Utils.hpp"
 
 ConfigParser::ConfigParser()
 {
@@ -48,7 +49,7 @@ ConfigParser::ConfigParser()
 	_errorPage["500"] = "./web/error/Error500.html";
 }
 
-ConfigParser::~ConfigParser() {}
+ConfigParser::~ConfigParser(){}
 
 // reset dir bools
 void ConfigParser::resetConfig()
@@ -89,34 +90,94 @@ void ConfigParser::resetConfig()
 
 
 // getter e setter do locations
-std::map<std::string, LocationDirective> ConfigParser::getLocations(void) const{
+std::map<std::string, LocationDirective> ConfigParser::getLocations() const
+{
 	return _locations;
 }
 
-void ConfigParser::setLocations(std::map<std::string, LocationDirective>& locations){
+void ConfigParser::setLocations(std::map<std::string, LocationDirective>& locations)
+{
 	_locations = locations;
 }
 
-bool ConfigParser::contemApenasLetras(const std::string& str) {
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
-        if (!std::isalpha(*it)) {
-            return false;
-        }
-    }
-    return true;
+void ConfigParser::setPort(int portNumber)
+{
+    this->_portNumber = portNumber;
 }
 
-bool ConfigParser::contemApenasNumeros(const std::string& str) {
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
-        if (!std::isdigit(*it)) {
-            return false;
-        }
-    }
-    return true;
+void ConfigParser::setAddress(std::string ipAddress)
+{
+    this->_ipAddress = ipAddress;
 }
+
+const std::string& ConfigParser::getPort()const
+{
+    return _portNumber;
+}
+
+const std::string& ConfigParser::getAddress()const
+{
+    return _ipAddress;
+}
+
+void ConfigParser::setRoot(std::string root)
+{
+    _root = root;
+}
+
+const std::string& ConfigParser::getRoot()const
+{
+    return _root;
+}
+
+std::map<std::string, std::string> ConfigParser::getErrorPage(void)const
+{
+        return _errorPage;
+}
+
+const std::string& ConfigParser::getIndexFile()const
+{
+	return _indexFile;
+}
+
+void ConfigParser::setIndexFile(std::string index)
+{
+	_indexFile = index;
+}
+
+const std::vector<std::string>& ConfigParser::getMethods()const
+{
+    return _methods;
+}
+
+bool ConfigParser::getAutoIndex()const
+{
+	return _autoIndexOn;
+}
+
+// foi para utils
+//bool ConfigParser::contemApenasLetras(const std::string& str)
+//{
+//    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) 
+//	{
+//        if (!std::isalpha(*it))
+//            return false;
+//    }
+//    return true;
+//}
+
+// bool ConfigParser::contemApenasNumeros(const std::string& str)
+// {
+//     for (std::string::const_iterator it = str.begin(); it != str.end(); ++it)
+// 	{
+//         if (!std::isdigit(*it))
+//             return false;
+//     }
+//     return true;
+// }
 
 /* REFATORAÇÃO DO PROCESS LISTEN
-	-> vamos fazer a diretiva listen ser obrigatoria?
+	-> vamos fazer a diretiva listen ser obrigatoria -> SIM
 	-> outra: ela pode ser duplicada
 	-> a pessoa tem que PELO MENOS configurar UMA PORTA (e tem que ser DENTRO DO RANGE)
 		-> ou seja, NADA DE DEFINIR PORTA PADRÃO, tem que FICAR EXPLICITO no arquivo de config
@@ -134,7 +195,8 @@ bool ConfigParser::contemApenasNumeros(const std::string& str) {
 	** LEMBRE: como a diretiva pode ser duplicada MAS NAO PODE MESMA PORTA,
 	**		   vamos ter que armazenar isso em vetores (?) mas tomar cuidado pra ver se essa porta ja nao está armazenada
 */
-void ConfigParser::processListen(std::string &line){
+void ConfigParser::processListen(std::string &line)
+{
 	size_t	posInit;
 	size_t	_semicolonIndex;
 
@@ -155,12 +217,6 @@ void ConfigParser::processListen(std::string &line){
 		throw ErrorException("Syntax Error: Only ONE value by listen directive.");
 	if (palavras[0] != "listen")
 		throw ErrorException("Syntax Error: Format of line: [directive] [value] ...");
-	/*
-		localhost:2000
-		5005
-		127.0.0.1:5002
-		
-	*/
 	posInit = palavras[1].find("https");
 	if (posInit != std::string::npos)
 		throw ErrorException("Configuration Error: Can't configure https protocol.");
@@ -180,98 +236,32 @@ void ConfigParser::processListen(std::string &line){
 		_portNumber = palavras[1].substr(posInit + 1);
 		// **** tem que verificar que a porta SÃO APENAS NUMEROS
 		// **** e verificar o FORMATO DO IPADDRESS
-		if (!contemApenasNumeros(_portNumber))
+		if (!_utils.containsOnlyNumbers(_portNumber)) //ontemApenasNumeros
 			throw ErrorException("Syntax Error: Port must be ONLY numbers.");
-		std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
+		// std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
 	}
 	else
 	{
 		// quer dizer que ou é só ipAddress ou é só porta
-		// se for só ipAddress -> não aceitamos (?) -> pode ter apenas porta, mas não apenas o ipAddress.. porque nós não
-		// colocamos nenhuma porta por default no nosso server...
-		if (contemApenasNumeros(palavras[1]))
+		// se for só ipAddress -> não aceitamos -> pode ter apenas porta, mas não apenas o ipAddress..
+		if (_utils.containsOnlyNumbers(palavras[1])) //ontemApenasNumeros
 		{
 			_portNumber = palavras[1];
 			_ipAddress = "localhost";
-			std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
+			// std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
 		}
 		else
 			throw ErrorException("Configuration Error: You must configure a PORT NUMBER!");
 	}
-    // _directive = line.find("listen");
-    // if(line == "listen"){
-    //     _ipAddress = "0.0.0.0";
-    //     _portNumber = "80";
-    //     std::cout << "\n-----[PRIMEIRO] TESTE DEFAULT-----";
-    //     // std::cout << "IP Address: " << _ipAddress << std::endl;
-    //     // std::cout << "Port: " << _portNumber << std::endl;
-    //     //std::cout << std::endl;
-    //     return ;
-    // }
-    // _semicolonIndex = line.find_first_of(";");
-    // if(_semicolonIndex != std::string::npos && _semicolonIndex == (line.length() - 1)){
-    //     line = line.substr(0, (line.length() - 1));
-    // }
-    // if(_directive != std::string::npos){
-    //     _directive += std::string("listen ").length();
-    //     posInit = line.find("://", _directive);
-    //     if(posInit != std::string::npos){
-    //         _ipAddress = line.substr(_directive, (line.length() - (_directive)));
-    //         size_t _delimiter = line.find_last_of(":");
-    //         if(_delimiter != posInit){
-    //             _portNumber = line.substr(_delimiter + 1, line.length() - (_delimiter + 1));
-    //             size_t portIndex = _ipAddress.find_last_of(":");
-    //             _ipAddress = _ipAddress.substr(0, portIndex);
-    //         }else
-    //             _portNumber = "80";
-    //         std::cout << "\n-----[SEGUNDO] TESTE DE HTTP E HTTPS  COM E SEM PORTA-----" << std::endl;
-    //         // std::cout << "IP Address: " << _ipAddress << std::endl;
-    //         // std::cout << "Port: " << _portNumber << std::endl;
-    //         //std::cout << std::endl;
-    //     }
-    //     else
-    //     { // sem protocolo http ou https // trata primeiro com :
-    //         posInit = line.find(":", _directive);
-    //         if (posInit != std::string::npos){// std::cout << "Posição dos ':' >> " << _posInit << std::endl;
-    //             _ipAddress = line.substr(_directive, posInit - _directive);
-    //             _portNumber = line.substr(posInit + 1, line.length());
-    //         }
-    //         else if(line.find(".", _directive) != std::string::npos){// significa que tem ipAddress (port será default)
-    //            _ipAddress = line.substr(_directive);
-    //            _portNumber = "80"; //a gente vai usar o default como? porque 8080 e 80 ele nao deixa (sera que na VM deixa?
-    //         }
-    //         else{
-	// 			std::cout << "Ou SÓ TEM PORTA ou SÓ TEM IP" << std::endl;
-	// 			// tem que verificar se é a porta ou o ipadress (e se estiver escrito "localhost" apenas?)
-    //             std::string listenValue = line.substr(_directive);
-	// 			 if (contemApenasNumeros(listenValue))
-	// 			 {
-	// 				_portNumber = listenValue;
-    //             	_ipAddress = "localhost"; // isso ou 'localhost?'
-	// 			 }
-	// 			 else if (contemApenasLetras(listenValue))
-	// 			 {
-	// 				_ipAddress = listenValue;
-	// 				// _portNumber = "4005"; //a gente vai usar o default como? porque 8080 e 80 ele nao deixa (sera que na VM deixa?)
-	// 			 }
-	// 			//  mas um else, pro caso das duas funções darem falso -> erro de sintaxe, pessoa pode ter misturado letra e numero e daí dá exceção
-    //         }
-    //         std::cout << "\n-----[TERCEIRO] TESTE SEM HTTP E HTTPS -----\n";
-    //         // std::cout << "IP: " << _ipAddress << std::endl;
-    //         // std::cout << "Porta: " << _portNumber << std::endl;
-    //         //std::cout << std::endl;
-    //     }
-		// std::cout << "Que diabo...?" << std::endl;
-    // }
-    _hasDirListen = true;
+	_hasDirListen = true;
 }
 
-void ConfigParser::processServerName(std::string &line){
-
+void ConfigParser::processServerName(std::string &line)
+{
     if(_hasDirServerName == true)
         throw ErrorException("Error: The Directive Server_Name has been duplicated.");
-    if(line.find("server_name") != std::string::npos){
-		// tem que extrair o ;
+    if(line.find("server_name") != std::string::npos)
+	{// tem que extrair o ;
 		if (line[line.length() - 1] == ';')
 			line = line.substr(0, line.length() - 1);
 		// vamos splitar essa linha
@@ -310,7 +300,7 @@ bool ConfigParser::processRoot(std::string &line){
         throw ErrorException("Error: The path apointed by 'root' doesn't exist.");
 	if ((info.st_mode & S_IFDIR) == 0)
 		throw ErrorException("Error: The path apointed by 'root' ISN'T A DIRECTORY.");
-	std::cout << "Root: " << _root << std::endl;
+	// std::cout << "Root: " << _root << std::endl;
     return _hasRoot;
 }
 
@@ -362,33 +352,39 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
 	}
 }
 
-void ConfigParser::trimWhiteSpace(std::string &line){
+// foi pra utils
+// void ConfigParser::trimWhiteSpace(std::string &line){
+// 
+//     size_t startPos = line.find_first_not_of(" \t");
+//     if(startPos != std::string::npos)
+//         line = line.substr(startPos);
+//     size_t endPos = line.find_last_not_of(" \t");
+//     if(endPos != std::string::npos)
+//         line = line.substr(0, endPos + 1);
+// }
 
-    size_t startPos = line.find_first_not_of(" \t");
-    if(startPos != std::string::npos)
-        line = line.substr(startPos);
-    size_t endPos = line.find_last_not_of(" \t");
-    if(endPos != std::string::npos)
-        line = line.substr(0, endPos + 1);
-}
 
-void ConfigParser::removeComments(std::string &line){
+// foi para utils
+// void ConfigParser::removeComments(std::string &line)
+// {
+// 
+//     size_t start = line.find('#');
+//     while (start != std::string::npos)
+//     {
+//         size_t end = line.find('\n', start);
+//         if (end != std::string::npos)
+//             line.erase(start, end - start + 1); // +1 para '\n'
+//         else{
+//             line.erase(start);
+//             break;
+//         }
+//         start = line.find('#');
+//     }
+// }
 
-    size_t start = line.find('#');
-    while (start != std::string::npos)
-    {
-        size_t end = line.find('\n', start);
-        if (end != std::string::npos)
-            line.erase(start, end - start + 1); // +1 para '\n'
-        else{
-            line.erase(start);
-            break;
-        }
-        start = line.find('#');
-    }
-}
 
-void ConfigParser::validateFile(std::ifstream& fileToParse){
+void ConfigParser::validateFile(std::ifstream& fileToParse)
+{
  
     if (!fileToParse.is_open())
         throw ErrorException("File is not accessible");
@@ -435,7 +431,7 @@ void ConfigParser::processLocation(std::string &line)
 			throw ErrorException("Syntax Error: Missing '{' to open LOCATION BLOCK"); 
         // verificar o tipo de location ("/", "/[directorio], etc")
         // pra isso, teremos que dividir a line em partes pra ver o que é apontado pela location
-		std::cout << "Line in Location: " << line << std::endl;
+		// std::cout << "Line in Location: " << line << std::endl;
         std::istringstream iss(line);
         std::vector<std::string> parts;
     
@@ -453,24 +449,15 @@ void ConfigParser::processLocation(std::string &line)
     else //acho que esse "else" tambem pode ser identificando os caminhos do location (hardcoded) e, dependendo de qual for, encaminha
     {	//pra um metodo correspondente (entao se for '/' é pra um, se for 'cgi-bin' é outro, se for regex é outro, etc)
         std::cout << std::endl;
-        std::cout << "Current location: " << _currentLocationPathOnMap << std::endl;
+        // std::cout << "Current location: " << _currentLocationPathOnMap << std::endl;
         storeCurrentLocationDirectives(line);
     }
 }
 
-const std::string& ConfigParser::getIndexFile(void) const
-{
-	return _indexFile;
-}
-
-void ConfigParser::setIndexFile(std::string index)
-{
-	_indexFile = index;
-}
-
 void ConfigParser::processIndex(std::string &line)
 {
-	std::vector<std::string>            _indexFiles;
+	std::vector<std::string>	_indexFiles;
+
     if(_hasDirIndex == true)
         throw ErrorException("Error: The Directive Index has been duplicated.");
     if(line.find("index") != std::string::npos)
@@ -500,25 +487,20 @@ void ConfigParser::processErrorPage(std::string &line)
             errorCode.push_back(token);   
         }
         if(errorCode.size() != 3 || errorCode[0] != "error_page")
-            throw ErrorException("Found inconsistence in error_page parameter");
+            throw ErrorException("Syntax Error: Found inconsistence in error_page directive");
 		std::string statusCode;
         statusCode = errorCode[1];
         for(size_t i = 0; i < statusCode.size(); ++i){
             if(!isdigit(statusCode[i]))
-                throw ErrorException("Found inconsistence in status parameter");
+                throw ErrorException("Syntax Error: Found inconsistence in status code apointed by error_page directive");
         }
         std::string pathError;
         pathError = errorCode[2];
 		struct stat info;
 		if (stat(pathError.c_str(), &info) != 0)
-			throw ErrorException("Syntax Error: Error page file doesn't exist!");
+			throw ErrorException("Configuration Error: Error page file doesn't exist!");
         _errorPage[statusCode] = pathError; // Armazena a página de erro no mapa
     }
-}
-
-const std::vector<std::string>& ConfigParser::getMethods()const
-{
-    return _methods;
 }
 
 void ConfigParser::processAllowMethods(std::string &line)
@@ -563,11 +545,6 @@ void ConfigParser::processClientMaxBodySize(std::string &line)
         }
     }
     _hasDirMaxBodySize = true;
-}
-
-bool ConfigParser::getAutoIndex(void) const
-{
-	return _autoIndexOn;
 }
 
 void ConfigParser::processAutoIndex(std::string &line)
@@ -623,32 +600,4 @@ void ConfigParser::processReturn(std::string &line)
         }
     }
     _hasDirReturn = true;
-}
-
-void ConfigParser::setPort(int portNumber){
-    this->_portNumber = portNumber;
-}
-
-void ConfigParser::setAddress(std::string ipAddress){
-    this->_ipAddress = ipAddress;
-}
-
-const std::string& ConfigParser::getPort(void)const{
-    return _portNumber;
-}
-
-const std::string& ConfigParser::getAddress(void)const{
-    return _ipAddress;
-}
-
-void ConfigParser::setRoot(std::string root){
-    _root = root;
-}
-
-const std::string& ConfigParser::getRoot(void)const{
-    return _root;
-}
-
-std::map<std::string, std::string> ConfigParser::getErrorPage(void)const{
-        return _errorPage;
 }

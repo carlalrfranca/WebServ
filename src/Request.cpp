@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/05 19:51:03 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/17 17:53:31 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,19 +53,19 @@ bool Request::isFirstLineValid()
     if(_firstLine.find("GET") == std::string::npos && 
         _firstLine.find("POST") == std::string::npos && 
          _firstLine.find("DELETE") == std::string::npos)
-        throw RequestException();
+        throw ErrorException();
     //verifica se tem espaço após o metodo
     size_t spacePos = _firstLine.find(' ');
     if(spacePos == std::string::npos || spacePos == _firstLine.size() - 1 )
-        throw RequestException();
+        throw ErrorException();
     //valida HTTP após o metodo e espaço
     std::string version = _firstLine.substr(spacePos + 1);
     if(version.find("HTTP/1.1") == std::string::npos)
-        throw RequestException();
+        throw ErrorException();
     //valida espaço apos a versão
     spacePos = version.find(' ');
     if (spacePos == std::string::npos || spacePos == version.size() - 1)
-        throw RequestException(); 
+        throw ErrorException(); 
     //demais validacoes aqui, se houver
     return true;
 }
@@ -90,22 +90,22 @@ std::string Request::getPortRequest(void)const
     return _portRequest;
 }
 
-void Request::trimSpaces(std::string &s) {
-    // Encontra o primeiro caractere não espaço
-    std::string::size_type start = s.find_first_not_of(" \t\n\r");
-
-    // Se não encontrar nenhum caractere não espaço, a string está vazia ou só contém espaços
-    if (start == std::string::npos) {
-        s.clear();
-        return;
-    }
-
-    // Encontra o último caractere não espaço
-    std::string::size_type end = s.find_last_not_of(" \t\n\r");
-
-    // Remove os espaços no início e no final
-    s = s.substr(start, end - start + 1);
-}
+// void Request::trimSpaces(std::string &s) {
+//     // Encontra o primeiro caractere não espaço
+//     std::string::size_type start = s.find_first_not_of(" \t\n\r");
+// 
+//     // Se não encontrar nenhum caractere não espaço, a string está vazia ou só contém espaços
+//     if (start == std::string::npos) {
+//         s.clear();
+//         return;
+//     }
+// 
+//     // Encontra o último caractere não espaço
+//     std::string::size_type end = s.find_last_not_of(" \t\n\r");
+// 
+//     // Remove os espaços no início e no final
+//     s = s.substr(start, end - start + 1);
+// }
 
 bool Request::validateRequest()
 {
@@ -131,11 +131,12 @@ bool Request::validateRequest()
     {
         _domainContent = _hostContent.substr(0, posDiv);
         _portRequest = _hostContent.substr(posDiv+1, (_hostContent.size() - 1));
-        trimSpaces(_portRequest);
+        
+        _utils.trimSpaces((_portRequest));
+        
         std::cout << "este é domainContent " << _domainContent << std::endl;
         std::cout << "este é o  portRequest " << _portRequest << "a" << std::endl;
-        std::cout << "TAMANHO DO PORT REQUEST: " << _portRequest.size() << std::endl;
-        
+        std::cout << "TAMANHO DO PORT REQUEST: " << _portRequest.size() << std::endl;  
     }
     else
     {

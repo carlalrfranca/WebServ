@@ -6,17 +6,15 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/03 21:08:04 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/04 20:08:21 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/17 22:30:35 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/ValidatePost.hpp"
 
-ValidatePost::ValidatePost(void)
-{}
+ValidatePost::ValidatePost(){}
 
-ValidatePost::~ValidatePost(void)
-{}
+ValidatePost::~ValidatePost(){}
 
 bool ValidatePost::runValidations(std::map<std::string, std::vector< std::string > > &locationDirectives)
 {

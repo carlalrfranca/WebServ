@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   StatusMessages.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:33:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 17:21:25 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/17 10:01:47 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ StatusMessages::StatusMessages()
     statusMessages[401] = "Unauthorized";
     statusMessages[403] = "Forbidden";
     statusMessages[404] = "Not Found";
+	statusMessages[405] = "Method Not Allowed";
     statusMessages[500] = "Internal Server Error";
     statusMessages[503] = "Service Unavailable";
     statusMessages[505] = "HTTP Version Not Supported";

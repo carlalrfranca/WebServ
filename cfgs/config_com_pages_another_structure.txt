@@ -1,0 +1,25 @@
+server{
+    listen localhost:2002;
+    server_name example.com;
+	allow_methods GET POST
+    root web/pages/;
+
+	location / {
+		index index.html
+	}
+
+	location /images {
+		root web/images
+		auto_index on
+	}
+
+	location /about {
+		index index.html
+	}
+
+	location cgi-bin {
+      root ./;
+      cgi_path /usr/bin/python3 /bin/bash;
+      cgi_ext .py .sh;
+  	}
+}
