@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/18 23:55:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/19 19:26:38 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ Response::Response() : _headers(), _methodsFunctions()
 	_methodsFunctions["POST"] = &Response::postMethod;
 	_methodsFunctions["DELETE"] = &Response::deleteMethod;
     _body = "";
-    _response = ""; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
     _code = "";
     _path = "";
+    _response = ""; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
     _statusMessages = StatusMessages();
 }
 
@@ -41,23 +41,21 @@ Response::~Response(){}
 
 Response::Response(Request request)
 {
-    //define corpo da resposta lendo o conteudo do arquivo html
+    // define corpo da resposta lendo o conteudo do arquivo html
     // _body = readHtmlFile("web/html_upload_arquivo/index.html");
     
     // precisa definir os campos do cabeçalho aqui, entao se for inserir mais É AQUI
-    //setStatusCode("200 OK");
-    //setContentType("text/html");
-    //setDateAndTime();
-    //setContentLength(_body.length());
+    // setStatusCode("200 OK");
+    // setContentType("text/html");
+    // setDateAndTime();
+    // setContentLength(_body.length());
     _chosenSocket = NULL;
 }
 
 std::string Response::postMethod(Request &request, SocketS &server, Response *this_response)
 {
     // return "Resposta para POST";
-
 	// se for "POST", ele chama essa função... daí???
-
 	// já terá escolhido o socket, é claro.. então...
 	// tem que VER O LOCATION DO CGI, CERTO?
 	// porque pra ter POST, vai ter que usar um script CGI
@@ -271,57 +269,65 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	return response_error;
 }
 
+	// std::string OLAR = "TAMO NO DELETE METHOD";
+	// return OLAR;
+	// curl -X DELETE -i -v http://google.com.br
 std::string Response::deleteMethod(Request &request, SocketS &server, Response *this_response)
 {
+/*
 	std::string OLAR = "TAMO NO DELETE METHOD";
 	return OLAR;
-	// curl -X DELETE -i -v http://google.com.br
+*/
+	//1. verificar a solicitacao delete tipo
+	if(request.getMethod() != "DELETE")
+	{
+		//precisa retornar uma resposta de erro tipo:
+		std::string response_delete = 
+			"HTTP/1.1 405 Method Not Allowed\r\n"
+			"Server: nginx/1.20.0\r\n"
+			"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
+			"Content-Type: text/html\r\n"
+			"Content-Length: 1591\r\n";
 
-	/*
-		//1. obter informações e da solicitação 
-
-
-
-		//2. verificar a solicitacao delete tipo
-		if(request.getMethod() != "DELETE")
-		{
-			//precisa retornar uma resposta de erro tipo:
-			std::string response_delete =
-        					"HTTP/1.1 405 Method Not Allowed\r\n"			
-							... buscar e confirmar outros cabeçalhos
-							"\r\n";
-	
-			return response_delete;
-		}
-
-		//3. extrair a uri da solicitacao HTTP recebida p identificar o recurso que deve ser excluído
-		std::string uri = request.getURI();
-		construir o caminho do recurso
-		std::string caminhoDoRecurso = //constroi aqui
+		this_response->setResponse(response_delete);
 		
+		return this_response->getResponse();
+	}
+	//Agora se for o método for DELETE, continu com a exclusao
+	std::string root;
+	root = server.getRoot();
+	
+	//1. obter informações e da solicitação
+	std::string uri = request.getURI();
+	std::string resourcePath = root + uri;
+	
+	if (/**/(resourcePath))
+	{
+	}
 
-		//4. execução da ação delete
-		excluir
-		tratar error
-		e se o recurso na foi encntrado?
-
-
-
+	//3. extrair a uri da solicitacao HTTP recebida p identificar o recurso que deve ser excluído
+	// std::string uri = request.getURI();
+	// construir o caminho do recurso
+	// std::string caminhoDoRecurso = //constroi aqui
+		
+	//4. execução da ação delete
+	// excluir
+	// tratar error
+	// e se o recurso na foi encontrado?
+	
 		//5. gerar uma resposta HTTP
 		if() //verificar se a exclusao foi bem-sucedida
-		{
 			//se foi bem sucedida entao retorna a resposta
-			        		respose += "HTTP/1.1 + --- + "\r\n"
-							response += " "	+ ____ + "\r\n";		
+						respose += "HTTP/1.1 + --- + "\r\n";
+						response += " "	+ ____ + "\r\n";		
 
-		
+
+	this_response->generateResponse(405, request);
 							
-			return response;
-		}
-
-		
-	*/
-	// re
+							
+	
+	return this_response->getResponse();
+	
 
 }
 
@@ -598,8 +604,8 @@ void Response::errorCodeHtml(int statusCode, SocketS &server)
 	std::cout << "Error File Name Path: " << errorFileName << std::endl;
     errorDefault = _statusMessages.getMessage(statusCode); //mensagm
     
-    //le o arquivo
-    //monta as headers
+    // le o arquivo
+    // monta as headers
     // concatena o arquivo com as headers
     std::string errorHtml = readFileToString(errorFileName);
 	size_t content_length = errorHtml.size();
