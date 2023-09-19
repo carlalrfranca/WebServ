@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/18 00:41:01 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/18 19:43:57 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,6 @@ ConfigParser::ConfigParser()
 
 ConfigParser::~ConfigParser(){}
 
-// reset dir bools
 void ConfigParser::resetConfig()
 {
 	_hasDirAllowMethods = false;
@@ -88,8 +87,6 @@ void ConfigParser::resetConfig()
 	_errorPage["500"] = "./web/error/Error500.html";
 }
 
-
-// getter e setter do locations
 std::map<std::string, LocationDirective> ConfigParser::getLocations() const
 {
 	return _locations;
@@ -176,25 +173,6 @@ bool ConfigParser::getAutoIndex()const
 //     return true;
 // }
 
-/* REFATORAÇÃO DO PROCESS LISTEN
-	-> vamos fazer a diretiva listen ser obrigatoria -> SIM
-	-> outra: ela pode ser duplicada
-	-> a pessoa tem que PELO MENOS configurar UMA PORTA (e tem que ser DENTRO DO RANGE)
-		-> ou seja, NADA DE DEFINIR PORTA PADRÃO, tem que FICAR EXPLICITO no arquivo de config
-	-> pessoa NÃO PODE setar MESMA PORTA várias vezes
-
-	Para realizar os pontos acima, siga:
-	1) Dividir a line de acordo com espaços - split
-	2) garantir que hajam apenas DOIS ARGUMENTOS (a diretiva + valor) -> não dá pra setar vários [ip:porta] de uma vez
-	3) Se NAO HOUVER ':', TEM QUE SER A PORTA SETADA (numero)
-		-> se o valor da diretiva nao tiver numero, provavelmente indica um ip, e daí não atinge o requisito de a pessoa setar ao menos a porta
-	4) Se HOUVER ':', daí verifica se a primeira parte (ip) é endereço ip ou um nome e armazena de acordo (endereços podem ser 127.0.0.1, algum que começa com 128 mas eu nao lembro, e 0.0.0.0)
-		-> nome acho que só pode ser 'localhost' (acho que só assim funciona)
-	5) Se o ip não estiver setado, armazena 'localhost' na variavel ipAddress
-
-	** LEMBRE: como a diretiva pode ser duplicada MAS NAO PODE MESMA PORTA,
-	**		   vamos ter que armazenar isso em vetores (?) mas tomar cuidado pra ver se essa porta ja nao está armazenada
-*/
 void ConfigParser::processListen(std::string &line)
 {
 	size_t	posInit;
@@ -352,37 +330,6 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
 	}
 }
 
-// foi pra utils
-// void ConfigParser::trimWhiteSpace(std::string &line){
-// 
-//     size_t startPos = line.find_first_not_of(" \t");
-//     if(startPos != std::string::npos)
-//         line = line.substr(startPos);
-//     size_t endPos = line.find_last_not_of(" \t");
-//     if(endPos != std::string::npos)
-//         line = line.substr(0, endPos + 1);
-// }
-
-
-// foi para utils
-// void ConfigParser::removeComments(std::string &line)
-// {
-// 
-//     size_t start = line.find('#');
-//     while (start != std::string::npos)
-//     {
-//         size_t end = line.find('\n', start);
-//         if (end != std::string::npos)
-//             line.erase(start, end - start + 1); // +1 para '\n'
-//         else{
-//             line.erase(start);
-//             break;
-//         }
-//         start = line.find('#');
-//     }
-// }
-
-
 void ConfigParser::validateFile(std::ifstream& fileToParse)
 {
  
@@ -396,7 +343,6 @@ void ConfigParser::validateFile(std::ifstream& fileToParse)
 }
 
 /*
-
 void ConfigParser::hasMandatoryParameters(){
 
     if(!getHasDirListen()){
@@ -415,11 +361,6 @@ void ConfigParser::hasMandatoryParameters(){
     root [ja tem um default]
 
 }*/
-
-/*
-    NO CASOS DAS PORTAS PRECISO VER O RANGE DE PORTAS PERMITIDAS 
-    FORA DISSO DA ERRO EXCEÇÃO
-*/
 
 void ConfigParser::processLocation(std::string &line)
 {

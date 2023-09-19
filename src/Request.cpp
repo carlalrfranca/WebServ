@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 17:53:31 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/18 19:46:12 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,23 +90,6 @@ std::string Request::getPortRequest(void)const
     return _portRequest;
 }
 
-// void Request::trimSpaces(std::string &s) {
-//     // Encontra o primeiro caractere não espaço
-//     std::string::size_type start = s.find_first_not_of(" \t\n\r");
-// 
-//     // Se não encontrar nenhum caractere não espaço, a string está vazia ou só contém espaços
-//     if (start == std::string::npos) {
-//         s.clear();
-//         return;
-//     }
-// 
-//     // Encontra o último caractere não espaço
-//     std::string::size_type end = s.find_last_not_of(" \t\n\r");
-// 
-//     // Remove os espaços no início e no final
-//     s = s.substr(start, end - start + 1);
-// }
-
 bool Request::validateRequest()
 {
     std::istringstream firstLineStream(_firstLine);
@@ -144,8 +127,7 @@ bool Request::validateRequest()
         _portRequest = "80";
         std::cout << "este é o domainContent sem a porta " << _domainContent << std::endl;
         std::cout << "este é o portRequest DEFAULT " << _portRequest << std::endl;
-    }
-        
+    }  
     return true;
 }
 
@@ -164,41 +146,3 @@ const std::string& Request::getVersion(void) const
 {
     return _version;
 }
-
-
-
-
-
-
-
-/*
-
-	if(!isFirstLineValid(request, _firstLine)){
-	    hasError = true;
-	    close(clientSocket);
-	}
-	if(hasError)
-	    responseError();
-	// ---------------------------------------------------------------------------------------------------
-	std::istringstream firstLineStream(_firstLine);
-	std::vector<std::string> _tokens;
-	std::string _token;
-	while (std::getline(firstLineStream, _token, ' ')){
-	    _tokens.push_back(_token);
-	}
-	for (size_t i = 0; i < _tokens.size(); ++i){
-	    std::cout << "Token " << i << ": " << _tokens[i] << std::endl;
-	}
-	
-	std::string _hostLine;
-	std::string _hostContent;
-	
-	while (std::getline(requestStream, _hostLine)){
-	    if (_hostLine.substr(0, 6) == "Host: ") {
-	        _hostContent = _hostLine.substr(6);
-	        std::cout << "Host content: " << _hostContent << std::endl;
-	        break;
-
-
-
-*/

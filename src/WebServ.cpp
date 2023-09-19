@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 22:30:38 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/18 22:16:38 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,34 +133,14 @@ void WebServ::checkForDuplicates()
 void WebServ::configSocket(size_t serverIndex)
 {
 	// antes de passar os itens do _configParser para o socket, verificar que todas as diretivas mandatórias estão preenchidas..
-	/* modelo:
-		if (server.getRoot().empty())
-			server.setRoot("/;");
-		if (server.getHost() == 0)
-			server.setHost("localhost;");
-		if (server.getIndex().empty())
-			server.setIndex("index.html;");
-		if (ConfigFile::isFileExistAndReadable(server.getRoot(), server.getIndex()))
-			throw ErrorException("Index from config file not found or unreadable");
-		if (server.checkLocaitons())
-			throw ErrorException("Locaition is duplicated"); // ja ta resolvido no processLocation, certo?
-		if (!server.getPort())
-			throw ErrorException("Port not found");
-		server.setErrorPages(error_codes);
-		if (!server.isValidErrorPages())
-			throw ErrorException("Incorrect path for error page or number of error");
-	*/
 	if (_configParser.getRoot().empty())
 		_configParser.setRoot("./");
 	if (_configParser.getAddress().empty())
-		_configParser.setAddress("localhost"); //ver se isso já não está sendo resolvendo no processListen
-	//definir index, caso não tenha encontrado (e armazenar o que é encontrado no processIndex na classe)
-	// verificar tambem se o arquivo desse index existe e é acessivel
+		_configParser.setAddress("localhost");
 	if (_configParser.getIndexFile().empty())
 		_configParser.setIndexFile("index.html");
 	if (_configParser.getPort().empty())
 		throw ErrorException("Configuration Error: Port not found!");
-	// tem que setar as errorPages e verificar a existencia e acessibilidade delas...
 	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server, a gente vai definir um padrão? (ou deixar sem?)
 
 
@@ -170,20 +150,16 @@ void WebServ::configSocket(size_t serverIndex)
 	// ** ATENÇÃO: a MESMA porta não pode ter sido configurada DUAS VEZES (testar
 	// pra ver se escutar na porta 5005 no ip 127.0.0.1 e na mesma porta do ip 128.??? consegue bindar)
 
-	// passagem do conteudo do configParser pro temp_socket
     SocketS temp_socket;
     temp_socket.setPort(_configParser.getPort());
     temp_socket.setAddress(_configParser.getAddress());
-	//adicionar o _locations do ConfigParser ao _locations do temp_socket
 	temp_socket.setLocations(_configParser.getLocations());
     temp_socket.setMethods(_configParser.getMethods());
     temp_socket.setRoot(_configParser.getRoot());
 	temp_socket.setIndexFile(_configParser.getIndexFile());
 	temp_socket.setErrorPage(_configParser.getErrorPage());
-	// nós resetamos os bools do _configParser pra false // agora reseta tudo
 	_configParser.resetConfig();
 
-	// ------------------------------------------------
     _serverSocket.push_back(temp_socket);
 
 	// iterar o map do Locations pra verificar os valores
@@ -270,13 +246,10 @@ void WebServ::responseError()
     }
 }
 
-// divisao da mainLoop em 31.08.2023
-
 Epoll& WebServ::getEpollS()
 {
     return _epollS;
 }
-// fim da divisao da mainLoop em 31.08.2023
 
 bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index)
 {
@@ -320,7 +293,6 @@ void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, s
     close(clientSocket);
 }
 
-
 void WebServ::mainLoop()
 {
     std::cout << BLUE << "-----------------------------------------" << END << std::endl;
@@ -343,45 +315,54 @@ void WebServ::mainLoop()
         }
         for (int index = 0; index < _epollS.getNumberEvents(); ++index)
         {
-            isEventFromServerSocket(events,index);
-            if (_epollS.getIsServerFdTriggered() == true)
-            {
-                int result = _epollS.addNewClientToEpoll(events, index);
-                if (result == -3)
-                    continue;
-            } else { //quarta: temos que ldiar com as requests pra GET e provavelmente fazer um objeto pro client - guardando informação de em que server ele está bindando... (pesquisar mais com o chat)
-                int clientSocket = events[index].data.fd;
-                char buffer[1024];
-				std::string requestString;
-				// loop para receber e acumular os chunks da solicitação
-				while(true)
-				{
-					ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-                	if(bytesRead <= 0)
-                    {
-                    	if (bytesRead == 0)
-							std::cerr << "Client closed connection." << std::endl; //tem que tirar o client quando dá esse tipo de erro
-						else
-							std::cerr << "Error during reading of client request." << std::endl; //tem que tirar o client quando dá esse tipo de erro
-						break;
-                	}
-					// Adicionar dados lido ao final da string de request
-					requestString.append(buffer, bytesRead);
-					// Verificar se solicitação está completa (por exemplo, se termina com uma sequência específica)
-					if (requestString.find("\r\n\r\n") != std::string::npos)
-                    {
-						// A solicitação está completa, portanto podemos sair do loop de recepção de chunks
-						break;
+			int current_fd = events[index].data.fd;
+			isEventFromServerSocket(events,index);
+			if (events[index].events & EPOLLIN)
+			{
+            	if (_epollS.getIsServerFdTriggered() == true)
+            	{
+            	    int result = _epollS.addNewClientToEpoll(events, index);
+            	    if (result == -3)
+            	        continue;
+            	} else { //quarta: temos que ldiar com as requests pra GET e provavelmente fazer um objeto pro client - guardando informação de em que server ele está bindando... (pesquisar mais com o chat)
+            	    int clientSocket = events[index].data.fd;
+            	    char buffer[1024];
+					std::string requestString;
+					if (events[index].events & EPOLLIN)
+					{
+						// Operação de leitura disponível
+						std::cout << RED << "É OPERAÇÃO DE LEITURA" << END << std::endl;
 					}
-				}
-				// Agora temos a solicitação completa em requestString e podemos processá-la
-                printRequest(requestString);
-				handleRequest(clientSocket, buffer, requestString.length(), requestString);
-                // handleRequest(clientSocket, buffer, bytesRead, requestString);
-                std::cout << BLUE << "\n---------------------------------------" << END << std::endl;
-                std::cout << BLUE <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
-                std::cout << BLUE << "-----------------------------------------" << END << std::endl;
-            }
+					if (events[index].events & EPOLLOUT)
+					{
+						// Operação de escrita disponível
+						std::cout << RED << "É OPERAÇÃO DE ESCRITA" << END << std::endl;
+					}
+					// loop para receber e acumular os chunks da solicitação
+					while(true)
+					{
+						ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+            	    	if(bytesRead <= 0)
+            	        {
+            	        	if (bytesRead == 0)
+								std::cerr << "Client closed connection." << std::endl; //tem que tirar o client quando dá esse tipo de erro
+							else
+								std::cerr << "Error during reading of client request." << std::endl; //tem que tirar o client quando dá esse tipo de erro
+							break;
+            	    	}
+						requestString.append(buffer, bytesRead);
+						if (requestString.find("\r\n\r\n") != std::string::npos)
+							break;
+					}
+					// Agora temos a solicitação completa em requestString e podemos processá-la
+            	    printRequest(requestString);
+					handleRequest(clientSocket, buffer, requestString.length(), requestString);
+            	    // handleRequest(clientSocket, buffer, bytesRead, requestString);
+            	    std::cout << BLUE << "\n---------------------------------------" << END << std::endl;
+            	    std::cout << BLUE <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
+            	    std::cout << BLUE << "-----------------------------------------" << END << std::endl;
+            	}
+			}
         }
     }
     for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)

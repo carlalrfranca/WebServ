@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/17 17:23:38 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/18 23:49:57 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,10 +48,6 @@ std::vector<std::string> CGI::getExtensions(void) const
 	return _scriptExtensions;
 }
 
-// ----------------------
-
-// Adaptar o método abaixo de acordo com a chamada vinda da Response
-
 void CGI::executeScript(int *pipefd)
 {
 	pid_t childPid = fork();
@@ -69,7 +65,7 @@ void CGI::executeScript(int *pipefd)
 		close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
 		
 		// Executamos agora o script de exemplo
-		execl("./process_form.sh", "./process_form.sh", static_cast<char*>(0));
+		execl("./web/cgi-bin/process_form.sh", "./web/cgi-bin/process_form.sh", static_cast<char*>(0));
 		// Se chegou aqui, houve um erro no execl
 		std::cerr << "ERROR executing SCRIPT" << std::endl;
 		return ;
