@@ -17,8 +17,8 @@ server{
 		index index.html
 	}
 
-	location cgi-bin {
-      root ./;
+	location /cgi-bin {
+      root web/;
       cgi_path /usr/bin/python3 /bin/bash;
       cgi_ext .py .sh;
   	}

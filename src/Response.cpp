@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/18 12:59:04 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/18 23:55:15 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,18 @@
 Response::Response() : _headers(), _methodsFunctions()
 {
     _chosenSocket = NULL;
+
+	/*
+		--- NOTE 18.09.2023 ---
+		
+		map onde as chaves são os verbos e os valores os métodos:
+		
+		httpGet | A função retorna a resposta HTTP gerada, que pode conter o conteúdo do arquivo solicitado ou uma resposta de erro.
+		postMethod | A função retorna a resposta HTTP gerada, que pode ser a resposta do CGI bem-sucedida ou uma resposta de erro.
+		deleteMethod |
+		
+	*/ 
+	
 	_methodsFunctions["GET"] = &Response::httpGet;
 	_methodsFunctions["POST"] = &Response::postMethod;
 	_methodsFunctions["DELETE"] = &Response::deleteMethod;
@@ -39,24 +51,6 @@ Response::Response(Request request)
     //setContentLength(_body.length());
     _chosenSocket = NULL;
 }
-
-// métodos pra lidar com cada função respectiva
-// Funções de exemplo
-/*
-If you don't have a specific location directive in your Nginx configuration and you try to POST an image or any other data to the server, Nginx will typically handle the request as follows:
-
-Nginx will receive the POST request with the image data from the client.
-
-It will process the request headers as usual.
-
-Since there is no specific location block defined to handle the POST request, Nginx will not perform any custom processing on the request data.
-
-Instead, it will look for a default behavior to handle the POST data, which often involves saving the POST data to a temporary file on the server's filesystem. The exact location and behavior may depend on your Nginx configuration, but Nginx will generally handle the data as a file upload.
-
-Nginx will not perform any image processing or special handling of the uploaded image by default. It won't display or process the image unless you have a separate process or script in your server's backend that handles uploaded files.
-
-In summary, without a specific location directive to handle POST requests, Nginx will treat the uploaded image as a file upload and save it to the server.
-*/
 
 std::string Response::postMethod(Request &request, SocketS &server, Response *this_response)
 {
@@ -95,25 +89,64 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		RESPONSE DE ERRO DE ACORDO COM A SITUAÇÃO)
 	*/
 
+	// quer saber.. coloca tudo DENTRO DO LOCATION da pagina que vai executar o script
+	// em vez do script ter um location proprio?
 
-	std::string root_for_response; // essa é uma variavel temporaria daqui
+
+	// std::string root_for_response; // essa é uma variavel temporaria daqui
 	//if (server.getRoot().size() > 0)
 	//	root_for_response = server.getRoot();
 	// agora vamos ver se tem o location do CGI (se nao tiver, ir pro caminho "padrão" do server (vai ser apenas uma postagem no diretorio do server (faz um metodo pra isso?)))
 	// /cgi-bin/
-	root_for_response = "./";
-	std::cout << RED << "Esta é a URI DESSE POST::: " << request.getURI() << END << std::endl;
+	// root_for_response = "./";
+	// ---------------------------------------------------------------------------------
+	std::string root_for_response = server.getRoot();
+	// pega o root... encontra o location que tá sendo pedindo na uri
+	// pra post vai ser ou algo com o cgi.. ou um post comum, com /upload, por exemplo
+	// -----> lembre-se: o delete vai vir implicito numa solicitação POST, então..
+	// -----> é preciso identificar se a solicitação POST é mesmo um post OU SE É UM DELETE antes
+	// -----> de chegar aqui -> definir na buildResponse e modificar a variavel do método de acordo
+	// -----> (manipulação mesmo) pra forçar a chamar a função correta...
+	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, server, serverLocations);
+	std::string uri = request.getURI();
+    std::map<std::string, std::vector< std::string > > locationDirectives;
+
+	// ---- o de antes...
+	std::cout << RED << "Esta é a URI DESSE POST::: " << uri << END << std::endl;
 	// precisa usar o find de acordo com a URI -> definir se ele é pro /process_data.cgi OU pro /images/
 	// daí cada um tem um fluxo
 	/*
 		PARA ISSO, PRECISA FAZER UM CAMINHO SIMILAR AO DO GET:
 		1 - procurar o location adequado (nesse caso, o do cgi ou do /images/)
 		2 - ver o root (se tiver, senao, usa o default)
-		3 - ver se tem algum allow_methods interno impedindo o POST (ou isso pode ser feito antes)
-		4 - 
+		3 - ver se tem algum allow_methods interno impedindo o POST (isso pode ser feito antes)
+		4 - (depois tem que testar quando chega sem '/' no inicio, o httpGET que não consegue extrair a diferença da URI - aconteceu pra pedir o css do cgi com 'location cgi-bin')
 	*/
-
-	size_t found = request.getRequest().find("/process_data.cgi");
+	if (it != serverLocations.end())
+	{
+		std::cout << BLUE << "Location found! >> " << it->first << END << std::endl;
+	}
+	// verificar se o location é /upload/ ou cgi.. porque sao dois fluxos diferentes
+	// no caso do location cgi, seguir:
+	// extrair da uri o trecho "process_data.cgi"
+	// que terá o nome do arquivo CGI - mas a extensão mudará de acordo com as extensões dadas no arquivo de configuração
+	
+	size_t foundLastSlash = uri.find_last_of('/');
+	std::string scriptName;
+	if (foundLastSlash != std::string::npos && foundLastSlash != (uri.size() - 1))
+	{
+		// se nao é uma barra no final da uri... extrai da ultima barra até o final (deve extrair 'process_data.cgi' se for cgi)
+		// tem que verificar isso antes, não? Porque pode ter um POST pra /upload/ tambem...
+		// e daí É UM FLUXO DIFERENTE
+		scriptName = uri.substr(foundLastSlash);
+		std::cout << BLUE << "NOME DO SCRIPT: " << scriptName << END << std::endl;
+		// criar um else pra isso, pra caso haja uma barra no final, daí pegar a anterior,
+		// extrair o in between e verificar se é .cgi? porque daí tudo bem tambem nao?
+		// se nao, daí dar NÃO ENCONTRADO (404)?
+	}
+	// size_t found = request.getRequest().find("/process_data.cgi");
+	size_t found = scriptName.find(".cgi");
 	if (found == std::string::npos)
 	{
 		std::cerr << "---- Opa, essa request NÃO tem process_data CGI !!! ----" << std::endl;
@@ -126,8 +159,8 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
         				"Connection: keep-alive\r\n\r\n";
 		return response_error;
 	}
-	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-	std::map<std::string, LocationDirective>::iterator it = serverLocations.find("cgi-bin");
+	// std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+	// std::map<std::string, LocationDirective>::iterator it = serverLocations.find("/cgi-bin");
 	if (it != serverLocations.end())
 	{
 		CGI script;
@@ -164,9 +197,17 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 				{
 					std::vector<std::string> scriptsExtensions = CGIExtension->second;
 					for (int j = 0; j < scriptsExtensions.size(); j++)
-						std::cout << "Extensões dods scripts CGI ------> " << scriptsExtensions[j] << std::endl;
+						std::cout << "Extensões dos scripts CGI ------> " << scriptsExtensions[j] << std::endl;
 					std::cout << "------------------------------------------------------" << std::endl;
 					
+					// montar o nome do arquivo com ambas as extensões disponiveis?
+					// para caso de uso?
+					// e verificar se eles existem...
+					// caso nao existam.. já dar 404 (not found)?
+
+					// FORMAR PATH DO SCRIPT -> root + nomeScript (com a extensão)
+					// forma os paths para as duas extensões?
+
 					// setando todas essas variaveis no objeto CGI pra processar o resto A PARTIR DELE
 					script.setRoot(root_for_response);
 					script.setCommands(scriptsCommands);
@@ -176,7 +217,7 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 					// chamando seus métodos aqui pra executar e criar a resposta...
 					// daí no final só armazenaria o que ele retorna na _response daqui....
 					
-					// NÃO SE ESQUEÇA DE IMPLEMENTAR O LOOP DE CHUNCKS TAMBEM
+					// NÃO SE ESQUEÇA DE IMPLEMENTAR O LOOP DE CHUNCKS TAMBEM (FEITO)
 
 					script.handleCGIRequest(request);
 
@@ -232,10 +273,58 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 
 std::string Response::deleteMethod(Request &request, SocketS &server, Response *this_response)
 {
-    return "Resposta para DELETE";
+	std::string OLAR = "TAMO NO DELETE METHOD";
+	return OLAR;
+	// curl -X DELETE -i -v http://google.com.br
+
+	/*
+		//1. obter informações e da solicitação 
+
+
+
+		//2. verificar a solicitacao delete tipo
+		if(request.getMethod() != "DELETE")
+		{
+			//precisa retornar uma resposta de erro tipo:
+			std::string response_delete =
+        					"HTTP/1.1 405 Method Not Allowed\r\n"			
+							... buscar e confirmar outros cabeçalhos
+							"\r\n";
+	
+			return response_delete;
+		}
+
+		//3. extrair a uri da solicitacao HTTP recebida p identificar o recurso que deve ser excluído
+		std::string uri = request.getURI();
+		construir o caminho do recurso
+		std::string caminhoDoRecurso = //constroi aqui
+		
+
+		//4. execução da ação delete
+		excluir
+		tratar error
+		e se o recurso na foi encntrado?
+
+
+
+		//5. gerar uma resposta HTTP
+		if() //verificar se a exclusao foi bem-sucedida
+		{
+			//se foi bem sucedida entao retorna a resposta
+			        		respose += "HTTP/1.1 + --- + "\r\n"
+							response += " "	+ ____ + "\r\n";		
+
+		
+							
+			return response;
+		}
+
+		
+	*/
+	// re
+
 }
 
-//metodo para ler o conteudo do html
 std::string Response::readHtmlFile(const std::string& filePath)
 {
     std::ifstream file(filePath.c_str());
@@ -281,11 +370,6 @@ std::string Response::getDate()const
 	return "Date not found";
 }
 
-// void Response::setContentLength(size_t length)
-// {
-//     _headers["Content-Length"] = to_string(length); //***   contentLength(_response.length());
-// }
-
 void Response::setResponse(const std::string& response)
 {
     _response = response;
@@ -301,56 +385,6 @@ const std::string& Response::getHeader(const std::string& header)const
     return emptyHeader;
 }
 
-//bool Response::contains(const std::vector<std::string>& vec , const std::string& content)
-//bool Response::isInVector(const std::vector<std::string>& vec , const std::string& content)
-//{
-//    for(size_t i = 0; i < vec.size(); ++i)
-//    {
-//        if(vec[i] == content)
-//            return true;
-//    }
-//    return false;
-//}
-
-// void Response::setPath(const std::string& allPath){
-//     _path = allPath;
-// }
-
-
-// refazer esse metodo selectServer
-
-
-
-
-/*
-
-
-Na configuração que você forneceu, onde existem dois servidores virtuais ouvindo em portas diferentes, mas com o mesmo nome de servidor, 
-a ordem de verificação será a seguinte:
-
-Verificação da Porta e Endereço IP: O Nginx primeiro verificará a combinação de porta e endereço IP da solicitação recebida. 
-Ele tentará corresponder a combinação de porta e IP com a configuração dos servidores virtuais. No seu caso:
-
-Se a solicitação for recebida em localhost (127.0.0.1) na porta 8034, ela será direcionada para o primeiro servidor virtual.
-Se a solicitação for recebida no endereço IP 142.0.0.1 na porta 8033, ela será direcionada para o segundo servidor virtual.
-
-Verificação do Campo "Host" (Nome do Servidor): Se a solicitação for direcionada para um servidor virtual com base na porta e no IP, 
-o Nginx, em seguida, verificará o campo "Host" (nome do servidor) no cabeçalho da solicitação. Ele comparará o valor do campo "Host" 
-com os nomes de domínio configurados (server_name) para determinar qual servidor virtual deve lidar com a solicitação.
-
-No seu caso, ambos os servidores virtuais têm o mesmo nome de servidor (exemplo.net e www.exemplo.net), então o Nginx usará o campo "Host" no cabeçalho da solicitação para escolher qual servidor virtual deve ser usado.
-
-Escolha do Servidor Virtual: O Nginx selecionará o primeiro servidor virtual que corresponda ao valor do campo "Host". Portanto, mesmo que os servidores virtuais tenham endereços IP diferentes, se o campo "Host" for exemplo.net ou www.exemplo.net, a solicitação será direcionada para o primeiro servidor virtual que você definiu.
-Em resumo, a ordem de verificação é:
-
-Verificação da combinação de porta e endereço IP.
-Verificação do campo "Host" (nome do servidor) para selecionar o servidor virtual correspondente.
-Certifique-se de configurar os servidores virtuais com nomes de domínio distintos se você desejar que diferentes endereços IP e portas sejam tratados de forma distinta.
-
-
-
-
-*/
 int Response::selectServer(Request& stringDomain, std::vector<SocketS> serverSocket)
 {
     int indexChosenSocket = -1;
@@ -373,8 +407,7 @@ int Response::selectServer(Request& stringDomain, std::vector<SocketS> serverSoc
                 //se for tudo certinho...
                 indexChosenSocket = serverIndex; //depois passar isso pra essa condicao abaixo
             }
-        }
-        
+        }  
     }
     return indexChosenSocket;
     // construir resposta de erro... (se sair do loop é que deu merda)
@@ -559,7 +592,6 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList){
 
 void Response::errorCodeHtml(int statusCode, SocketS &server)
 {
-
     std::string errorFileName;
     std::string errorDefault;
     errorFileName = server.getErrorPage(statusCode); //caminho
@@ -593,7 +625,6 @@ void Response::generateResponse(int statusCode, const Request& request)
     std::string contentType;
     std::string content = readFileToString(getPath());
     std::string response;
-    
 	std::cout << " -------------------------------------- URI ------------------------ " << request.getURI() << std::endl;
     if(request.getURI().find("css") != std::string::npos)
         contentType = "text/css";
@@ -605,7 +636,6 @@ void Response::generateResponse(int statusCode, const Request& request)
         contentType = "image/gif";
     else
         contentType = "text/html";
-	
 	std::stringstream toConvertToString;
     toConvertToString << statusCode;
     std::string statusCodeStr = toConvertToString.str();
@@ -621,7 +651,6 @@ void Response::generateResponse(int statusCode, const Request& request)
     response += content;
     setResponse(response);
     // return response;
-
 }
 
 bool isDirectory(const std::string& path)
@@ -633,28 +662,7 @@ bool isDirectory(const std::string& path)
     return S_ISDIR(fileStat.st_mode);
 }
 
-// Função para dividir uma string com base no caractere "/"
-// foi pra utils
-// std::vector<std::string> splitString(const std::string& input, char delimiter) {
-//     std::vector<std::string> tokens;
-//     size_t start = 0;
-//     size_t end = input.find(delimiter);
-// 
-//     while (end != std::string::npos) {
-//         end = input.find(delimiter, start);
-// 		std::string part = input.substr(start, end - start);
-// 		if (!part.empty())
-//         	tokens.push_back(part);
-//         start = end + 1;
-//     }
-// 
-//     // Adicione a última parte da string
-//     // tokens.push_back(input.substr(start));
-// 
-//     return tokens;
-// }
-
-std::map<std::string, LocationDirective>::iterator findRequestedLocation(Request &request, SocketS &server, std::map<std::string, LocationDirective>& serverLocations)
+std::map<std::string, LocationDirective>::iterator Response::findRequestedLocation(Request &request, SocketS &server, std::map<std::string, LocationDirective>& serverLocations)
 {
 	//obtenho informações das loalizacoes
     std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI()); //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
@@ -686,12 +694,6 @@ std::map<std::string, LocationDirective>::iterator findRequestedLocation(Request
 	std::cout << YELLOW << "LOCATION que se ENCAIXA >> " << it->first << END << std::endl;
 	return it;
 }
-
-/*
-	Quebrar a parte de CONSTRUÇÃO DO PATH:
-	1) buildPathToResource() que chamará:
-	  -> 
-*/
 
 bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it, std::string indexPage)
 {
@@ -811,21 +813,21 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 	return false;
 }
 
-std::string Response::httpGet(Request &request, SocketS &server, Response *this_response){
+std::string Response::httpGet(Request &request, SocketS &server, Response *this_response)
+{
     std::string root;
-
 	root = server.getRoot();
 
 	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-	std::map<std::string, LocationDirective>::iterator it = findRequestedLocation(request, server, serverLocations);
+	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, server, serverLocations);
 	std::string uri = request.getURI();
     std::map<std::string, std::vector< std::string > > locationDirectives; //cria map p armazenar diretivas de localizacao
 
-    if (it != serverLocations.end()){
+    if (it != serverLocations.end())
+	{
         std::cout << "Location found! >> " << it->first << std::endl;
         locationDirectives = it->second.getDirectives(); //obtem as diretivas da location
         std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
-        
 		if (itRoot != locationDirectives.end())
 		{
             root = itRoot->second[0];
@@ -870,18 +872,20 @@ void Response::buildResponse(Request &request, SocketS &server)
     
     bool isAllowedMethod = false;
 
-    for (std::vector<std::string>::iterator it = allowed_methods.begin(); it != allowed_methods.end(); ++it) {
-        if (strcmp(it->c_str(), requestMethod.c_str()) == 0) {
+    for (std::vector<std::string>::iterator it = allowed_methods.begin(); it != allowed_methods.end(); ++it)
+	{
+        if (strcmp(it->c_str(), requestMethod.c_str()) == 0)
+		{
             isAllowedMethod = true;
             break;
         }
     }
-
     std::string hasRoot;
-
-    if (isAllowedMethod) {
+    if (isAllowedMethod)
+	{
 		std::string resposta = _methodsFunctions[requestMethod](request, server, this);
 		// std::cout << BLUE << " ***** A resposta é *****\n" << getResponse() << END << std::endl;
+		/// consta a delete aqui
     }
     else
     {
@@ -891,23 +895,6 @@ void Response::buildResponse(Request &request, SocketS &server)
 		errorCodeHtml(405, server); // statusCode 405 = "Method Not Allowed"
     }
 }
-
-
-
-/*
-
-Agora preciso que seja criado um metodo  
-que avaliara se no atributo SocketS tem uma diretiva location , 
-se tiver a diretiva location verifica se tem uma root se tiver uma 
-root entao essa root sera usada para determinar o diretorio raiz. 
-Se não houver a diretiva location ou se nao tiver um root dentro da 
-location o servidor entao usa a diretiva root global definida fora. 
-Agora fica a questao , e se nao tiver uma root na global?
-
-
-
-*/
-
 
 void Response::reset()
 {
@@ -922,99 +909,3 @@ void Response::httpError(std::string errorCode, const std::string &errorMessage)
     _response = errorMessage;
     _headers.clear(); //limpa cabeçalhos anteriores
 }
-
-
-
-/*
-
-
-
-
-
-    std::map<std::string, std::string>  _headers;
-    std::string                         _body;
-    std::string                         _response; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
-    std::string                         _code;
-    
-    ------------------------------------------- LETICIA DEIXOU ANOTADO ----------------------------------------------
-    criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
-    PRA DEIFINIR O BODY (um arquivo html que voce precisa "pegar" do diretorio que temos, por exemplo)
-    1. Identificar QUAL é o método sendo pedido pela request e verificar que esse socket ACEITA ESSA MÉTODO (get, por exemplo)
-        ---> se NÃO aceitar, construir uma RESPOSTA DE ERRO (com o statusCode adequado) e ARMAZENAR isso na response da classe e retornar (pra interromper o metodo)
-    2. SE ACEITAR, daí IDENTIFICAR qual é o RECURSO (URI) pedido pela request e verificar se
-         esse recurso está entre os locations (map) desse SERVER SOCKET (qualquer duvida, dar uma olhada no hpp do SocketS)
-        ---> Se esse recurso NÃO ESTIVER DENTRE AS LOCATIONS, tem que construir uma RESPOSTA DE ERRO (404?) e armazenar na resposne da classe e retornar (pra interromper o metodo)
-    3. SE ESTIVER PRESENTE, acessar o valor (LocationsDirective) desse location no map e indeitificar o arquivo INDEX pedido (está em algum lugar do diretorio) e
-        criar um método pra abrir esse arquivo e armazenar seu conteúdo numa string (a string body, no caso)
- precisa devolver essa string de alguma forma (get?) pra mainLoop
- pra que ela possa fazer send() dessa response pro clientSocket
-
-*/
-
-
-
-   // Response::Response(){}
-   // Response::~Response(){}
-   // Response::Response(Request *req, Server *_server){}
-   // 
-   // //getters and setters
-   // size_t Response::getIdClient()const{}
-   // const std::string& Response::getHeader(const std::string& header)const{} // busca pelo campo de cabeçalho na lista de cabeçalhos
-   // 
-   // //response methods
-   // void Response::status(int statusCode, const std::string& header)const{} // status da resposta com base no código e no texto fornecidos
-   // void Response::text(){} //configuração do corpo da resposta como texto
-   // void Response::reset(){} //implementa a redefinição de resposta, limpando cabeçalhos e corpo
-   // 
-   // //response methods
-   // void Response::processResponse(){} //processa a solicitacao, verifica método, URI, etc. e constrói a resposta de acordo com os requisitos
-   // void Response::createResponse(std::string requestedContent){}
-   // void Response::readRequestedFile(std::string requestedContent){}
-
-/*
-
-Receber uma Request e Identificar o Socket do Servidor:
-
-Quando o servidor recebe uma solicitação (request) de um cliente, ele primeiro analisa essa solicitação.
-Para determinar qual servidor socket deve processar essa solicitação, o servidor verifica o cabeçalho Host da solicitação.
-(IPADRESS, )
-Ele compara o valor do cabeçalho Host (que geralmente é o nome de domínio do site) com os endereços IP, nomes de servidor e portas associados aos seus próprios servidores sockets.
-Com base nessa comparação, o servidor identifica o socket específico que deve lidar com essa solicitação.
-Passar o Socket e a Request para o Método da Classe Response:
-
-Uma vez que o servidor tenha identificado o socket correto, ele passa o socket e o objeto da solicitação (Request) para um método na classe Response.
-Isso permite que o objeto Response saiba qual socket está lidando com a solicitação e possa trabalhar com ele.
-Verificar o Método e Validar o Socket:
-
-No método da classe Response, o objeto Response verifica o método (GET, POST, etc.) que foi solicitado na Request.
-Também verifica se o socket correspondente suporta esse método. Se não suportar, constrói uma resposta de erro indicando que o método não é permitido.
-Se houver um erro, a Response cria uma resposta de erro e retorna essa resposta para a MainLoop.
-Comparar a URI (Recurso) com os Locations Disponíveis:
-
-Se o método for suportado pelo socket e não houver erro, a Response continua verificando a URI (recurso) que foi solicitada na Request.
-Ela compara essa URI com os possíveis "locations" que esse socket tem gravados.
-Os "locations" são mapeados usando um mapa que relaciona URIs a objetos LocationDirectives.
-Construir a Resposta Básica:
-
-Se a URI solicitada corresponder a um dos "locations" disponíveis para esse socket, a Response acessa o objeto LocationDirectives correspondente.
-Se houver um recurso chamado "index" dentro desse objeto LocationDirectives (representado por uma entrada no mapa), a Response usa o valor associado para localizar o recurso real (por exemplo, "index.html") no diretório.
-Ela lê o conteúdo desse recurso e o armazena em uma string.
-Enviar a Resposta para o Cliente:
-
-A Response, após ler e processar o conteúdo do recurso, constrói uma resposta de sucesso usando o conteúdo do recurso como o "body" da resposta.
-Ela retorna essa resposta construída para a MainLoop.
-A MainLoop, por sua vez, envia essa resposta de sucesso para o cliente usando o socket associado.
-Esse é um fluxo detalhado de como o servidor identifica o socket, verifica o método, 
-compara a URI e constrói uma resposta básica. Lembre-se de que essa é uma descrição 
-de alto nível e que a implementação real envolverá várias etapas, verificações e 
-tratamento de erros ao longo do processo.
-
-
-
-SE FOR NUMERO CONFERE O FORMATO E CONFERE SE É O MESMO QUE ESTA EM IP ADRESS BATE COM O DO LISTEM
-SE FOR ESCRITO ENTAO PUXA NO SERVER_NAME
-SE TIVER PORTA, SE ELA ESTA PREENCHIDA NA PORT DO SOCKETS
-SE NAO TIVER PORTA É DEFAULT ENTAO PRECISA VERFICAR SE ESTÁ HABILITADA
-SE DER ALGO ERRADO ENTAO CONSTROI UMA RESPNSE DE ERRO COM O STATUS DE ERRO E RETORNA ISSO PRA MAIN LOOP E A MAIN LOOP FAZ UMA SEND PARA O CLIENT
-SE DER CERTO DAI VOCE PROSSEGUE, MANDA O OBJETO REQUEST E ESSE SOCKET QUE ENCONTREI. NESSA FUNCAO QUE TEM
-*/
