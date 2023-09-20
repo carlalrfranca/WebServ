@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/19 19:26:38 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/19 22:11:58 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,6 +138,11 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		// tem que verificar isso antes, não? Porque pode ter um POST pra /upload/ tambem...
 		// e daí É UM FLUXO DIFERENTE
 		scriptName = uri.substr(foundLastSlash);
+		// size_t foundCGIExt = scriptName.find(".cgi");
+		// if (foundCGIExt != std::string::npos)
+		// {
+		// 	scriptName = scriptName.substr(0, foundCGIExt);
+		// }
 		std::cout << BLUE << "NOME DO SCRIPT: " << scriptName << END << std::endl;
 		// criar um else pra isso, pra caso haja uma barra no final, daí pegar a anterior,
 		// extrair o in between e verificar se é .cgi? porque daí tudo bem tambem nao?
@@ -148,14 +153,8 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	if (found == std::string::npos)
 	{
 		std::cerr << "---- Opa, essa request NÃO tem process_data CGI !!! ----" << std::endl;
-		std::string response_error =
-        				"HTTP/1.1 404 Not Found\r\n"
-        				"Server: nginx/1.20.0\r\n"
-        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
-        				"Content-Type: text/html\r\n"
-        				"Content-Length: 162\r\n"
-        				"Connection: keep-alive\r\n\r\n";
-		return response_error;
+		this_response->errorCodeHtml(404, server);
+		return this_response->getResponse();
 	}
 	// std::map<std::string, LocationDirective> serverLocations = server.getLocations();
 	// std::map<std::string, LocationDirective>::iterator it = serverLocations.find("/cgi-bin");
@@ -164,6 +163,11 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		CGI script;
 		// quer dizer que teve esse location
 		std::cout << "Há um LOCATION PRO CGI!" << std::endl;
+		size_t foundCGIExt = scriptName.find(".cgi");
+		if (foundCGIExt != std::string::npos)
+		{
+			scriptName = scriptName.substr(0, foundCGIExt);
+		}
 		// agora verificamos se há um "root" dentro desse location (um root mais "especifico", portanto)
 		std::map<std::string, std::vector< std::string > > locationDirectives;
 		locationDirectives = it->second.getDirectives();
@@ -198,35 +202,56 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 						std::cout << "Extensões dos scripts CGI ------> " << scriptsExtensions[j] << std::endl;
 					std::cout << "------------------------------------------------------" << std::endl;
 					
-					// montar o nome do arquivo com ambas as extensões disponiveis?
-					// para caso de uso?
-					// e verificar se eles existem...
-					// caso nao existam.. já dar 404 (not found)?
+					// talvez seja interessante configuar tudo em relação
+					// ao script DENTRO DA HANDLECGIREQUEST - acho que faz mais sentido nenao
 
-					// FORMAR PATH DO SCRIPT -> root + nomeScript (com a extensão)
-					// forma os paths para as duas extensões?
+						// montar o nome do arquivo com ambas as extensões disponiveis?
+						// para caso de uso?
+						// e verificar se eles existem...
+						// caso nao existam.. já dar 404 (not found)?
+	
+						// FORMAR PATH DO SCRIPT -> root + nomeScript (com a extensão)
+						// forma os paths para as duas extensões?
+						// tem que ser gravado na classe, nao? é melhor, certo?
+						std::string pathToScript = root_for_response + scriptName;
+						std::cout << BLUE << "CAMINHO PARA O SCRIPT >> " << pathToScript << END << std::endl;
+						
+						// setando todas essas variaveis no objeto CGI pra processar o resto A PARTIR DELE
+						script.setRoot(root_for_response);
+						script.setCommands(scriptsCommands);
+						script.setExtensions(scriptsExtensions);
+						// criar o método:
+						// setPathToScript(scriptName); ?? e que adiciona a extensão ao nome
+						script.setPathToScript(scriptName);
+						std::cout << BLUE << "CAMINHO SCRIPT COM EXTENSÃO >> " << script.getPathToScript() << END << std::endl;
+						// verificar se esse path existe
+						// se nao existir, retorna erro ??
+						struct stat info;
+		 				if (stat(script.getPathToScript().c_str(), &info) != 0)
+		 				{
+							std::cerr << "Error: Config file doesn't exist!" << std::endl;
+							this_response->errorCodeHtml(404, server);
+							return this_response->getResponse();
+		 				}
+						std::cout << YELLOW << "<< CAMINHO INTEIRO PARA O SCRIPT CONSTRUIDO >>" << END << std::endl;
+						std::cout << YELLOW << script.getPathToScript() << END << std::endl;
+						std::cout << std::endl;
+						// podia já declarar um objeto CGI e inserir essas informações (extensão e comando) dentro dele, certo?
+						// e daí prosseguir a partir dele...
+						// chamando seus métodos aqui pra executar e criar a resposta...
+						// daí no final só armazenaria o que ele retorna na _response daqui....
+						
+						// NÃO SE ESQUEÇA DE IMPLEMENTAR O LOOP DE CHUNCKS TAMBEM (FEITO)
 
-					// setando todas essas variaveis no objeto CGI pra processar o resto A PARTIR DELE
-					script.setRoot(root_for_response);
-					script.setCommands(scriptsCommands);
-					script.setExtensions(scriptsExtensions);
-					// podia já declarar um objeto CGI e inserir essas informações (extensão e comando) dentro dele, certo?
-					// e daí prosseguir a partir dele...
-					// chamando seus métodos aqui pra executar e criar a resposta...
-					// daí no final só armazenaria o que ele retorna na _response daqui....
-					
-					// NÃO SE ESQUEÇA DE IMPLEMENTAR O LOOP DE CHUNCKS TAMBEM (FEITO)
-
-					script.handleCGIRequest(request);
+						script.handleCGIRequest(request);
 
 					std::cout << RED << "RESPONSE DO CGI" << END << std::endl;
 					std::cout << RED << script.getResponse() << END << std::endl;
 					this_response->setResponse(script.getResponse());
 					return script.getResponse(); // retorna a response
 				}
-				else
-				{
-					// se nao encontrar a diretiva 'cgi-ext'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
+				else{
+				//  se nao encontrar a diretiva 'cgi-ext'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
 					this_response->setDateAndTime();
 					std::string date = this_response->getDate();
 					std::string response_error =
@@ -255,7 +280,7 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	}
 	else
 	{
-		//quer dizer que nao teve o locatin do cgi-bin, então lidamos com a postagem da forma "padrão" (grava o conteudo num arquivo no diretorio raiz do projeto)
+		// quer dizer que nao teve o locatin do cgi-bin, então lidamos com a postagem da forma "padrão" (grava o conteudo num arquivo no diretorio raiz do projeto)
 		std::cout << "NÃO HÁ um location PRO CGI! Vai pro caminho padrão..." << std::endl;
 		// ou seja, só "posta" o que tiver que postar num arquivo no diretório
 	}
@@ -266,70 +291,62 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
         				"Content-Type: text/html\r\n"
         				"Content-Length: 162\r\n"
         				"Connection: keep-alive\r\n\r\n";
-	return response_error;
+		return response_error;
 }
+
 
 	// std::string OLAR = "TAMO NO DELETE METHOD";
 	// return OLAR;
 	// curl -X DELETE -i -v http://google.com.br
 std::string Response::deleteMethod(Request &request, SocketS &server, Response *this_response)
 {
-/*
-	std::string OLAR = "TAMO NO DELETE METHOD";
-	return OLAR;
-*/
-	//1. verificar a solicitacao delete tipo
+	// 1. verificar a solicitacao delete tipo
 	if(request.getMethod() != "DELETE")
 	{
-		//precisa retornar uma resposta de erro tipo:
-		std::string response_delete = 
+		// precisa retornar uma resposta de erro tipo:
+		std::string response_405 = 
 			"HTTP/1.1 405 Method Not Allowed\r\n"
 			"Server: nginx/1.20.0\r\n"
 			"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
 			"Content-Type: text/html\r\n"
-			"Content-Length: 1591\r\n";
-
-		this_response->setResponse(response_delete);
-		
+			"Content-Length: 1591\r\n"
+			"Connection: keep-alive\r\n\r\n";
+		this_response->setResponse(response_405);
 		return this_response->getResponse();
 	}
-	//Agora se for o método for DELETE, continu com a exclusao
-	std::string root;
-	root = server.getRoot();
-	
-	//1. obter informações e da solicitação
-	std::string uri = request.getURI();
-	std::string resourcePath = root + uri;
-	
-	if (/**/(resourcePath))
-	{
-	}
-
-	//3. extrair a uri da solicitacao HTTP recebida p identificar o recurso que deve ser excluído
+	// 2. extrair a uri da solicitacao HTTP recebida p identificar o recurso que deve ser excluído
 	// std::string uri = request.getURI();
 	// construir o caminho do recurso
 	// std::string caminhoDoRecurso = //constroi aqui
-		
-	//4. execução da ação delete
-	// excluir
-	// tratar error
-	// e se o recurso na foi encontrado?
-	
-		//5. gerar uma resposta HTTP
-		if() //verificar se a exclusao foi bem-sucedida
-			//se foi bem sucedida entao retorna a resposta
-						respose += "HTTP/1.1 + --- + "\r\n";
-						response += " "	+ ____ + "\r\n";		
+	std::string root;
+	if(server.getRoot().size() > 0)
+	{
+		root = server.getRoot();
+	}
+	std::string uri = request.getURI();
+	std::string resourcePath = root + uri;
+	//4. verificando antes de excluir
+	if(this_response->_utils.fileExists(resourcePath))
+	{
+		this_response->errorCodeHtml(404, server);
+		return this_response->getResponse();
+	}
+	if(remove(resourcePath.c_str()) == 0)
+		this_response->generateResponse(200, request); //exclusão bem-sucedida
+	else
+		this_response->errorCodeHtml(500, server);
 
-
-	this_response->generateResponse(405, request);
-							
-							
-	
+	//5. gerar uma resposta HTTP
+	std::string response_204 = 
+			"HTTP/1.1 204 No Content\r\n"
+			"Server: nginx/1.20.0\r\n"
+			"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
+			"Connection: keep-alive\r\n\r\n";
+	//6. retorno a resposta
+	this_response->setResponse(response_204);
 	return this_response->getResponse();
-	
-
 }
+
 
 std::string Response::readHtmlFile(const std::string& filePath)
 {

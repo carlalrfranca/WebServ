@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/16 15:17:47 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/19 21:20:40 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ class SocketS
 		std::map<std::string, LocationDirective> getLocations() const;
 		const std::string getErrorPage(int statusCode)const;
 		void setErrorPage(std::map<std::string, std::string> errorPages);
+		void initServer();
         
     private:
         

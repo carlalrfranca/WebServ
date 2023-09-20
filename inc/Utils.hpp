@@ -6,14 +6,13 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 21:43:11 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/19 21:41:54 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _UTILS_HPP_
 #define _UTILS_HPP_
 
-#include "Utils.hpp"
 #include "HeadersLibs.hpp"
 
 class Utils
@@ -31,7 +30,7 @@ class Utils
         bool containsOnlyNumbers(const std::string& str);
         std::vector<std::string> splitString(const std::string& input, char delimiter);
         bool isInVector(const std::vector<std::string>& vec, const std::string& content); //contains
-		
+        bool fileExists(std::string filePath);
 
     private:
         
