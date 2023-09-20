@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 error</title>
-    <link rel="stylesheet" href="/assets/stylesError.css">
+    <title>Delete - Enviar Solicitação </title>
+    <link rel="stylesheet" href="assets/stylesError.css">
 </head>
     <body>
         <section class="main-section">
             <div class="navMenu">
-                <a href="/">return</a>
+                <a href="/">home</a>
+                <a href="about.html">about</a>
+                <a href="tour.html">tour</a>
+                <a href="#">tests</a>
                 <div class="dot"></div>
             </div>
         </section>
-        
         <section class="section-container">
             <div class="section-content">
-                <h3>404</h3>
-                <h4>Error page not found</h4>
-                
-                <p>The page you are looking for was not found on the server.
-Please check the URL or return to the homepage.</p>
+                <form method="POST" action="../pages/tour.html">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit">Enviar DELETE</button>
+                </form>
             </div>        
         </section>        
         <footer>

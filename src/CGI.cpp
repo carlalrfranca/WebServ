@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/18 23:49:57 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/19 23:41:15 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,19 @@ CGI::CGI() : _response(""), _method(""), _inputFormData(""), _scriptOutput("")
 
 CGI::~CGI()
 {}
+
+void CGI::setPathToScript(std::string scriptName)
+{
+	// construir o Caminho para o Script
+	std::vector<std::string>ext = getExtensions();
+	std::string tmp_path = getRoot() + scriptName + ext[0];
+	_scriptName = tmp_path;
+}
+
+const std::string& CGI::getPathToScript(void) const
+{
+	return _scriptName;
+}
 
 void CGI::setRoot(const std::string& root)
 {
@@ -65,7 +78,13 @@ void CGI::executeScript(int *pipefd)
 		close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
 		
 		// Executamos agora o script de exemplo
-		execl("./web/cgi-bin/process_form.sh", "./web/cgi-bin/process_form.sh", static_cast<char*>(0));
+		// quando tiver o método que recupera o path to Script
+		// o nome do arquivo abaixo tem que ser passado atraves de uma variavel
+		// talvez atraves dos parametros da funcao
+		// porque daí essa função também fica flexível para o caso em que queremos criar o html
+		// com a imagem que foi feita upload -> só passar o caminho dela e o script cuida
+		execl(getPathToScript().c_str(), getPathToScript().c_str(), "./info_usuario.txt", static_cast<char*>(0));
+		// execl("./web/cgi-bin/process_data.sh", "./web/cgi-bin/process_data.sh", static_cast<char*>(0));
 		// Se chegou aqui, houve um erro no execl
 		std::cerr << "ERROR executing SCRIPT" << std::endl;
 		return ;
@@ -101,7 +120,7 @@ void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber
 	/* 
 		aqui vamos:
 			- confirmar que o método é o POST (depois, transferir isso para um outro método, antes de
-			chamar essa função aqui)
+			chamar essa função aqui) --> está sendo feito, essa função só é chamada por isso!!!!
 				> Se for, vamos resgatar o conteúdo enviado pelo formulário e passar para uma
 				  função que cuidará disso (parseFormData) -> irá criar um map com os valores dos inputs do formulario
 				> Vamos inserir esses valores na variavel de ambiente QUERY_STRING com setenv() - (para que o script possa acessar essas informações)
@@ -110,16 +129,11 @@ void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber
 				> vamos fazer um fork() - criar um processo filho que irá modificar o STDOUT com dup e executará o script
 				> vamos resgatar a saída do script e construir uma response pra retornar pra mainLoop()
 	*/
-
-	// int indexMethod = request.find("POST");
-	// if (indexMethod != std::string::npos)
-	// {
-		// _method = request.substr(indexMethod, indexMethod + 3);
 		std::string request_content = request.getRequest();
 		std::size_t data_init_pos = request_content.find("\r\n\r\n");
 		std::cout << "CABEÇALHO DESSA REQUEST ----------- !!!!!!!!!!!!!!!!!!!!" << std::endl;
 		std::cout << request_content.substr(0, data_init_pos) << std::endl;
-		std::cout << "!!!!!!!!!!!!!!!!!!!!!!! ----------- !!!!!!!!!!!!!!!!!!!!" << std::endl;
+		std::cout << "\n" << std::endl;
 		if (data_init_pos != std::string::npos)
 		{
 			_inputFormData = request_content.substr(data_init_pos + 4);
@@ -177,6 +191,7 @@ void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber
 			std::cout << RED << "--------------------" << END << std::endl;
 			std::cout << "RESPONSE DO CGI" << std::endl;
 			std::cout << _response << std::endl;
+			std::cout << RED << "--------------------" << END << std::endl;
 			
 		}
 		else

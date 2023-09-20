@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 19:39:11 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/19 21:29:32 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,6 +138,32 @@ void SocketS::setIndexFile(std::string index)
 void SocketS::setErrorPage(std::map<std::string, std::string> errorPages)
 {
 	_errorPage = errorPages;
+}
+
+void SocketS::initServer()
+{
+	setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));
+	if(getWebServSocket() == -1)
+	{
+        throw SocketSException("Socket Error: Failed to create socket!");
+    }
+	//configura endereço do servidor e inicializa os campos da estrutura com 0
+    struct sockaddr_in server_address = {0};
+    server_address.sin_family = AF_INET; //socket usará os ends. IPv4
+    server_address.sin_port = htons(std::atoi(getPort().c_str())); //usa a função htons para converter8080 para a ordem de bytes da rede e atribui a sin_port
+    server_address.sin_addr.s_addr = INADDR_ANY; //especifica o end.IP que o socket do server será vinculado
+    //chamada para o bind - vincula o socket ao endereço e porta, 0 -1 tem haver com a falha na chamada do bind
+    if(bind(getWebServSocket(),(struct sockaddr*)&server_address, sizeof(server_address)) == -1)
+	{
+        close(getWebServSocket());
+          throw SocketSException("Socket Error: Bind failed!");
+    }
+    //habilitar o socket para aguardar conexões de entrada. ) 5 representa o tamanho máximo da fila de conexões pendentes.
+    if(listen(getWebServSocket(), 5) == -1)
+	{
+        close(getWebServSocket());
+        throw SocketSException("Socket Error: Listen failed!");
+	}
 }
 
 // int SocketS::bindSocketListenConnections(){

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/18 22:16:38 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/19 21:28:33 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,15 +163,17 @@ void WebServ::configSocket(size_t serverIndex)
     _serverSocket.push_back(temp_socket);
 
 	// iterar o map do Locations pra verificar os valores
-	std::map<std::string, LocationDirective>::iterator it = _serverSocket.back().getLocations().begin();
-	int size_locations =  _serverSocket.back().getLocations().size();
-    
-	
+	// std::map<std::string, LocationDirective>::iterator it = _serverSocket.back().getLocations().begin();
+	// int size_locations =  _serverSocket.back().getLocations().size();
+
+
 	// colocar esse prcesso de criação de socket num outro método
 	// quando já tiver o vetor de sockets
 	// e daí ir validando e criando (sem bindar o mesmo ip:port duas vezes)
+	
 	//cria socket -----> deixa isso em outra função pra daí poder avaliar se tem server escutando no msmo ip:port e só fazer bind de um e replicar o fd pro outro?
-    _serverSocket[serverIndex].setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));//int server_socket = socket(AF_INET, SOCK_STREAM, 0);
+	// A PARTIR DAQUI: tá na função initServer() do SocketS!!!! vai ser chamado depois, na initServers() 
+	_serverSocket[serverIndex].setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));//int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(_serverSocket[serverIndex].getWebServSocket() == -1){
         throw ErrorException("Socket Error: Failed to create socket!");
     }
@@ -191,6 +193,27 @@ void WebServ::configSocket(size_t serverIndex)
         throw ErrorException("Socket Error: Listen failed!");
     } //std::cout << "--------- Socket atual colocado pra escutar..." << std::endl;
 }
+
+// função pra inicializar os servers depois de todos já estarem setados no vetor
+// (é aqui que vamos verificar se tem algum com ip:address repetida e só dar UM bind e compartilhar o fd!)
+// criar essas estruturas e fazer o bind e o listen é algo que está num método próprio do server (SocketS)
+/*
+
+void Webserv::initServers()
+{
+	int i = 0;
+	while (i < _serverSocket.size())
+	{
+		// aqui vai o if testando se a porta e o address é igual -> daí 
+		// replica o fd deles (tem que ser com iteradores - consultar isso)
+		// e continua;
+		// senão:
+		_serverSocket[i].initServer();
+		i++;
+	}
+}
+
+*/
 
 void WebServ::printRequest(const std::string& request)
 {
