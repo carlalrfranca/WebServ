@@ -43,6 +43,11 @@ class WebServ
         bool isFirstLineValid(const std::string &request, std::string &_firstLine);
         bool isEventFromServerSocket(struct epoll_event *events, int index);
         void handleRequest(int clientSocket, char *buffer, ssize_t bytesRead, std::string &requestString);
+		void readRequest(int clientSocket);
+		std::string				_response;
+		int						_totalBytesRead;
+		int 					_contentLength;
+		std::string				_requestString;
 
     private:
 

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/19 23:41:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/21 08:42:05 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ void CGI::executeScript(int *pipefd)
 void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber o ponteiro pro obj Response pra poder acessar headers
 {
 	// primeiro criamos a header da response:
-	_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+	_response = "HTTP/1.1 204 No Content\r\nDate: Sat, 03 Sep 2023 12:34:56 GMT\r\nConnection: keep-alive\r\n\r\n";
 
 	/* 
 		aqui vamos:
@@ -130,29 +130,95 @@ void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber
 				> vamos resgatar a saída do script e construir uma response pra retornar pra mainLoop()
 	*/
 		std::string request_content = request.getRequest();
+		// Abre um arquivo para escrever (substitua "request.txt" pelo nome do arquivo desejado)
+    	std::ofstream outputFile("request_imagem.txt");
+	
+    	// Verifica se o arquivo foi aberto com sucesso
+    	if (!outputFile.is_open()) {
+    	    std::cerr << "Erro ao abrir o arquivo." << std::endl;
+    	    exit(1);
+    	}
+	
+    	// Escreve o conteúdo da solicitação no arquivo
+    	outputFile << request_content;
+	
+    	// Fecha o arquivo
+    	outputFile.close();
+
 		std::size_t data_init_pos = request_content.find("\r\n\r\n");
-		std::cout << "CABEÇALHO DESSA REQUEST ----------- !!!!!!!!!!!!!!!!!!!!" << std::endl;
-		std::cout << request_content.substr(0, data_init_pos) << std::endl;
-		std::cout << "\n" << std::endl;
+		// std::size_t data_init_pos = request_content.find("boundary=");
+		if (data_init_pos == std::string::npos)
+		{
+			std::cout << YELLOW << "Não tem boundary" << END << std::endl;
+			_response += "<html><body><h1>Simple Form</h1><form method=\"post\">";
+		   _response += "Name: <input type=\"text\" name=\"name\"><br>Email: <input type=\"text\" name=\"email\"><br>";
+		   _response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
+		}
+		// std::cout << "CABEÇALHO DESSA REQUEST ----------- !!!!!!!!!!!!!!!!!!!!" << std::endl;
+		// std::cout << request_content.substr(0, data_init_pos) << std::endl;
+		// std::cout << "\n" << std::endl;
+		
 		if (data_init_pos != std::string::npos)
 		{
-			_inputFormData = request_content.substr(data_init_pos + 4);
+			// _inputFormData = request_content.substr(data_init_pos + 4);
 			// como ele vai ter uma imagem.. entao
-			// std::cout << "Entrou no if" << std::endl;
-			// std::string image_content = request_content.substr(data_init_pos + 4);
-			// std::cout << "Entrou no if = 2" << std::endl;
-			// size_t content_type_pos = image_content.find("Content-Type");
-			// std::cout << "Entrou no if = 3" << std::endl;
-			// std::size_t contentTypeEnd = image_content.find("\r\n", content_type_pos);
-			// std::cout << "Entrou no if = 4" << std::endl;
-			// std::cout << "ContenttypeEnd::: " << contentTypeEnd << std::endl;
-			// if (content_type_pos != std::string::npos)
-				// std::cout << "Encontrou content-type" << std::endl;
-			// if (contentTypeEnd != std::string::npos)
-				// std::cout << "Encontrou O FIM do content-type" << std::endl;
-			// std::string content_type = image_content.substr(content_type_pos, contentTypeEnd);
-// 
-			// std::cout << "CONTENT TYPE ----> " << content_type << std::endl;
+			
+
+			 std::string image_content = request_content.substr(data_init_pos + 4);
+			 size_t content_type_pos = image_content.find("Content-Type");
+			 if (content_type_pos != std::string::npos)
+				std::cout << BLUE << "ENCONTROU CONTENT-TYPE NA RESPONSE" << END << std::endl;
+			 else
+				std::cout << RED << "[[NÃO]] ENCONTROU CONTENT-TYPE NA RESPONSE" << END << std::endl;
+			 std::size_t contentTypeEnd = image_content.find("\r\n", content_type_pos);
+			 if (contentTypeEnd != std::string::npos)
+			 {
+				std::cout << BLUE << "ENCONTROU o fim CONTENT-TYPE NA RESPONSE" << END << std::endl;
+				std::size_t fileDataStart = contentTypeEnd + 4;
+			 	std::string image_content_cleaned = image_content.substr(fileDataStart);
+    		 	std::ofstream imageFile("Conseguiu-armazenar-sera-image.jpg", std::ios::binary);
+			 	//  Process chunks of data
+			 	std::cout << std::endl;
+			 	//  std::cout << "Image content: -----------" << std::endl;
+			 	//  std::cout << image_content_cleaned << std::endl;
+			 	std::cout << "Size of image: " << image_content_cleaned.size() << std::endl;
+			 	if (imageFile.is_open())
+			 	{
+					imageFile.write(image_content_cleaned.c_str(), image_content_cleaned.size());
+					imageFile.close();
+			 	}
+			 	_response += "<html><body><h1>Simple Image</h1></body></html>";
+			 }
+			 else
+			 {
+				std::cout << RED << "[[NÃO]] ENCONTROU o fim CONTENT-TYPE NA RESPONSE" << END << std::endl;
+				_response = "HTTP/1.1 404 Not Found\r\nDate: Sat, 03 Sep 2023 12:34:56 GMT\r\nConnection: keep-alive\r\n\r\n";
+			 	_response += "<html><body><h1>Error 404</h1></body></html>";
+			 }
+			
+			//  std::cout << "ContenttypeEnd::: " << contentTypeEnd << std::endl;
+			//  if (content_type_pos != std::string::npos)
+		// std::cout << "Encontrou content-type" << std::endl;
+			//  if (contentTypeEnd != std::string::npos)
+		// std::cout << "Encontrou O FIM do content-type" << std::endl;
+			//  std::string content_type = image_content.substr(content_type_pos, contentTypeEnd);
+			//  std::size_t fileDataStart = contentTypeEnd + 4;
+			//  std::string image_content_cleaned = image_content.substr(fileDataStart);
+    		//  std::ofstream imageFile("Conseguiu-armazenar-sera-image.jpg", std::ios::binary);
+			// //  Process chunks of data
+			//  std::cout << std::endl;
+			// //  std::cout << "Image content: -----------" << std::endl;
+			// //  std::cout << image_content_cleaned << std::endl;
+			//  std::cout << "Size of image: " << image_content_cleaned.size() << std::endl;
+			//  if (imageFile.is_open())
+			//  {
+			// 	imageFile.write(image_content_cleaned.c_str(), image_content_cleaned.size());
+			// 	imageFile.close();
+			//  }
+			//  _response += "<html><body><h1>Simple Image</h1></body></html>";
+
+
+			//////////////////////////////////////////////////////////////
 			// Save the received image data to a file
 			// std::size_t fileDataStart = contentTypeEnd + 4;
 			// std::string image_content_cleaned = image_content.substr(fileDataStart);
@@ -171,27 +237,27 @@ void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber
 			
 			// -------------------------------------------------
 			// setamos a env QUERY_STRING com esses valores do form
-			setenv("QUERY_STRING", _inputFormData.c_str(), 1);
-
+			// setenv("QUERY_STRING", _inputFormData.c_str(), 1);
+// 
 			// criar o pipe pra redirecionar a saída do script pra poder resgatar pra cá
-			int pipefd[2];
-			if (pipe(pipefd) == -1)
-			{
-				std::cerr << "ERROR creating PIPE" << std::endl;
-				return;
-			}
-			std::cout << YELLOW << "----------- CRIOU O PIPE! -----------" << END << std::endl;
-//
-			executeScript(pipefd);
-			if (_scriptOutput.empty())
-			{
-				return ;
-			}
-			_response += _scriptOutput;
-			std::cout << RED << "--------------------" << END << std::endl;
-			std::cout << "RESPONSE DO CGI" << std::endl;
-			std::cout << _response << std::endl;
-			std::cout << RED << "--------------------" << END << std::endl;
+			// int pipefd[2];
+			// if (pipe(pipefd) == -1)
+			// {
+				// std::cerr << "ERROR creating PIPE" << std::endl;
+				// return;
+			// }
+			// std::cout << YELLOW << "----------- CRIOU O PIPE! -----------" << END << std::endl;
+
+			// executeScript(pipefd);
+			// if (_scriptOutput.empty())
+			// {
+				// return ;
+			// }
+			// _response += _scriptOutput;
+			// std::cout << RED << "--------------------" << END << std::endl;
+			// std::cout << "RESPONSE DO CGI" << std::endl;
+			// std::cout << _response << std::endl;
+			// std::cout << RED << "--------------------" << END << std::endl;
 			
 		}
 		else
@@ -204,6 +270,9 @@ void CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber
 		   _response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
 		}
 		std::cout << "Tá fora do if else do cgi" << std::endl;
+		_response += "<html><body><h1>Simple Form</h1><form method=\"post\">";
+		   _response += "Name: <input type=\"text\" name=\"name\"><br>Email: <input type=\"text\" name=\"email\"><br>";
+		   _response += "<input type=\"submit\" value=\"Submit\"></form></body></html>";
 }
 
 std::string CGI::getResponse(void) const

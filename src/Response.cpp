@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/19 22:11:58 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/21 08:30:08 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,24 +54,9 @@ Response::Response(Request request)
 
 std::string Response::postMethod(Request &request, SocketS &server, Response *this_response)
 {
-    // return "Resposta para POST";
-	// se for "POST", ele chama essa função... daí???
-	// já terá escolhido o socket, é claro.. então...
-	// tem que VER O LOCATION DO CGI, CERTO?
-	// porque pra ter POST, vai ter que usar um script CGI
-	// se nao tiver essa location, o que acontece????
-	// ele envia uma resposta de erro????? 
-	// ----> Não, o ngnix vai apenas POSTAR NO SERVER (diretorio) o conteudo,
-	// ele só NÃO VAI FAZER NENHUM PROCESSAMENTO DESSE CONTEUDO
-
 	// TO DO:
 	// entao vemos se tem location pra decidir se: ---> é pra ser um location pro script CGI ( location /cgi-bin/)
 	// -- ao receber um POST, vamos usar um script
-	// -- ou, como nao tem location (logo, nao tem script pra chamar), APENAS SALVA O CONTEUDO
-
-	// --> tambem temos que ver se tem "root" (seja no bloco de server ou do location)
-	// --- pra saber em que diretorio buscar
-
 	// Sobre se nao houver root em nenhum lugar do bloco server doarquivo:
 	/*
 		 Se nenhum root for especificado em qualquer lugar, o Nginx usará o diretório
@@ -86,17 +71,19 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		determinado no arquivo de configuração. Se não estiver, corta na hora reornando uma
 		RESPONSE DE ERRO DE ACORDO COM A SITUAÇÃO)
 	*/
-
 	// quer saber.. coloca tudo DENTRO DO LOCATION da pagina que vai executar o script
 	// em vez do script ter um location proprio?
 
-
-	// std::string root_for_response; // essa é uma variavel temporaria daqui
-	//if (server.getRoot().size() > 0)
-	//	root_for_response = server.getRoot();
-	// agora vamos ver se tem o location do CGI (se nao tiver, ir pro caminho "padrão" do server (vai ser apenas uma postagem no diretorio do server (faz um metodo pra isso?)))
-	// /cgi-bin/
-	// root_for_response = "./";
+	/*
+		1) Pegar o root base
+		2) Pegar o location e decdir qual é o location mais adequado
+		3) Se tem .cgi é script -> vai pra um fluxo (que tá feito)
+			-> se for cgi, tem que chamar um método pra extrair o nome do script (só transferir o trecho do código)
+		4) Se não tem, é porque é /images/ (porque é a href que vai ter no html) e segue OUTRO FLUXO
+		---> tem que ter a parte de identificar se a uri tem varias partes e teria que extrair pedaços em comum? talvez..
+		5) 
+	*/
+	
 	// ---------------------------------------------------------------------------------
 	std::string root_for_response = server.getRoot();
 	// pega o root... encontra o location que tá sendo pedindo na uri
@@ -129,7 +116,18 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	// no caso do location cgi, seguir:
 	// extrair da uri o trecho "process_data.cgi"
 	// que terá o nome do arquivo CGI - mas a extensão mudará de acordo com as extensões dadas no arquivo de configuração
-	
+	// if (uri.find('.cgi') != std::string::npos)
+	// {
+	// 	// então é um pedido por cgi
+	// }
+	// else
+	// {
+	// 	// entao NÃO É POST CGI -> é o de upload comum
+		
+	// }
+
+
+	// isso abaixo já é pro caso de script cgi - pra retirar o nome do script e coisa do tipo
 	size_t foundLastSlash = uri.find_last_of('/');
 	std::string scriptName;
 	if (foundLastSlash != std::string::npos && foundLastSlash != (uri.size() - 1))
@@ -269,7 +267,7 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 				// se nao encontrar a diretiva 'cgi-path'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
 				std::string response_error =
         				"HTTP/1.1 404 Not Found\r\n"
-        				"Server: nginx/1.20.0\r\n"
+        				"Server: webserv/1.0.0\r\n"
         				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
         				"Content-Type: text/html\r\n"
         				"Content-Length: 162\r\n"
@@ -648,7 +646,7 @@ void Response::generateResponse(int statusCode, const Request& request)
     std::string contentType;
     std::string content = readFileToString(getPath());
     std::string response;
-	std::cout << " -------------------------------------- URI ------------------------ " << request.getURI() << std::endl;
+	std::cout << " ----- URI ------------------------ " << request.getURI() << std::endl;
     if(request.getURI().find("css") != std::string::npos)
         contentType = "text/css";
     else if(request.getURI().find("jpg" ) != std::string::npos || request.getURI().find("jpeg") != std::string::npos)
@@ -673,6 +671,7 @@ void Response::generateResponse(int statusCode, const Request& request)
     response += "\r\n"; // Linha em branco indica o fim dos cabeçalhos
     response += content;
     setResponse(response);
+	std::cout << RED << "Response\n" << getResponse() << END << std::endl;
     // return response;
 }
 

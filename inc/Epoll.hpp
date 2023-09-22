@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 19:59:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/17 15:32:23 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/20 21:56:33 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ class Epoll
 		const int& getMaxEvents() const;
 		const int& getNumberEvents() const;
 		const bool& getIsServerFdTriggered() const;
+		struct epoll_event _event;
+		int					_clientFd;
 	
 	private:
 
