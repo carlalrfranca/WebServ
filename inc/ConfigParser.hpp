@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 21:49:56 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/21 22:34:28 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,15 @@
 #include "HeadersLibs.hpp"
 #include "LocationDirective.hpp"
 
+struct ListenDirective
+{
+    std::string ipAddress;
+    std::string portNumber;
+};
+
 
 class ConfigParser
 {
-
     public:
     
         ConfigParser();
@@ -75,33 +80,34 @@ class ConfigParser
 
 
 		void resetConfig();
-	    void validateFile(std::ifstream& fileToParse);
+		void checkDuplicatePorts();
 		void removeComments(std::string &line);
+	    void validateFile(std::ifstream& fileToParse);
 		bool contemApenasLetras(const std::string& str);
 		bool contemApenasNumeros(const std::string& str);
 		//acrescentado dia 06.09
         
     private:
         
+        std::string     _currentLocationPathOnMap;
+        std::string     _portNumber;
         std::string     _indexFile;
         std::string     _ipAddress;
         std::string     _path;
-        std::string     _portNumber;
         std::string     _root;
-        std::string     _currentLocationPathOnMap;
+        Utils           _utils;
         size_t          _directive;
         size_t			_maxBodySize;
-		bool			_autoIndexOn;
-		bool            _hasRoot;
-        bool            _hasDirListen;
-        bool            _hasDirLocation;
-        bool            _hasDirServerName;
-        bool            _hasDirIndex;
         bool            _hasDirAllowMethods;
         bool            _hasDirMaxBodySize;
+        bool            _hasDirServerName;
+        bool            _hasDirLocation;
         bool            _hasDirReturn;
+        bool            _hasDirListen;
 		bool			_hasAutoIndex;
-        Utils           _utils;
+        bool            _hasDirIndex;
+        bool			_autoIndexOn;
+        bool            _hasRoot;
 
         
         std::vector<std::string>                            _domains; //server_name
@@ -110,6 +116,8 @@ class ConfigParser
         std::map<std::string, std::string>                  _errorPage;
 		std::map<std::string, LocationDirective>            _locations;
         std::map<std::string, std::vector<std::string> >    _locationsMap;
+        std::vector<std::string>                            _portNumbers;
+        std::vector<std::string>                            _ipAddresses;
         
         
     class ErrorException: public std::exception

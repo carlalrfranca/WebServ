@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/19 22:11:58 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/21 17:56:19 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -295,9 +295,41 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 }
 
 
-	// std::string OLAR = "TAMO NO DELETE METHOD";
-	// return OLAR;
-	// curl -X DELETE -i -v http://google.com.br
+// std::string OLAR = "TAMO NO DELETE METHOD";
+// return OLAR;
+// curl -X DELETE -i -v http://google.com.br
+	
+	
+/*
+std::string Response::getParameter(std::string query, std::string parameter)const
+{
+	size_t start = query.find(parameter + "=");
+	
+	if(start != std::string::npos)
+	{
+		start += parameter.length() + 1;
+		size_t end = query.find("_method", start);
+		if(end != std::string::npos)
+		{
+			end = query.length();
+		}
+		return query.substr(start, end - start);
+	}
+	return ""; //retorna vazio se o parametro não for encontado
+}
+	
+std::string Response::getMethod()const
+{
+	const std::string override = getParameter("_method", "name"); //pega  o parmtro no post 
+	
+	if(!override.empty())
+		return override;
+		
+	return "-->metodo original<--";
+}
+*/
+	
+	
 std::string Response::deleteMethod(Request &request, SocketS &server, Response *this_response)
 {
 	// 1. verificar a solicitacao delete tipo

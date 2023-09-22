@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/19 16:19:00 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/21 17:55:48 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,10 @@ class Response
         const std::string getPath()const;
         std::string getResponse()const;//foi criado outro metodo, precisa ajustar .cpp
 		std::string getDate()const;
+		
+		//20.09.2023
+		std::string getMethod()const;
+        std::string getParameter(std::string query, std::string parameter)const;
 		
         void setDateAndTime();
         void setPath(const std::string& allPath); 
