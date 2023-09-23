@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/21 22:42:00 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/22 17:49:53 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@
 
 ConfigParser::ConfigParser()
 {
-    //_line = ""; // talvez, mas acho que nao precisa mesmo
-    // _domains = ""; // server_name
-    // _rules = "";    // location
+    // _line = ""; talvez, mas acho que nao precisa mesmo
+    // _domains = ""; server_name
+    // _rules = ""; location
     _directive = 0;
     _portNumber = "";
     _ipAddress = "";
@@ -34,7 +34,9 @@ ConfigParser::ConfigParser()
 	_indexFile = "";
 	_maxBodySize = 1024;
 
-	// configurando por padrão os paths das paginas de erro (se o arquivo personalizar alguma, vai sobrescrever na hora em que estiver processando a diretiva de error_page)
+	// configurando por padrão os paths das paginas de erro (se o arquivo personalizar alguma, 
+	// vai sobrescrever na hora em que estiver processando a diretiva de error_page).
+	
 	_errorPage["404"] = "./web/error/Error404.html";
 	struct stat info;
 		if (stat(_errorPage["404"].c_str(), &info) != 0)
@@ -47,6 +49,7 @@ ConfigParser::ConfigParser()
 	_errorPage["405"] = "./web/error/Error405.html";
 	_errorPage["505"] = "./web/error/Error505.html";
 	_errorPage["500"] = "./web/error/Error500.html";
+
 }
 
 ConfigParser::~ConfigParser(){}
@@ -62,7 +65,6 @@ void ConfigParser::resetConfig()
 	_hasDirServerName = false;
 	_maxBodySize = 1024;
 
-	//
 	// tinha algo aqui dando problema antes.... ver onde essas var comentadas estao sendo usadas e avaliar
     // _rules = "";    // location
     _directive = 0;
@@ -73,6 +75,13 @@ void ConfigParser::resetConfig()
     _root = "";
     _hasRoot = true;
 	_indexFile = "";
+	/*
+		No método que faz o reset do _configParser
+		(só ver qual método tem "reset" no nome, está sendo chamado na configSocket tambem),
+		inserir a linha que limpa o vetor de ipAddress e port
+	*/
+	_ipAddress.clear();
+	_portNumber.clear();
 
 	// _indexFiles.clear();
 	_locationsMap.clear();
@@ -315,11 +324,9 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
 		std::vector<std::string> splittedLine;
 		std::string singleValue;
 		while (iss >> singleValue)
-			splittedLine.push_back(singleValue);
-		
+			splittedLine.push_back(singleValue);	
 		if (splittedLine.size() < 2)
 			throw ErrorException("Syntax Error: Missing values to directive in location block");
-
 		// nao pode ter nem "listen" nem "server_name" dentro de um bloco location...
 		if (splittedLine[0].find("listen") != std::string::npos || splittedLine[0].find("server_name") != std::string::npos
 			|| splittedLine[0].find("location") != std::string::npos)
@@ -511,6 +518,7 @@ void ConfigParser::processAutoIndex(std::string &line)
 {
 	if (_hasAutoIndex)
 		throw ErrorException("Configuration Error: AutoIndex directive duplicated.");
+		
 	std::vector<std::string> autoIndexLine;
     std::istringstream iss(line);
     std::string value;
@@ -527,7 +535,16 @@ void ConfigParser::processAutoIndex(std::string &line)
 	else
 		throw ErrorException("Syntax Error: AutoIndex directive has wrong value. Value must be only ON | OFF");
 	_hasAutoIndex = true;
+	
+	//22.09.2023
+	if(_hasDirIndex && _autoIndexOn)
+		_autoIndexOn = false;
 }
+	/*
+		Ajuste de AutoIndex - inverter a ordem. quando na location tem a diretiva index indicando 
+		uma pagina padrao e tem um autoindex a location e: quando coloca a barra / primeiro vc ver 
+		se tem o autoindex se esta on e ele tem a precedencia ai vc ve se tem index e server.
+	*/
 
 void ConfigParser::processReturn(std::string &line)
 {

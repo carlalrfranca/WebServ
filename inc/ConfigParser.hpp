@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/21 22:34:28 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/22 17:11:18 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ struct ListenDirective
     std::string ipAddress;
     std::string portNumber;
 };
-
 
 class ConfigParser
 {
@@ -63,8 +62,7 @@ class ConfigParser
         void hasMandatoryParameters();
         void listFilesAndGenerateHtml(std::string &line);
 		void storeCurrentLocationDirectives(std::string &directiveLine);
-        //void processErrorPage(std::map<std::string, std::string> errorPage);
-	    
+        // void processErrorPage(std::map<std::string, std::string> errorPage);
         // bool getHasDirLocation(void)const;
 	    // bool getHasDirListen(void)const;
         // bool getHasDirServerName(void)const;
@@ -73,11 +71,8 @@ class ConfigParser
         // bool getHasDirAllowMethods(void)const;
         // bool getHasDirMaxBodySize(void)const;
         // bool getHasDirReturn(void)const;
-		// validar o tipo do ipaddress
-
-        
-        //void trimWhiteSpace(std::string &line);
-
+		// validar o tipo do ipaddress 
+        // void trimWhiteSpace(std::string &line);
 
 		void resetConfig();
 		void checkDuplicatePorts();
