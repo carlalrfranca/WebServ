@@ -17,12 +17,12 @@
 		<h1>Preencha o Formulário</h1>
 	</header>
 	<section class="test-container">
-		<form method="post" id="myForm" action="http://localhost:2002/cgi-bin/process_data_store.cgi">
+		<form method="post" id="myForm" action="cgi-bin/process_data_store.cgi">
 			<label for="name">Nome</label>
 			<input id="name" type="text" name="nome"><br>
-			<label for="email">Email</label>
-			<input id="email" type="text" name="email"><br>
+			<textarea name="mensagem" id="mensagem" cols="30" rows="10"></textarea>
 			<input class="form-button" type="submit" value="Enviar">
+			<input class="form-button" type="reset" value="Limpar">
 		</form>
 	</section>
 </body>

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 20:22:28 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/18 20:25:35 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/20 21:46:00 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,14 +99,12 @@ int Epoll::addNewClientToEpoll(struct epoll_event *event_ptr, int i)
 	}
 	
 	// Set the client socket to non-blocking mode
-	int flags = fcntl(clientSocket, F_GETFL, 0);
-	fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
-	struct epoll_event event;
-	event.data.u64 = 0;
-	event.data.fd = clientSocket;
-	event.events = EPOLLIN | EPOLLOUT; // Listen for read events in edge-triggered mode
+	fcntl(clientSocket, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	_event.data.u64 = 0;
+	_event.data.fd = clientSocket;
+	_event.events = EPOLLIN;
 	
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSocket, &event) == -1) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSocket, &_event) == -1) {
 	    perror("Error adding client socket to epoll");
 	    close(clientSocket); // Close the socket on error
 	}

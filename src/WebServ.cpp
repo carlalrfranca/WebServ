@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/22 15:28:18 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/23 15:18:09 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@ WebServ::WebServ(std::string filename)
 	size_t index = 0;
     fileToParse.open(filename.c_str());
     char contentFile;
+	_totalBytesRead = 0;
+	_contentLength = 0;
 
     if(!(fileToParse >> contentFile))
     {
@@ -306,14 +308,118 @@ void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, s
     int selectedServer = currentResponse.selectServer(request, _serverSocket);
     if (selectedServer != -1) {
         currentResponse.buildResponse(request, _serverSocket[selectedServer]);
-        std::string response = currentResponse.getResponse();
-        ssize_t bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
-        if (bytesSent == -1)
-            throw ErrorException ("Erro ao enviar a resposta ao cliente");
+        _response = currentResponse.getResponse();
+        // ssize_t bytesSent = send(clientSocket, _response.c_str(), _response.length(), 0);
+        // if (bytesSent == -1)
+        //     throw ErrorException ("Erro ao enviar a resposta ao cliente");
     } 
     else
         std::cout << "Server não encontrado!" << std::endl;
-    close(clientSocket);
+    // close(clientSocket);
+}
+
+void WebServ::readRequest(int clientSocket)
+{
+	char buffer[1000];
+	_epollS._clientFd = clientSocket;
+	// int contentLength = 0;
+	// ah, por enquanto tá funcionando porque ele toda vez processa a requestString no cgi... individualmente..
+	// mas tem que tratar os chunks direito...
+	// std::string requestString;
+	if (_requestString.size() > 0)
+		std::cout << RED << "Request JÁ TEM COISA!!!" << END << std::endl;
+	ssize_t totalBytesRead = 0;
+	// loop para receber e acumular os chunks da solicitação
+	ssize_t bytesRead = 0;
+	// while ((bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0)) > 0)
+	std::cout << BLUE << "ENTERING READ REQUEST" << END << std::endl;
+	while (true)
+	{
+		ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+        if (bytesRead == 0)
+		{
+			std::cerr << "Client closed connection." << std::endl; //tem que tirar o client quando dá esse tipo de erro
+			_epollS._event.data.fd = _epollS._clientFd;
+			epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS._clientFd, &_epollS._event);
+			close(_epollS._clientFd);
+			return ;
+		}
+		else if (bytesRead == -1)
+		{
+			std::cerr << "Error during reading of client request: " << strerror(errno) << std::endl; //tem que tirar o client quando dá esse tipo de erro
+			// _epollS._event.data.fd = _epollS._clientFd;
+			// epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS._clientFd, &_epollS._event);
+			// close(_epollS._clientFd);
+			return ;
+		}
+		else if (bytesRead != 0)
+		{
+			_requestString.append(buffer, bytesRead);
+			_totalBytesRead += bytesRead;
+			std::cout << BLUE << "Total de Bytes lidos: " << _totalBytesRead << END << std::endl;
+			memset(buffer, 0, sizeof(buffer));
+		}
+		// verificar num if se o recebimento da request tá completo
+		// Agora temos a solicitação completa em requestString e podemos processá-la
+		size_t headerEndPos = _requestString.find("\r\n\r\n");
+		if (headerEndPos != std::string::npos) {
+			std::cout << RED << "Encontrou fim do cabeçalho " << totalBytesRead << END << std::endl;
+		    // O fim do cabeçalho foi encontrado.
+		    // Agora você pode processar o cabeçalho separadamente do corpo da mensagem.
+		    std::string header = _requestString.substr(0, headerEndPos + 4); // +4 para incluir "\r\n\r\n"
+		    std::string body = _requestString.substr(headerEndPos + 4); // Restante da mensagem após o cabeçalho
+			std::cout << YELLOW << "TAMANHO DA HEADER " << header.size() << END << std::endl;
+		    // Faça algo com o cabeçalho e o corpo, se necessário.
+			size_t contentLengthPos = header.find("Content-Length: ");
+			if (contentLengthPos != std::string::npos)
+			{
+				std::cout << RED << "Encontrou Content-Length " << END << std::endl;
+				// Agora, extraia o valor do Content-Length.
+    			contentLengthPos += strlen("Content-Length: "); // Avance para o início do valor.
+    			size_t lineEndPos = header.find("\r\n", contentLengthPos); // Encontre o final da linha.
+
+    			if (lineEndPos != std::string::npos) {
+    			    std::string contentLengthStr = header.substr(contentLengthPos, lineEndPos - contentLengthPos);
+    			    // Agora, 'contentLengthStr' contém o valor do Content-Length como uma string.
+					std::cout << RED << "Content-Length > " << contentLengthStr << END << std::endl;
+    			    // Você pode converter 'contentLengthStr' para um valor numérico, se necessário.
+    			    // Exemplo:
+    			    try {
+    			        _contentLength = std::atoi(contentLengthStr.c_str());
+    			        // 'contentLength' agora contém o valor do Content-Length como um inteiro.
+						
+    			    } catch (const std::invalid_argument& e) {
+    			        // Lida com erros de conversão, se necessário.
+						std::cout << RED << "Erro de conversão -->>> " << e.what() << std::endl;
+    			    }
+    			}
+				std::cout << BLUE << "Total lido até agora: " << _totalBytesRead << END << std::endl;
+				std::cout << BLUE << "CONTENT LENGTH: " << _contentLength << END << std::endl;
+				if ((_totalBytesRead - header.size())  == _contentLength)
+				{
+					std::cout << YELLOW << _contentLength << END << std::endl;
+					std::cout << YELLOW << totalBytesRead << END << std::endl;
+        			printRequest(_requestString);
+					handleRequest(clientSocket, buffer, _requestString.length(), _requestString);
+					_epollS._event.events = EPOLLOUT;
+					epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &_epollS._event);
+					_requestString = "";
+					_contentLength = 0;
+					_totalBytesRead = 0;
+				}
+			}
+			else {
+				printRequest(_requestString);
+				handleRequest(clientSocket, buffer, _requestString.length(), _requestString);
+				_epollS._event.events = EPOLLOUT;
+				epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &_epollS._event);
+				_requestString = "";
+				_contentLength = 0;
+				_totalBytesRead = 0;
+				return ;
+			}
+		}
+	}
 }
 
 void WebServ::mainLoop()
@@ -349,42 +455,62 @@ void WebServ::mainLoop()
             	        continue;
             	} else { //quarta: temos que ldiar com as requests pra GET e provavelmente fazer um objeto pro client - guardando informação de em que server ele está bindando... (pesquisar mais com o chat)
             	    int clientSocket = events[index].data.fd;
-            	    char buffer[1024];
+					readRequest(clientSocket);
+					/*
+					char buffer[150];
+					_epollS._clientFd = clientSocket;
 					std::string requestString;
-					if (events[index].events & EPOLLIN)
-					{
-						// Operação de leitura disponível
-						std::cout << RED << "É OPERAÇÃO DE LEITURA" << END << std::endl;
-					}
-					if (events[index].events & EPOLLOUT)
-					{
-						// Operação de escrita disponível
-						std::cout << RED << "É OPERAÇÃO DE ESCRITA" << END << std::endl;
-					}
+					ssize_t totalBytesRead = 0;
 					// loop para receber e acumular os chunks da solicitação
-					while(true)
+					ssize_t bytesRead = 0;
+					// while ((bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0)) > 0)
+					while (true)
 					{
 						ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-            	    	if(bytesRead <= 0)
-            	        {
-            	        	if (bytesRead == 0)
-								std::cerr << "Client closed connection." << std::endl; //tem que tirar o client quando dá esse tipo de erro
-							else
-								std::cerr << "Error during reading of client request." << std::endl; //tem que tirar o client quando dá esse tipo de erro
+            	        if (bytesRead == 0)
+						{
+							std::cerr << "Client closed connection." << std::endl; //tem que tirar o client quando dá esse tipo de erro
+							_epollS._event.data.fd = _epollS._clientFd;
+							epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS._clientFd, &_epollS._event);
+							close(_epollS._clientFd);
 							break;
-            	    	}
+						}
+						else if (bytesRead == -1)
+						{
+							std::cerr << "Error during reading of client request: " << strerror(errno) << std::endl; //tem que tirar o client quando dá esse tipo de erro
+							// _epollS._event.data.fd = _epollS._clientFd;
+							// epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS._clientFd, &_epollS._event);
+							// close(_epollS._clientFd);
+							break;
+						}
 						requestString.append(buffer, bytesRead);
-						if (requestString.find("\r\n\r\n") != std::string::npos)
-							break;
+						totalBytesRead += bytesRead;
+						std::cout << BLUE << "Total de Bytes lidos: " << totalBytesRead << END << std::endl;
 					}
 					// Agora temos a solicitação completa em requestString e podemos processá-la
-            	    printRequest(requestString);
+					printRequest(requestString);
 					handleRequest(clientSocket, buffer, requestString.length(), requestString);
-            	    // handleRequest(clientSocket, buffer, bytesRead, requestString);
-            	    std::cout << BLUE << "\n---------------------------------------" << END << std::endl;
-            	    std::cout << BLUE <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
-            	    std::cout << BLUE << "-----------------------------------------" << END << std::endl;
+
+					_epollS._event.events = EPOLLOUT;
+					epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &_epollS._event);
+					*/
+					// handleRequest(clientSocket, buffer, bytesRead, requestString);
+            	    // std::cout << BLUE << "\n---------------------------------------" << END << std::endl;
+            	    // std::cout << BLUE <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
+            	    // std::cout << BLUE << "-----------------------------------------" << END << std::endl;
             	}
+			}
+			else if (events[index].events & EPOLLOUT)
+			{
+				ssize_t bytesSent = send(_epollS._clientFd, _response.c_str(), _response.length(), 0);
+        		if (bytesSent == -1)
+            		throw ErrorException ("Erro ao enviar a resposta ao cliente");
+				_epollS._event.data.fd = _epollS._clientFd;
+				epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS._clientFd, &_epollS._event);
+				close(_epollS._clientFd);
+				std::cout << BLUE << "\n---------------------------------------" << END << std::endl;
+            	std::cout << BLUE <<     "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
+            	std::cout << BLUE << "-----------------------------------------" << END << std::endl;
 			}
         }
     }

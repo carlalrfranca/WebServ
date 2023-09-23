@@ -34,11 +34,13 @@
 		<div id="choose-image">
 			<div>
 				<span class="upload-span">Vamos lá? A imagem aparecerá nesse <span class="colored">espaço destacado</span></span>
-				<form action="/images/" method="post" enctype="multipart/form-data">
+				<form action="/upload/process_data.cgi" method="post" enctype="multipart/form-data">
 					<label for="fileUpload" class="custom-file">Selecione um arquivo:</label>
 					<input type="file" name="fileUpload" id="fileUpload">
 					<input type="submit" value="Enviar Arquivo" id="submit-image">
 				</form>
+
+				<!-- fazer um botao aqui pra caso a pessoa queira gerar uma pagina html - em CGI? - com a imagem postada? -->
 			</div>
 			<div id="image">	
 			</div>
