@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/18 19:43:57 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/22 17:49:53 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@
 
 ConfigParser::ConfigParser()
 {
-    //_line = ""; // talvez, mas acho que nao precisa mesmo
-    // _domains = ""; // server_name
-    // _rules = "";    // location
+    // _line = ""; talvez, mas acho que nao precisa mesmo
+    // _domains = ""; server_name
+    // _rules = ""; location
     _directive = 0;
     _portNumber = "";
     _ipAddress = "";
@@ -34,7 +34,9 @@ ConfigParser::ConfigParser()
 	_indexFile = "";
 	_maxBodySize = 1024;
 
-	// configurando por padrão os paths das paginas de erro (se o arquivo personalizar alguma, vai sobrescrever na hora em que estiver processando a diretiva de error_page)
+	// configurando por padrão os paths das paginas de erro (se o arquivo personalizar alguma, 
+	// vai sobrescrever na hora em que estiver processando a diretiva de error_page).
+	
 	_errorPage["404"] = "./web/error/Error404.html";
 	struct stat info;
 		if (stat(_errorPage["404"].c_str(), &info) != 0)
@@ -47,6 +49,7 @@ ConfigParser::ConfigParser()
 	_errorPage["405"] = "./web/error/Error405.html";
 	_errorPage["505"] = "./web/error/Error505.html";
 	_errorPage["500"] = "./web/error/Error500.html";
+
 }
 
 ConfigParser::~ConfigParser(){}
@@ -62,7 +65,6 @@ void ConfigParser::resetConfig()
 	_hasDirServerName = false;
 	_maxBodySize = 1024;
 
-	//
 	// tinha algo aqui dando problema antes.... ver onde essas var comentadas estao sendo usadas e avaliar
     // _rules = "";    // location
     _directive = 0;
@@ -73,6 +75,13 @@ void ConfigParser::resetConfig()
     _root = "";
     _hasRoot = true;
 	_indexFile = "";
+	/*
+		No método que faz o reset do _configParser
+		(só ver qual método tem "reset" no nome, está sendo chamado na configSocket tambem),
+		inserir a linha que limpa o vetor de ipAddress e port
+	*/
+	_ipAddress.clear();
+	_portNumber.clear();
 
 	// _indexFiles.clear();
 	_locationsMap.clear();
@@ -129,7 +138,7 @@ const std::string& ConfigParser::getRoot()const
 
 std::map<std::string, std::string> ConfigParser::getErrorPage(void)const
 {
-        return _errorPage;
+    return _errorPage;
 }
 
 const std::string& ConfigParser::getIndexFile()const
@@ -173,60 +182,80 @@ bool ConfigParser::getAutoIndex()const
 //     return true;
 // }
 
+
+/*
+	depois, criar um método que irá verificar o vetor de ports e, 
+	caso haja alguma porta duplicada, dará exceção (não pode ter porta duplicada). 
+	Esse método será chamado na primeira parte da configSocket.
+*/
+
+void ConfigParser::checkDuplicatePorts()
+{
+	std::vector<std::string> seenPorts;
+	for(size_t i = 0; i < _portNumbers.size(); ++i)
+	{
+		for(size_t j = 0; j < _portNumbers.size(); ++j)
+		{
+			if(_portNumbers[i] == _portNumbers[j])
+				throw ErrorException("Configuration Error: Duplicate port number found.");
+		}
+	}
+}
+
 void ConfigParser::processListen(std::string &line)
 {
 	size_t	posInit;
 	size_t	_semicolonIndex;
 
-	// esse if impede a duplicação (tirar depois?)
     if(_hasDirListen == true)
         throw ErrorException("Error: The Directive Listen has been duplicated.");
-	// tem que extrair o ;
 	if (line[line.length() - 1] == ';')
 		line = line.substr(0, line.length() - 1);
-	// vamos splitar essa linha
-	std::istringstream listen_values(line);
-	std::string palavra;
-    std::vector<std::string> palavras;
 
-	while (listen_values >> palavra)
-       	palavras.push_back(palavra);
-	if (palavras.size() != 2)
+	std::istringstream listen_values(line);
+	std::string token;
+    std::vector<std::string> tokens;
+
+	while (listen_values >> token)
+	   	tokens.push_back(token);
+	if (tokens.size() != 2)
 		throw ErrorException("Syntax Error: Only ONE value by listen directive.");
-	if (palavras[0] != "listen")
+	if (tokens[0] != "listen")
 		throw ErrorException("Syntax Error: Format of line: [directive] [value] ...");
-	posInit = palavras[1].find("https");
+	posInit = tokens[1].find("https");
 	if (posInit != std::string::npos)
 		throw ErrorException("Configuration Error: Can't configure https protocol.");
-	posInit = palavras[1].find("://");
+	posInit = tokens[1].find("://");
 	if (posInit != std::string::npos)
 	{
 		posInit += 3;
-		palavras[1] = palavras[1].substr(posInit);
-		std::cout << "Valor da listen sem '://' >> " << palavras[1] << std::endl;
+		tokens[1] = tokens[1].substr(posInit);
+		std::cout << "Valor da listen sem '://' >> " << tokens[1] << std::endl;
 	}
-	// agora vemos se tem ':'
-	posInit = palavras[1].find(":");
+	posInit = tokens[1].find(":");
 	if (posInit != std::string::npos)
 	{
-		// quer dizer que é combo ip + porta
-		_ipAddress = palavras[1].substr(0, posInit);
-		_portNumber = palavras[1].substr(posInit + 1);
+		_ipAddress = tokens[1].substr(0, posInit);
+		_portNumber = tokens[1].substr(posInit + 1);
 		// **** tem que verificar que a porta SÃO APENAS NUMEROS
 		// **** e verificar o FORMATO DO IPADDRESS
 		if (!_utils.containsOnlyNumbers(_portNumber)) //ontemApenasNumeros
 			throw ErrorException("Syntax Error: Port must be ONLY numbers.");
 		// std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
-	}
-	else
-	{
+		
+		_portNumbers.push_back(_portNumber);
+		_ipAddresses.push_back(_ipAddress);
+	} else {
 		// quer dizer que ou é só ipAddress ou é só porta
 		// se for só ipAddress -> não aceitamos -> pode ter apenas porta, mas não apenas o ipAddress..
-		if (_utils.containsOnlyNumbers(palavras[1])) //ontemApenasNumeros
+		if (_utils.containsOnlyNumbers(tokens[1])) //ontemApenasNumeros
 		{
-			_portNumber = palavras[1];
+			_portNumber = tokens[1];
 			_ipAddress = "localhost";
 			// std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
+		
+			_portNumbers.push_back(_portNumber);
+			_ipAddresses.push_back(_ipAddress);
 		}
 		else
 			throw ErrorException("Configuration Error: You must configure a PORT NUMBER!");
@@ -239,24 +268,23 @@ void ConfigParser::processServerName(std::string &line)
     if(_hasDirServerName == true)
         throw ErrorException("Error: The Directive Server_Name has been duplicated.");
     if(line.find("server_name") != std::string::npos)
-	{// tem que extrair o ;
-		if (line[line.length() - 1] == ';')
-			line = line.substr(0, line.length() - 1);
-		// vamos splitar essa linha
-		std::istringstream server_name_values(line);
-		std::string palavra;
-    	std::vector<std::string> palavras;
-	
-		while (server_name_values >> palavra)
-		{
-			if (palavra.find_first_not_of("abcdefghijklmnopqrstuvwxyz._") != std::string::npos)
-				throw ErrorException("Syntax Error: Server_name can only be written with [letters and dot]. You CANNOT use regex or wildcards, only LITERAL names.");
-        	palavras.push_back(palavra);
-    	}
-		// o problema é que no vetor "palavras", ele gravou o nome da diretiva (server_name), temos que extrai-la do vetor
-		palavras.erase(palavras.begin());
-		for (size_t i = 0; i < palavras.size(); ++i)
-        	_domains.push_back(palavras[i]);
+    {
+        if (line[line.length() - 1] == ';')
+            line = line.substr(0, line.length() - 1);
+
+        std::istringstream server_name_values(line);
+        std::string token;
+        std::vector<std::string> tokens;
+        while (server_name_values >> token)
+        {
+            if (token.find_first_not_of("abcdefghijklmnopqrstuvwxyz._") != std::string::npos)
+		throw ErrorException("Syntax Error: Server_name can only be written with [letters and dot]. You CANNOT use regex or wildcards, only LITERAL names.");
+        	tokens.push_back(token);
+        }
+        // o problema é que no vetor "tokens", ele gravou o nome da diretiva (server_name), temos que extrai-la do vetor
+        tokens.erase(tokens.begin());
+        for (size_t i = 0; i < tokens.size(); ++i)
+            _domains.push_back(tokens[i]);
     }
     _hasDirServerName = true;
 }
@@ -265,11 +293,11 @@ bool ConfigParser::processRoot(std::string &line){
 	std::istringstream iss(line);
     std::vector<std::string> partes;
 
-    std::string palavra;
+    std::string token;
 	if (_root.empty() == false)
 		throw ErrorException("Error: The Directive Root has been duplicated.");
-    while (iss >> palavra)
-        partes.push_back(palavra);
+    while (iss >> token)
+        partes.push_back(token);
 	if (partes[0] != "root" || partes.size() != 2)
 		throw ErrorException("Syntax Error: Directive Root");
 	_root = partes[1];
@@ -296,11 +324,9 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
 		std::vector<std::string> splittedLine;
 		std::string singleValue;
 		while (iss >> singleValue)
-			splittedLine.push_back(singleValue);
-		
+			splittedLine.push_back(singleValue);	
 		if (splittedLine.size() < 2)
 			throw ErrorException("Syntax Error: Missing values to directive in location block");
-
 		// nao pode ter nem "listen" nem "server_name" dentro de um bloco location...
 		if (splittedLine[0].find("listen") != std::string::npos || splittedLine[0].find("server_name") != std::string::npos
 			|| splittedLine[0].find("location") != std::string::npos)
@@ -492,6 +518,7 @@ void ConfigParser::processAutoIndex(std::string &line)
 {
 	if (_hasAutoIndex)
 		throw ErrorException("Configuration Error: AutoIndex directive duplicated.");
+		
 	std::vector<std::string> autoIndexLine;
     std::istringstream iss(line);
     std::string value;
@@ -508,7 +535,16 @@ void ConfigParser::processAutoIndex(std::string &line)
 	else
 		throw ErrorException("Syntax Error: AutoIndex directive has wrong value. Value must be only ON | OFF");
 	_hasAutoIndex = true;
+	
+	//22.09.2023
+	if(_hasDirIndex && _autoIndexOn)
+		_autoIndexOn = false;
 }
+	/*
+		Ajuste de AutoIndex - inverter a ordem. quando na location tem a diretiva index indicando 
+		uma pagina padrao e tem um autoindex a location e: quando coloca a barra / primeiro vc ver 
+		se tem o autoindex se esta on e ele tem a precedencia ai vc ve se tem index e server.
+	*/
 
 void ConfigParser::processReturn(std::string &line)
 {

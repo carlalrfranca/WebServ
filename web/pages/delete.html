@@ -4,26 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delete - Enviar Solicitação </title>
-    <link rel="stylesheet" href="assets/stylesError.css">
+    <link rel="stylesheet" href="assets/styles.css">
 </head>
     <body>
         <section class="main-section">
             <div class="navMenu">
                 <a href="/">home</a>
                 <a href="about.html">about</a>
+                <a href="delete.html">delete</a>          
                 <a href="tour.html">tour</a>
                 <a href="#">tests</a>
                 <div class="dot"></div>
             </div>
         </section>
         <section class="section-container">
-            <div class="section-content">
-                <form method="POST" action="../pages/tour.html">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <button type="submit">Enviar DELETE</button>
+            <div class="section-button">
+                <form method="POST" action="../pages/caminhoparaoendpoint.html">
+                    <input type="hidden" name="_method" value="DELETE"> <!--form com campo oculto para especificar o método DELETE -->
+                    <button type="submit">excluir imagem</button>
                 </form>
-            </div>        
-        </section>        
+            </div>      
+        </section>
         <footer>
             <div class="contact">
                 <a href="https://github.com/usuario-github-lfranca">lfranca-</a>
