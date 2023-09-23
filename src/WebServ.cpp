@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/21 20:22:25 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/23 15:18:09 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,11 @@ WebServ::WebServ(std::string filename)
     fileToParse.unget(); //funcao que desfaz a leitura do conteudo.
     _configParser.validateFile(fileToParse);
 
-    if(fileToParse.is_open()){
+    if(fileToParse.is_open())
+    {
         std::string line;
         bool isLocationBlock = false;
         bool isInsideServerBlock = false;
-
         while(getline(fileToParse, line))
         {
             _utils.trimWhiteSpace(line); //trima espaços em branco
@@ -143,8 +143,8 @@ void WebServ::configSocket(size_t serverIndex)
 		_configParser.setIndexFile("index.html");
 	if (_configParser.getPort().empty())
 		throw ErrorException("Configuration Error: Port not found!");
+	_configParser.checkDuplicatePorts();
 	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server, a gente vai definir um padrão? (ou deixar sem?)
-
 
 	// verificar se esse server teve mais de um listen (ip e porta)...
 	// se sim, cria um socket pra cada, cada um escutando em sua respectiva

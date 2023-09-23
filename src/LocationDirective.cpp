@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 21:13:30 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/05 16:18:38 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/22 18:55:47 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ std::map<std::string, std::vector<std::string > > LocationDirective::getDirectiv
 {
 	return _directives;
 }
-
 
 std::vector<std::string> LocationDirective::getSpecificDirective(std::string directiveName)const
 {

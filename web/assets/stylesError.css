@@ -52,6 +52,16 @@ body {
   transform: translateX(60px);
   opacity: 1;
 }
+.navMenu a:nth-child(1):hover ~ .dot {
+  transform: translateX(100px);
+  opacity: 1;
+}
+.navMenu a:nth-child(1):hover ~ .dot {
+  transform: translateX(140px);
+  opacity: 1;
+}
+
+
 
 
 
