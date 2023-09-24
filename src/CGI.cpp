@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/23 19:48:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/24 17:05:39 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,10 +61,20 @@ std::vector<std::string> CGI::getExtensions(void) const
 	return _scriptExtensions;
 }
 
+// volatile sig_atomic_t timedOut = 0;
+
+// void handleAlarm(int signum) {
+//     timedOut = 1;
+// }
+
 int CGI::executeScript(int *pipefd)
 {
 	pid_t childPid = fork();
-	
+	// signal(SIGCHLD, handleChildExit);
+	// signal(SIGALRM, handleAlarm);
+	// Defina um limite de tempo em segundos
+    unsigned int timeoutSeconds = 10000;
+
 	if (childPid == -1)
 	{
 		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
@@ -91,9 +101,36 @@ int CGI::executeScript(int *pipefd)
 	} else {
 		// processo pai
 		close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
-		
+		// alarm(timeoutSeconds);
 		// Ler a saída do script CGI do pipe e armazená-la numa string
 		// std::string scriptOutPut;
+
+		struct timeval startTime;
+		gettimeofday(&startTime, NULL);
+		
+		while (true) {
+		    pid_t result = waitpid(childPid, NULL, WNOHANG);
+		    if (result == -1) {
+		        perror("waitpid");
+		        throw std::exception();
+		    }
+		
+		    if (result != 0)
+		        break;
+		
+		    struct timeval currentTime;
+		    gettimeofday(&currentTime, NULL);
+		    unsigned int elapsedTime = (currentTime.tv_sec - startTime.tv_sec) * 1000
+		        + (currentTime.tv_usec - startTime.tv_usec) / 1000;
+		    if (elapsedTime >= timeoutSeconds) {
+				std::cout << "ESTOUROU O TEMPO" << std::endl;
+		        kill(childPid, SIGTERM);
+		        return 504;
+		    }
+		    usleep(1000);
+		}
+
+
 		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
 		while (true)
 		{
@@ -103,12 +140,11 @@ int CGI::executeScript(int *pipefd)
 			_scriptOutput.append(buffer, bytesRead);
 		}
 		close(pipefd[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
-		
 		// É importante colocarmos esse processo (pai) pra aguardar o término do processo filho
-		int status;
-		waitpid(childPid, &status, 0);
-		if (status == 500)
-			return status;
+		// int status;
+		// waitpid(childPid, &status, 0);
+		// if (status == 500)
+		// 	return status;
 		// é aqui que breca se o script demorar demais? (SCRIPT COM LOOP?) -> o statusCode de estouro de limite de tempo seria 504
 		// Agora a saída do script CGI está armazenada em 'scriptOutPut'
 		std::cout << "------ SAÍDA DO SCRIPT --------\n" << _scriptOutput << std::endl;
@@ -155,7 +191,10 @@ int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_co
 		std::cerr << "ERROR creating PIPE" << std::endl;
 		return 500;
 	}
-	executeScript(pipefd);
+	int resultCGI = 0;
+	resultCGI = executeScript(pipefd);
+	if (resultCGI == 504)
+		return 504;
 	if (_scriptOutput.empty())
 		return 500;
 	_response += _scriptOutput;

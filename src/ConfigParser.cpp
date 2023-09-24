@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/23 20:28:59 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/24 15:38:54 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ ConfigParser::ConfigParser()
 	_errorPage["403"] = "./web/error/Error403.html";
 	_errorPage["405"] = "./web/error/Error405.html";
 	_errorPage["505"] = "./web/error/Error505.html";
+	_errorPage["504"] = "./web/error/Error504.html";
 	_errorPage["500"] = "./web/error/Error500.html";
 }
 

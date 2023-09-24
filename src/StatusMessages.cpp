@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:33:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 10:01:47 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/24 15:41:49 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ StatusMessages::StatusMessages()
 	statusMessages[405] = "Method Not Allowed";
     statusMessages[500] = "Internal Server Error";
     statusMessages[503] = "Service Unavailable";
+	statusMessages[504] = "Gateway Timeout";
     statusMessages[505] = "HTTP Version Not Supported";
     // Adicione mais códigos e mensagens conforme necessário
 }
