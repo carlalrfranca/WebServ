@@ -1,16 +1,25 @@
 server{
-    listen localhost:2002;
+    listen localhost:2007;
     server_name example.com;
-	allow_methods GET POST
+	allow_methods GET POST DELETE
     root web/pages/;
 
 	location / {
 		index index.html
+		auto_index off
 	}
 
 	location /images {
-		root web/images
+		root web/images/
 		auto_index on
+		allow_methods GET
+	}
+
+	location /upload {
+		root web/cgi-bin/;
+      	cgi_path /bin/bash;
+      	cgi_ext .sh;
+		upload_store web/images/
 	}
 
 	location /about {
@@ -19,7 +28,10 @@ server{
 
 	location /cgi-bin {
       root web/cgi-bin/;
-      cgi_path /usr/bin/python3 /bin/bash;
-      cgi_ext .sh .py;
+      cgi_path /bin/bash;
+      cgi_ext .sh;
+	  
   	}
 }
+
+# precisamosincluir todas as possibilidades de servers/diretivas/param

@@ -19,8 +19,12 @@
         </section>
         <section class="section-container">
             <div class="section-button">
-                <form method="POST" action="../pages/caminhoparaoendpoint.html">
+                <h1>Imagem a ser excluída </h1>
+                <form method="POST" action="/images/imagem-salva.jpg">
                     <input type="hidden" name="_method" value="DELETE"> <!--form com campo oculto para especificar o método DELETE -->
+                    <select name="imagemSelecionada">
+                       <option value="imagem1.jpg">Imagem1</option>                   
+                    </select>
                     <button type="submit">excluir imagem</button>
                 </form>
             </div>      

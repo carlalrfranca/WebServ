@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 17:31:02 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/23 21:51:36 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,17 @@ class Request
         bool validateRequest();
         void setHasError(bool hasError);
         void setRequest(const std::string& request);
+		void setMethod(const std::string& method);
+        void setHeader(const std::string& header); 
+        void setBody(const std::string& body); 
         
-        bool getHasError()const;
+        std::string getHeader()const;
+        std::string getBody()const;
         std::string getDomainRequest()const;
 		std::string getRequest() const;
         std::string getPortRequest()const;
         const std::string& getMethod() const;
+        bool getHasError()const;
         const std::string& getURI() const;
         const std::string& getVersion() const;
         //void trimSpaces(std::string &s);
@@ -51,6 +56,8 @@ class Request
         std::string         _method;
         std::string         _uri;
         std::string         _version;
+        std::string         _body;
+        std::string         _header;
         bool                _hasError;
         Utils               _utils;
         

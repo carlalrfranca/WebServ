@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/19 21:41:54 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/23 22:24:49 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,6 @@ class Utils
         std::vector<std::string> splitString(const std::string& input, char delimiter);
         bool isInVector(const std::vector<std::string>& vec, const std::string& content); //contains
         bool fileExists(std::string filePath);
-
-    private:
-        
-
+        bool pathExists(const std::string &path);
 };
 #endif

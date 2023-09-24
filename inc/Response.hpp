@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/21 17:55:48 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/23 20:24:39 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,8 @@ class Response
 		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
 		// static std::string postMethod(Request &request, SocketS &server);
 		// static std::string getMethod(Request &request, SocketS &server, Response *this_response);
-        
+		bool isDirectory(const std::string& path);
+
     private:
     
         std::map<std::string, std::string>  _headers;

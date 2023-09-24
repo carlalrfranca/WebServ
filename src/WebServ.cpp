@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/23 17:44:05 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/23 21:48:29 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,8 +139,8 @@ void WebServ::configSocket(size_t serverIndex)
 		_configParser.setRoot("./");
 	if (_configParser.getAddress().empty())
 		_configParser.setAddress("localhost");
-	if (_configParser.getIndexFile().empty())
-		_configParser.setIndexFile("index.html");
+	// if (_configParser.getIndexFile().empty())
+		// _configParser.setIndexFile("index.html");
 	if (_configParser.getPort().empty())
 		throw ErrorException("Configuration Error: Port not found!");
 	// _configParser.checkDuplicatePorts();
@@ -293,6 +293,25 @@ bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index)
 void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString)
 {
     Request request(requestString);
+	// // -------------
+	// size_t headerEndPos = _requestString.find("\r\n\r\n");
+	// std::string body;
+	// if (headerEndPos != std::string::npos)
+	// {
+	// 	body = _requestString.substr(headerEndPos + 4);
+	// 	std::cout << RED << "******************" << END << std::endl;
+	// 	std::cout << RED << body << END << std::endl;
+	// 	std::cout << RED << "******************" << END << std::endl;
+	// 	size_t methodDelete = body.find("_method=DELETE");
+	// 	if (methodDelete != std::string::npos)
+	// 	{
+	// 		request.setMethod("DELETE");
+	// 		std::cout << "ENTROOOOOU" << std::endl;
+	// 	}
+	// 	// tambem resgatar o valor do "imagemSelecionada"
+	// }
+	std::cout << BLUE << request.getMethod() << END << std::endl;
+	// ----------------
     if (!request.isFirstLineValid())
     {
         request.setHasError(true);
@@ -360,6 +379,7 @@ void WebServ::readRequest(int clientSocket)
 	char buffer[1000];
 	_epollS._clientFd = clientSocket;
 	std::string header;
+	std::string body;
 	// ah, por enquanto tá funcionando porque ele toda vez processa a requestString no cgi... individualmente..
 	// mas tem que tratar os chunks direito...
 	if (_requestString.size() > 0)
@@ -395,7 +415,10 @@ void WebServ::readRequest(int clientSocket)
 		size_t headerEndPos = _requestString.find("\r\n\r\n");
 		if (headerEndPos != std::string::npos) {
 			if (header.size() == 0)
+			{
 			    header = _requestString.substr(0, headerEndPos + 4); // +4 para incluir "\r\n\r\n"
+				std::cout << YELLOW << header << END << std::endl;
+			}
 			if (_contentLength == 0 && hasBodyContent(header) == true)
 			{
 				size_t contentLengthPos = header.find("Content-Length: ");
