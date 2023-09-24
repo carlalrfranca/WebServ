@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/24 17:05:39 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/24 17:23:50 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,12 +124,11 @@ int CGI::executeScript(int *pipefd)
 		        + (currentTime.tv_usec - startTime.tv_usec) / 1000;
 		    if (elapsedTime >= timeoutSeconds) {
 				std::cout << "ESTOUROU O TEMPO" << std::endl;
-		        kill(childPid, SIGTERM);
+		        kill(childPid, SIGKILL);
 		        return 504;
 		    }
 		    usleep(1000);
 		}
-
 
 		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
 		while (true)
@@ -140,11 +139,6 @@ int CGI::executeScript(int *pipefd)
 			_scriptOutput.append(buffer, bytesRead);
 		}
 		close(pipefd[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
-		// É importante colocarmos esse processo (pai) pra aguardar o término do processo filho
-		// int status;
-		// waitpid(childPid, &status, 0);
-		// if (status == 500)
-		// 	return status;
 		// é aqui que breca se o script demorar demais? (SCRIPT COM LOOP?) -> o statusCode de estouro de limite de tempo seria 504
 		// Agora a saída do script CGI está armazenada em 'scriptOutPut'
 		std::cout << "------ SAÍDA DO SCRIPT --------\n" << _scriptOutput << std::endl;
