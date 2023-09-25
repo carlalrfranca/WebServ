@@ -1,5 +1,5 @@
 server{
-    listen localhost:2007;
+    listen localhost:5006;
     server_name example.com;
 	allow_methods GET POST DELETE
     root web/pages/;
@@ -12,7 +12,6 @@ server{
 	location /images {
 		root web/images/
 		auto_index on
-		allow_methods GET
 	}
 
 	location /upload {
@@ -33,5 +32,3 @@ server{
 	  
   	}
 }
-
-# precisamosincluir todas as possibilidades de servers/diretivas/param
