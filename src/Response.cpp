@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/23 23:16:32 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/24 21:40:13 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -471,7 +471,7 @@ std::string readFileToString(const std::string& filename)
     return content;
 }
 
-void Response::listFilesAndGenerateHtml()
+void Response::listFilesAndGenerateHtml(std::map<std::string, LocationDirective>::iterator& it)
 {
 
 	//passar essa função pra parte de execução do autoIndex:
@@ -498,7 +498,7 @@ void Response::listFilesAndGenerateHtml()
                     std::cout << i << " - " << fileList[i] << std::endl;
 				}
 				std::cout << BLUE << "cabo listagem..." << END << std::endl;
-				generateHtmlFromFiles(fileList);
+				generateHtmlFromFiles(fileList, it);
 				std::cout << BLUE << "Passou do generate HTML com base na lista" << END << std::endl;
             } else 
 			{
@@ -519,10 +519,15 @@ void Response::listFilesAndGenerateHtml()
 	std::cout << BLUE << "Depois do try catch mas ainda na função" << END << std::endl;
 }
 
-void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList){
+void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, std::map<std::string, LocationDirective>::iterator& it){
 
     std::string html;
-
+	std::string location = it->first;
+	std::string path = getPath();
+	std::cout << "Path: " << path << std::endl;
+	if (!location.empty() && location[location.size() - 1] != '/') {
+        location += '/';
+    }
     html += "<html>\n";
     html += "<head><title></title></head>\n";
     html += "<body>\n";
@@ -533,17 +538,27 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList){
 	// se é um diretorio, tem que ser um link, e esse link tem que começar com /images
 	//    -> porque ele substitui pelo root do location, que é web/images (e daí teria que completar com o resto do uri,
 	// 		 e se estiver sem '/' final, tem que incluir)
+
+	if (!_uri.empty() && _uri[_uri.size() - 1] != '/')
+       	_uri += '/';
     for(size_t i = 0; i < fileList.size(); ++i)
 	{
 		// ver se é um arquivo ou um diretorio, se for um diretorio, tem que ser EM FORMA DE LINK
 		std::string itemName = fileList[i];
-		bool isDir = isDirectory(itemName);
+		bool isDir = isDirectory(path + itemName);
 		//html += "<li>" + fileList[i] + "</li>\n";
-
 		if(isDir)
-			html += "<li><a href='" + itemName + "'>" + itemName + "</a></li>\n";
+		{
+			if (!itemName.empty() && itemName[itemName.size() - 1] != '/')
+        		itemName += '/';
+			std::cout << RED << "É diretorio: " << _uri + itemName << END << std::endl;
+			html += "<li><a href='" + _uri + itemName + "'>" + itemName + "</a></li>\n";
+		}
 		else
+		{
+			std::cout << YELLOW << "É arquivo: " << _uri + itemName << END << std::endl;
 			html += "<li>" + itemName + "</li>\n";		
+		}
 
     }
 	std::cout << BLUE << "cabo listagem...3" << END << std::endl;
@@ -608,11 +623,11 @@ void Response::generateResponse(int statusCode, const Request& request)
     if(request.getURI().find("css") != std::string::npos)
         contentType = "text/css";
     else if(request.getURI().find("jpg" ) != std::string::npos || request.getURI().find("jpeg") != std::string::npos)
-        contentType = "image/jpeg";
+        contentType = "images/jpeg";
     else if(request.getURI().find("png") != std::string::npos)
-        contentType = "image/png";
+        contentType = "images/png";
     else if(request.getURI().find("gif") != std::string::npos)
-        contentType = "image/gif";
+        contentType = "images/gif";
     else
         contentType = "text/html";
 	std::stringstream toConvertToString;
@@ -635,12 +650,13 @@ void Response::generateResponse(int statusCode, const Request& request)
 
 bool Response::isDirectory(const std::string& path)
 {
-    struct stat fileStat;
-    if (stat(path.c_str(), &fileStat) != 0){
+    struct stat info;
+    if (stat(path.c_str(), &info) != 0){
         // Erro ao obter informações do arquivo Leti LEEEEEEEEEEE//ti quer cafe?
-        return false;
+        std::cout << RED << "Esse file >>> " << path << " e aí?" << END << std::endl;
+		return false;
 	}// leti quer cafe?
-    return S_ISDIR(fileStat.st_mode);
+    return (info.st_mode & S_IFDIR) != 0;
 }
 
 std::map<std::string, LocationDirective>::iterator Response::findRequestedLocation(Request &request, SocketS &server, std::map<std::string, LocationDirective>& serverLocations)
@@ -679,6 +695,7 @@ std::map<std::string, LocationDirective>::iterator Response::findRequestedLocati
 bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it, std::string indexPage)
 {
 	// std::cout << path << " é um diretório." << std::endl;
+	std::cout << BLUE << "LOCAAAAATION>>> " << it->first << END << std::endl;
 	locationDirectives = it->second.getDirectives();
        std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
     if (itIndex != locationDirectives.end()){ //não é o oposto? primeiro ve que se tem autoindex, se nao tiver (ou tiver off?) ve se tem index e serve se tiver? (ou gera pagina de erro se nao?)
@@ -699,7 +716,7 @@ bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS 
 			if (itAutoIndex->second[0] == "on")
 			{
 				setPath(path);
-				listFilesAndGenerateHtml();
+				listFilesAndGenerateHtml(it);
 				return true;
 			}
 			else
@@ -721,26 +738,69 @@ bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS 
 	setPath(path);
 	return false;
 }
+/*
 
+std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
+{
+	std::string commonSubstring = "";
+	std::string this_location = it->first;
+	if (!uri.empty() && uri[0] == '/')
+		uri.erase(0, 1);
+	size_t minlen = std::min(this_location.length(), uri.length());
+	for (size_t i = 0; i < minlen; ++i)
+	{
+    	if (this_location[i] == uri[i])
+    	    commonSubstring += root[i];
+    	else
+			break; //aqui leti ele para quando encontra uma diferenca
+	}
+	std::string caminhoCompleto;
+	std::cout << "Uri: " << uri << " | Common Substring: " << commonSubstring << std::endl;
+	// if (commonSubstring == uri)
+	// {
+		// caminhoCompleto = commonSubstring;
+		// return caminhoCompleto;
+	// }
+	std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
+
+	if (uriSemParteEmComum != root)
+		caminhoCompleto = root + uriSemParteEmComum;
+	else
+		caminhoCompleto = root;
+
+	// if (!caminhoCompleto.empty() && caminhoCompleto[caminhoCompleto.length() - 1] == '/')
+		// caminhoCompleto.erase(caminhoCompleto.length() -1);
+	return caminhoCompleto;
+		
+}*/
+
+/**/
 std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
 {
 	std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
 	std::cout << parts_uri[0] << " - " << parts_uri[0].size() << " e " << parts_uri[1] << std::endl;
 	std::string this_location = it->first;
 	std::string commonSubstring = "";
-	size_t minlen = std::min(this_location.length(), uri.length());
+	if (!uri.empty() && uri[0] == '/')
+		uri.erase(0, 1);
+	// _uri = uri;
+	size_t minlen = std::min(root.length(), uri.length());
 	size_t j = 0;
+	size_t i = 0;
+	std::cout << BLUE << "Root | " << root << " URI: " << uri << END << std::endl;
+
     for (size_t i = 0; i < minlen; ++i) {
         if (this_location[i] == uri[j]) {
             commonSubstring += this_location[i];
 			j++;
         }
     }
+	// commonSubstring = uri.substr(0, j);
 	std::cout << "-- PARTE A EXTRAIR PRA FORMAR O CAMINHO REAL: " << commonSubstring << std::endl;
 	// retirar a commonSubstring do uri e juntar?
 	std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
 	std::string caminhoCompleto = "";
-	if (uri != "/")
+	if (uri != "/" && uri != root)
 		caminhoCompleto = root + uriSemParteEmComum; // isso ja vai adicionar todo o caminho que vem da uri, se tiver?
 	else
 		caminhoCompleto = root;
@@ -748,6 +808,56 @@ std::string Response::extractUriAndBuildPathToResource(std::string root, std::ve
 	return caminhoCompleto;
 }
 
+
+/*
+// pra formar o caminho:
+-> chega a uri -> exemplo: /images/web/images
+-> a location vai ser images/, que tem como root web/images/
+-> vamos PRIMEIRO extrair da uri o que tem em relação à location (no caso, )
+std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
+{
+	std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
+	std::cout << parts_uri[0] << " - " << parts_uri[0].size() << " e " << parts_uri[1] << std::endl;
+	std::string this_location = it->first;
+	std::string commonSubstring = "";
+	size_t minlen = std::min(this_location.length(), uri.length());
+	std::cout << RED << "Esse LOCATION: " << this_location << END << std::endl;
+	std::cout << RED << "Essa URI: " << uri << END << std::endl;
+	std::cout << RED << "Min LEN: " << minlen << END << std::endl;
+	size_t j = 0;
+	size_t i = 0;
+	// while (this_location[i] == uri[j])
+	if (!uri.empty() && uri[0] == '/')
+		uri.erase(0, 1);
+	std::cout << BLUE << "Essa URI: " << uri << END << std::endl;
+	while (root[i] == uri[j])
+	{ // é claro que ele nao tira o root porque o uri começa com '/'
+		i++;
+		j++;
+	}
+	std::string newUri = uri.substr(j);
+	std::cout << BLUE << "NOVA URI: " << newUri << std::endl;
+    // for (size_t i = 0; i < minlen; ++i)
+	// {
+
+        // if (this_location[i] == uri[j])
+		// {
+        //     commonSubstring += this_location[i];
+		// 	j++;
+        // }
+    // }
+	// std::cout << "-- PARTE A EXTRAIR PRA FORMAR O CAMINHO REAL: " << commonSubstring << std::endl;
+	// retirar a commonSubstring do uri e juntar?
+	// std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
+	std::string caminhoCompleto = "";
+	if (uri != "/" && newUri != root)
+		caminhoCompleto = root + newUri; // isso ja vai adicionar todo o caminho que vem da uri, se tiver?
+	else
+		caminhoCompleto = root;
+	std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
+	return caminhoCompleto;
+}
+*/
 bool Response::buildPathToResource(std::string root, Request &request, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it)
 {
 	std::string indexPage;
@@ -776,6 +886,7 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 		// (ou seja, não precisa extrair alguma parte da uri, ou a uri é igual à location - e daí é só usar o root, ou basta juntá-la com o root)
 		std::cout << "Tem só o arquivo de caminho ou só diretorio" << std::endl;
 		std::string path;
+		_uri = uri;
 		if (uri == it->first || uri + '/' == it->first || it->first + '/' == uri) //essa terceira condição vai ferrar outros casos do site?
 			path = root;
 		else
