@@ -1,16 +1,24 @@
 server{
-    listen localhost:2002;
+    listen localhost:5006;
     server_name example.com;
-	allow_methods GET POST
+	allow_methods GET POST DELETE
     root web/pages/;
 
 	location / {
 		index index.html
+		auto_index off
 	}
 
 	location /images {
-		root web/images
+		root web/images/
 		auto_index on
+	}
+
+	location /upload {
+		root web/cgi-bin/;
+      	cgi_path /bin/bash;
+      	cgi_ext .sh;
+		upload_store web/images/
 	}
 
 	location /about {
@@ -19,7 +27,8 @@ server{
 
 	location /cgi-bin {
       root web/cgi-bin/;
-      cgi_path /usr/bin/python3 /bin/bash;
-      cgi_ext .sh .py;
+      cgi_path /bin/bash;
+      cgi_ext .sh;
+	  
   	}
 }

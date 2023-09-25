@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/21 17:55:48 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/24 21:06:56 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,8 @@ class Response
         void httpError(std::string errorCode, const std::string &errorMessage);
         void errorPage(Request &response, std::string &root);
 		void errorCodeHtml(int statusCode, SocketS &server);
-        void listFilesAndGenerateHtml();
-        void generateHtmlFromFiles(const std::vector<std::string>& fileList);
+        void listFilesAndGenerateHtml(std::map<std::string, LocationDirective>::iterator& it);
+        void generateHtmlFromFiles(const std::vector<std::string>& fileList, std::map<std::string, LocationDirective>::iterator& it);
 		bool buildPathToResource(std::string root, Request &request, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it);
 		std::string extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it);
 		bool isResponseADirectoryListingOrErrorPage(std::string path, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it, std::string indexPage);
@@ -76,7 +76,9 @@ class Response
 		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
 		// static std::string postMethod(Request &request, SocketS &server);
 		// static std::string getMethod(Request &request, SocketS &server, Response *this_response);
-        
+		bool isDirectory(const std::string& path);
+		std::string	_uri;
+
     private:
     
         std::map<std::string, std::string>  _headers;

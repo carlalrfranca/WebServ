@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/23 15:19:39 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/24 21:40:13 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,33 +55,18 @@ Response::Response(Request request)
 std::string Response::postMethod(Request &request, SocketS &server, Response *this_response)
 {
 	// TO DO:
-	// entao vemos se tem location pra decidir se: ---> é pra ser um location pro script CGI ( location /cgi-bin/)
-	// -- ao receber um POST, vamos usar um script
-	// Sobre se nao houver root em nenhum lugar do bloco server doarquivo:
-	/*
-		 Se nenhum root for especificado em qualquer lugar, o Nginx usará o diretório
-		 raiz padrão do sistema como ponto de partida para atender as solicitações.
-		 Isso é geralmente definido durante a compilação ou instalação do Nginx e pode
-		 variar de acordo com o sistema operacional.
-	*/
-
 	/*
 		ANTES DE TUDO:
 		-> verificar o TAMANHO DO CONTEUDO DO POST (vê se está dentro dos limites de max-content
 		determinado no arquivo de configuração. Se não estiver, corta na hora reornando uma
 		RESPONSE DE ERRO DE ACORDO COM A SITUAÇÃO)
 	*/
-	// quer saber.. coloca tudo DENTRO DO LOCATION da pagina que vai executar o script
-	// em vez do script ter um location proprio?
-
 	/*
 		1) Pegar o root base
-		2) Pegar o location e decdir qual é o location mais adequado
+		2) Pegar o location e decidir qual é o location mais adequado
 		3) Se tem .cgi é script -> vai pra um fluxo (que tá feito)
-			-> se for cgi, tem que chamar um método pra extrair o nome do script (só transferir o trecho do código)
-		4) Se não tem, é porque é /images/ (porque é a href que vai ter no html) e segue OUTRO FLUXO
+		4) Se não tem, é porque é /upload/ e segue OUTRO FLUXO
 		---> tem que ter a parte de identificar se a uri tem varias partes e teria que extrair pedaços em comum? talvez..
-		5) 
 	*/
 	
 	// ---------------------------------------------------------------------------------
@@ -109,24 +94,7 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		4 - (depois tem que testar quando chega sem '/' no inicio, o httpGET que não consegue extrair a diferença da URI - aconteceu pra pedir o css do cgi com 'location cgi-bin')
 	*/
 	if (it != serverLocations.end())
-	{
 		std::cout << BLUE << "Location found! >> " << it->first << END << std::endl;
-	}
-	// verificar se o location é /upload/ ou cgi.. porque sao dois fluxos diferentes
-	// no caso do location cgi, seguir:
-	// extrair da uri o trecho "process_data.cgi"
-	// que terá o nome do arquivo CGI - mas a extensão mudará de acordo com as extensões dadas no arquivo de configuração
-	// if (uri.find('.cgi') != std::string::npos)
-	// {
-	// 	// então é um pedido por cgi
-	// }
-	// else
-	// {
-	// 	// entao NÃO É POST CGI -> é o de upload comum
-		
-	// }
-
-
 	// isso abaixo já é pro caso de script cgi - pra retirar o nome do script e coisa do tipo
 	size_t foundLastSlash = uri.find_last_of('/');
 	std::string scriptName;
@@ -136,17 +104,11 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		// tem que verificar isso antes, não? Porque pode ter um POST pra /upload/ tambem...
 		// e daí É UM FLUXO DIFERENTE
 		scriptName = uri.substr(foundLastSlash);
-		// size_t foundCGIExt = scriptName.find(".cgi");
-		// if (foundCGIExt != std::string::npos)
-		// {
-		// 	scriptName = scriptName.substr(0, foundCGIExt);
-		// }
 		std::cout << BLUE << "NOME DO SCRIPT: " << scriptName << END << std::endl;
 		// criar um else pra isso, pra caso haja uma barra no final, daí pegar a anterior,
 		// extrair o in between e verificar se é .cgi? porque daí tudo bem tambem nao?
 		// se nao, daí dar NÃO ENCONTRADO (404)?
 	}
-	// size_t found = request.getRequest().find("/process_data.cgi");
 	size_t found = scriptName.find(".cgi");
 	if (found == std::string::npos)
 	{
@@ -154,13 +116,10 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		this_response->errorCodeHtml(404, server);
 		return this_response->getResponse();
 	}
-	// std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-	// std::map<std::string, LocationDirective>::iterator it = serverLocations.find("/cgi-bin");
+	
 	if (it != serverLocations.end())
 	{
 		CGI script;
-		// quer dizer que teve esse location
-		std::cout << "Há um LOCATION PRO CGI!" << std::endl;
 		size_t foundCGIExt = scriptName.find(".cgi");
 		if (foundCGIExt != std::string::npos)
 		{
@@ -175,121 +134,84 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 			// quer dizer que teve um root mais especifico no location... daí substituímos o root_for_response por essa..
 			root_for_response = itLocationRoot->second[0];
 			std::cout << "Root ESPECIFICO da location do CGI:::: " << root_for_response << std::endl;
-			// tem que pegar outras duas diretivas dentro do it (ponteiro pra esse location):
-			/*
-				cgi_path --> location of interpreters installed on the current system, mandatory parameter
-				cgi_ext --> extensions for executable files, mandatory parameter
-			*/
-			// passar aqui pra classe de ValidationsPost
-			std::map<std::string, std::vector< std::string > >::iterator commandOfCGI = locationDirectives.find("cgi_path");
-			if (commandOfCGI != locationDirectives.end())
+		}
+		// tem que pegar outras duas diretivas dentro do it (ponteiro pra esse location):
+		/*
+			cgi_path --> location of interpreters installed on the current system, mandatory parameter
+			cgi_ext --> extensions for executable files, mandatory parameter
+		*/
+		// passar aqui pra classe de ValidationsPost
+		std::map<std::string, std::vector< std::string > >::iterator commandOfCGI = locationDirectives.find("cgi_path");
+		if (commandOfCGI != locationDirectives.end())
+		{
+			// encontrou CGI-path... LIMITAR ISSO A UM TIPO APENAS?
+			std::vector<std::string> scriptsCommands = commandOfCGI->second;
+			for (int i = 0; i < scriptsCommands.size() ; i++)
+				std::cout << "Comandos para executar os scripts CGI ------> " << scriptsCommands[i] << std::endl;
+			std::cout << "------------------------------------------------------" << std::endl;
+			// bora encontrar a(s) extensão(ões)
+			std::map<std::string, std::vector< std::string > >::iterator CGIExtension = locationDirectives.find("cgi_ext");
+			if (CGIExtension != locationDirectives.end())
 			{
-				// encontrou CGI-path...
-				// tem que gravar isso numa variavel (pode ser um vetor, porque pode ter mais de um tipo de script CGI e, por
-				// consequencia, mais de um comando pra executar cada um)
-				std::vector<std::string> scriptsCommands = commandOfCGI->second;
-				for (int i = 0; i < scriptsCommands.size() ; i++)
-					std::cout << "Comandos para executar os scripts CGI ------> " << scriptsCommands[i] << std::endl;
+				std::vector<std::string> scriptsExtensions = CGIExtension->second;
+				for (int j = 0; j < scriptsExtensions.size(); j++)
+					std::cout << "Extensões dos scripts CGI ------> " << scriptsExtensions[j] << std::endl;
 				std::cout << "------------------------------------------------------" << std::endl;
-				// bora encontrar a(s) extensão(ões)
-				std::map<std::string, std::vector< std::string > >::iterator CGIExtension = locationDirectives.find("cgi_ext");
-				if (CGIExtension != locationDirectives.end())
+				std::string pathToScript = root_for_response + scriptName;
+				
+				// setando todas essas variaveis no objeto CGI pra processar o resto A PARTIR DELE
+				script.setRoot(root_for_response);
+				script.setCommands(scriptsCommands);
+				script.setExtensions(scriptsExtensions);
+				script.setPathToScript(scriptName);
+				// std::cout << BLUE << "CAMINHO SCRIPT COM EXTENSÃO >> " << script.getPathToScript() << END << std::endl;
+				struct stat info;
+		 		if (stat(script.getPathToScript().c_str(), &info) != 0)
+		 		{
+					std::cerr << "Error: Config file doesn't exist!" << std::endl;
+					this_response->errorCodeHtml(404, server);
+					return this_response->getResponse();
+		 		}
+				std::cout << YELLOW << "<< CAMINHO INTEIRO PARA O SCRIPT CONSTRUIDO >>" << END << std::endl;
+				std::cout << YELLOW << script.getPathToScript() << END << std::endl;
+				std::cout << std::endl;
+				// podia já declarar um objeto CGI e inserir essas informações (extensão e comando) dentro dele, certo?
+				// e daí prosseguir a partir dele...
+				// chamando seus métodos aqui pra executar e criar a resposta...
+				// daí no final só armazenaria o que ele retorna na _response daqui....
+				int resultCode = 0;
+				resultCode = script.handleCGIRequest(request); //pode dar um retorno caso precise retornar página de erro?
+				if (resultCode != 204)
 				{
-					std::vector<std::string> scriptsExtensions = CGIExtension->second;
-					for (int j = 0; j < scriptsExtensions.size(); j++)
-						std::cout << "Extensões dos scripts CGI ------> " << scriptsExtensions[j] << std::endl;
-					std::cout << "------------------------------------------------------" << std::endl;
-					
-					// talvez seja interessante configuar tudo em relação
-					// ao script DENTRO DA HANDLECGIREQUEST - acho que faz mais sentido nenao
-
-						// montar o nome do arquivo com ambas as extensões disponiveis?
-						// para caso de uso?
-						// e verificar se eles existem...
-						// caso nao existam.. já dar 404 (not found)?
-	
-						// FORMAR PATH DO SCRIPT -> root + nomeScript (com a extensão)
-						// forma os paths para as duas extensões?
-						// tem que ser gravado na classe, nao? é melhor, certo?
-						std::string pathToScript = root_for_response + scriptName;
-						std::cout << BLUE << "CAMINHO PARA O SCRIPT >> " << pathToScript << END << std::endl;
-						
-						// setando todas essas variaveis no objeto CGI pra processar o resto A PARTIR DELE
-						script.setRoot(root_for_response);
-						script.setCommands(scriptsCommands);
-						script.setExtensions(scriptsExtensions);
-						// criar o método:
-						// setPathToScript(scriptName); ?? e que adiciona a extensão ao nome
-						script.setPathToScript(scriptName);
-						std::cout << BLUE << "CAMINHO SCRIPT COM EXTENSÃO >> " << script.getPathToScript() << END << std::endl;
-						// verificar se esse path existe
-						// se nao existir, retorna erro ??
-						struct stat info;
-		 				if (stat(script.getPathToScript().c_str(), &info) != 0)
-		 				{
-							std::cerr << "Error: Config file doesn't exist!" << std::endl;
-							this_response->errorCodeHtml(404, server);
-							return this_response->getResponse();
-		 				}
-						std::cout << YELLOW << "<< CAMINHO INTEIRO PARA O SCRIPT CONSTRUIDO >>" << END << std::endl;
-						std::cout << YELLOW << script.getPathToScript() << END << std::endl;
-						std::cout << std::endl;
-						// podia já declarar um objeto CGI e inserir essas informações (extensão e comando) dentro dele, certo?
-						// e daí prosseguir a partir dele...
-						// chamando seus métodos aqui pra executar e criar a resposta...
-						// daí no final só armazenaria o que ele retorna na _response daqui....
-						
-						// NÃO SE ESQUEÇA DE IMPLEMENTAR O LOOP DE CHUNCKS TAMBEM (FEITO)
-
-						script.handleCGIRequest(request);
-
-					std::cout << RED << "RESPONSE DO CGI" << END << std::endl;
-					std::cout << RED << script.getResponse() << END << std::endl;
-					this_response->setResponse(script.getResponse());
-					return script.getResponse(); // retorna a response
+					this_response->errorCodeHtml(resultCode, server);
+					return this_response->getResponse();
 				}
-				else{
-				//  se nao encontrar a diretiva 'cgi-ext'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
-					this_response->setDateAndTime();
-					std::string date = this_response->getDate();
-					std::string response_error =
-        				"HTTP/1.1 404 Not Found\r\n"
-        				"Server: webserv/1.0.0\r\n"
-        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
-        				"Content-Type: text/html\r\n"
-        				"Content-Length: 162\r\n"
-        				"Connection: keep-alive\r\n\r\n";
-					return response_error;
-				}
+				std::cout << RED << "RESPONSE DO CGI" << END << std::endl;
+				std::cout << RED << script.getResponse() << END << std::endl;
+				this_response->setResponse(script.getResponse());
+				return script.getResponse(); // retorna a response
 			}
 			else
 			{
-				// se nao encontrar a diretiva 'cgi-path'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
-				std::string response_error =
-        				"HTTP/1.1 404 Not Found\r\n"
-        				"Server: webserv/1.0.0\r\n"
-        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
-        				"Content-Type: text/html\r\n"
-        				"Content-Length: 162\r\n"
-        				"Connection: keep-alive\r\n\r\n";
-				return response_error;
+			//  se nao encontrar a diretiva 'cgi-ext'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
+				this_response->setDateAndTime();
+				std::string date = this_response->getDate();
+				this_response->errorCodeHtml(404, server);
+				return this_response->getResponse();
 			}
 		}
+		else
+		{
+			// se nao encontrar a diretiva 'cgi-path'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
+			this_response->errorCodeHtml(404, server);
+			return this_response->getResponse();
+		}
 	}
-	else
-	{
-		// quer dizer que nao teve o locatin do cgi-bin, então lidamos com a postagem da forma "padrão" (grava o conteudo num arquivo no diretorio raiz do projeto)
-		std::cout << "NÃO HÁ um location PRO CGI! Vai pro caminho padrão..." << std::endl;
-		// ou seja, só "posta" o que tiver que postar num arquivo no diretório
-	}
-	std::string response_error =
-        				"HTTP/1.1 505 Not Found\r\n"
-        				"Server: nginx/1.20.0\r\n"
-        				"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
-        				"Content-Type: text/html\r\n"
-        				"Content-Length: 162\r\n"
-        				"Connection: keep-alive\r\n\r\n";
-		return response_error;
+	// quer dizer que nao teve o locatin do cgi-bin, então lidamos com a postagem da forma "padrão" (grava o conteudo num arquivo no diretorio raiz do projeto)
+	std::cout << "NÃO HÁ um location PRO CGI! Vai pro caminho padrão..." << std::endl;
+	// ou seja, só "posta" o que tiver que postar num arquivo no diretório
+	this_response->errorCodeHtml(404, server);
+	return this_response->getResponse();
 }
 
 
@@ -298,7 +220,7 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 // curl -X DELETE -i -v http://google.com.br
 	
 	
-/*
+
 std::string Response::getParameter(std::string query, std::string parameter)const
 {
 	size_t start = query.find(parameter + "=");
@@ -318,62 +240,57 @@ std::string Response::getParameter(std::string query, std::string parameter)cons
 	
 std::string Response::getMethod()const
 {
-	const std::string override = getParameter("_method", "name"); //pega  o parmtro no post 
+	const std::string override = getParameter("", "name"); //pega  o parmtro no post 
 	
 	if(!override.empty())
 		return override;
 		
 	return "-->metodo original<--";
 }
-*/
-	
+
 	
 std::string Response::deleteMethod(Request &request, SocketS &server, Response *this_response)
 {
-	// 1. verificar a solicitacao delete tipo
-	if(request.getMethod() != "DELETE")
-	{
-		// precisa retornar uma resposta de erro tipo:
-		std::string response_405 = 
-			"HTTP/1.1 405 Method Not Allowed\r\n"
-			"Server: nginx/1.20.0\r\n"
-			"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
-			"Content-Type: text/html\r\n"
-			"Content-Length: 1591\r\n"
-			"Connection: keep-alive\r\n\r\n";
-		this_response->setResponse(response_405);
-		return this_response->getResponse();
-	}
-	// 2. extrair a uri da solicitacao HTTP recebida p identificar o recurso que deve ser excluído
+	// 1. extrair a uri da solicitacao HTTP recebida p identificar o recurso que deve ser excluído
 	// std::string uri = request.getURI();
 	// construir o caminho do recurso
 	// std::string caminhoDoRecurso = //constroi aqui
+
+	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, server, serverLocations);
+	std::string uri = request.getURI();
+
+	std::cout << BLUE << "CHAMAMOS O METODO DELETE" << END << std::endl;
+	if (it != serverLocations.end())
+		std::cout << BLUE << "Location found! >> " << it->first << END << std::endl;
+	std::cout << BLUE << "URI >>> " << uri << END << std::endl;
 	std::string root;
 	if(server.getRoot().size() > 0)
-	{
 		root = server.getRoot();
-	}
-	std::string uri = request.getURI();
-	std::string resourcePath = root + uri;
+	std::map<std::string, std::vector< std::string > > locationDirectives;
+	locationDirectives = it->second.getDirectives(); //obtem as diretivas da location
+	std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
+	if (itRoot != locationDirectives.end())
+		root = itRoot->second[0];
+	this_response->buildPathToResource(root, request, server, locationDirectives, it);
+	std::cout << YELLOW << "PATH::: " << this_response->getPath() << END << std::endl;
+	// std::string resourcePath = root + uri;
+	std::string resourcePath = this_response->getPath();
 	//4. verificando antes de excluir
-	if(this_response->_utils.fileExists(resourcePath))
+	if(this_response->_utils.fileExists(resourcePath) == false)
 	{
+		std::cout << RED << "O arquivo NÃO EXISTE nesse caminho" << END << std::endl;
 		this_response->errorCodeHtml(404, server);
 		return this_response->getResponse();
 	}
 	if(remove(resourcePath.c_str()) == 0)
-		this_response->generateResponse(200, request); //exclusão bem-sucedida
+	{
+		std::cout << BLUE << "Excluiu [aparentmente]" << END << std::endl;
+		this_response->generateResponse(204, request); //exclusão bem-sucedida
+	}
 	else
 		this_response->errorCodeHtml(500, server);
 
-	//5. gerar uma resposta HTTP
-	std::string response_204 = 
-			"HTTP/1.1 204 No Content\r\n"
-			"Server: nginx/1.20.0\r\n"
-			"Date: Sat, 03 Sep 2023 12:34:56 GMT\r\n"
-			"Connection: keep-alive\r\n\r\n";
-	//6. retorno a resposta
-	this_response->setResponse(response_204);
 	return this_response->getResponse();
 }
 
@@ -554,7 +471,7 @@ std::string readFileToString(const std::string& filename)
     return content;
 }
 
-void Response::listFilesAndGenerateHtml()
+void Response::listFilesAndGenerateHtml(std::map<std::string, LocationDirective>::iterator& it)
 {
 
 	//passar essa função pra parte de execução do autoIndex:
@@ -581,7 +498,7 @@ void Response::listFilesAndGenerateHtml()
                     std::cout << i << " - " << fileList[i] << std::endl;
 				}
 				std::cout << BLUE << "cabo listagem..." << END << std::endl;
-				generateHtmlFromFiles(fileList);
+				generateHtmlFromFiles(fileList, it);
 				std::cout << BLUE << "Passou do generate HTML com base na lista" << END << std::endl;
             } else 
 			{
@@ -602,10 +519,15 @@ void Response::listFilesAndGenerateHtml()
 	std::cout << BLUE << "Depois do try catch mas ainda na função" << END << std::endl;
 }
 
-void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList){
+void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, std::map<std::string, LocationDirective>::iterator& it){
 
     std::string html;
-
+	std::string location = it->first;
+	std::string path = getPath();
+	std::cout << "Path: " << path << std::endl;
+	if (!location.empty() && location[location.size() - 1] != '/') {
+        location += '/';
+    }
     html += "<html>\n";
     html += "<head><title></title></head>\n";
     html += "<body>\n";
@@ -616,9 +538,28 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList){
 	// se é um diretorio, tem que ser um link, e esse link tem que começar com /images
 	//    -> porque ele substitui pelo root do location, que é web/images (e daí teria que completar com o resto do uri,
 	// 		 e se estiver sem '/' final, tem que incluir)
+
+	if (!_uri.empty() && _uri[_uri.size() - 1] != '/')
+       	_uri += '/';
     for(size_t i = 0; i < fileList.size(); ++i)
 	{
-        html += "<li>" + fileList[i] + "</li>\n";
+		// ver se é um arquivo ou um diretorio, se for um diretorio, tem que ser EM FORMA DE LINK
+		std::string itemName = fileList[i];
+		bool isDir = isDirectory(path + itemName);
+		//html += "<li>" + fileList[i] + "</li>\n";
+		if(isDir)
+		{
+			if (!itemName.empty() && itemName[itemName.size() - 1] != '/')
+        		itemName += '/';
+			std::cout << RED << "É diretorio: " << _uri + itemName << END << std::endl;
+			html += "<li><a href='" + _uri + itemName + "'>" + itemName + "</a></li>\n";
+		}
+		else
+		{
+			std::cout << YELLOW << "É arquivo: " << _uri + itemName << END << std::endl;
+			html += "<li>" + itemName + "</li>\n";		
+		}
+
     }
 	std::cout << BLUE << "cabo listagem...3" << END << std::endl;
     html += "</ul>\n";
@@ -682,11 +623,11 @@ void Response::generateResponse(int statusCode, const Request& request)
     if(request.getURI().find("css") != std::string::npos)
         contentType = "text/css";
     else if(request.getURI().find("jpg" ) != std::string::npos || request.getURI().find("jpeg") != std::string::npos)
-        contentType = "image/jpeg";
+        contentType = "images/jpeg";
     else if(request.getURI().find("png") != std::string::npos)
-        contentType = "image/png";
+        contentType = "images/png";
     else if(request.getURI().find("gif") != std::string::npos)
-        contentType = "image/gif";
+        contentType = "images/gif";
     else
         contentType = "text/html";
 	std::stringstream toConvertToString;
@@ -707,13 +648,15 @@ void Response::generateResponse(int statusCode, const Request& request)
     // return response;
 }
 
-bool isDirectory(const std::string& path)
+bool Response::isDirectory(const std::string& path)
 {
-    struct stat fileStat;
-    if (stat(path.c_str(), &fileStat) != 0)
-        // Erro ao obter informações do arquivo
-        return false;
-    return S_ISDIR(fileStat.st_mode);
+    struct stat info;
+    if (stat(path.c_str(), &info) != 0){
+        // Erro ao obter informações do arquivo Leti LEEEEEEEEEEE//ti quer cafe?
+        std::cout << RED << "Esse file >>> " << path << " e aí?" << END << std::endl;
+		return false;
+	}// leti quer cafe?
+    return (info.st_mode & S_IFDIR) != 0;
 }
 
 std::map<std::string, LocationDirective>::iterator Response::findRequestedLocation(Request &request, SocketS &server, std::map<std::string, LocationDirective>& serverLocations)
@@ -752,11 +695,14 @@ std::map<std::string, LocationDirective>::iterator Response::findRequestedLocati
 bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it, std::string indexPage)
 {
 	// std::cout << path << " é um diretório." << std::endl;
+	std::cout << BLUE << "LOCAAAAATION>>> " << it->first << END << std::endl;
 	locationDirectives = it->second.getDirectives();
        std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
     if (itIndex != locationDirectives.end()){ //não é o oposto? primeiro ve que se tem autoindex, se nao tiver (ou tiver off?) ve se tem index e serve se tiver? (ou gera pagina de erro se nao?)
 		indexPage = itIndex->second[0];
 	}
+	else if (server.getIndexFile().size() > 0)
+		indexPage = server.getIndexFile();
 	else
 	{
 		// verificar se tem o autoindex, se não -> retorna pagina de erro
@@ -770,7 +716,7 @@ bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS 
 			if (itAutoIndex->second[0] == "on")
 			{
 				setPath(path);
-				listFilesAndGenerateHtml();
+				listFilesAndGenerateHtml(it);
 				return true;
 			}
 			else
@@ -792,26 +738,69 @@ bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS 
 	setPath(path);
 	return false;
 }
+/*
 
+std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
+{
+	std::string commonSubstring = "";
+	std::string this_location = it->first;
+	if (!uri.empty() && uri[0] == '/')
+		uri.erase(0, 1);
+	size_t minlen = std::min(this_location.length(), uri.length());
+	for (size_t i = 0; i < minlen; ++i)
+	{
+    	if (this_location[i] == uri[i])
+    	    commonSubstring += root[i];
+    	else
+			break; //aqui leti ele para quando encontra uma diferenca
+	}
+	std::string caminhoCompleto;
+	std::cout << "Uri: " << uri << " | Common Substring: " << commonSubstring << std::endl;
+	// if (commonSubstring == uri)
+	// {
+		// caminhoCompleto = commonSubstring;
+		// return caminhoCompleto;
+	// }
+	std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
+
+	if (uriSemParteEmComum != root)
+		caminhoCompleto = root + uriSemParteEmComum;
+	else
+		caminhoCompleto = root;
+
+	// if (!caminhoCompleto.empty() && caminhoCompleto[caminhoCompleto.length() - 1] == '/')
+		// caminhoCompleto.erase(caminhoCompleto.length() -1);
+	return caminhoCompleto;
+		
+}*/
+
+/**/
 std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
 {
 	std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
 	std::cout << parts_uri[0] << " - " << parts_uri[0].size() << " e " << parts_uri[1] << std::endl;
 	std::string this_location = it->first;
 	std::string commonSubstring = "";
-	size_t minlen = std::min(this_location.length(), uri.length());
+	if (!uri.empty() && uri[0] == '/')
+		uri.erase(0, 1);
+	// _uri = uri;
+	size_t minlen = std::min(root.length(), uri.length());
 	size_t j = 0;
+	size_t i = 0;
+	std::cout << BLUE << "Root | " << root << " URI: " << uri << END << std::endl;
+
     for (size_t i = 0; i < minlen; ++i) {
         if (this_location[i] == uri[j]) {
             commonSubstring += this_location[i];
 			j++;
         }
     }
+	// commonSubstring = uri.substr(0, j);
 	std::cout << "-- PARTE A EXTRAIR PRA FORMAR O CAMINHO REAL: " << commonSubstring << std::endl;
 	// retirar a commonSubstring do uri e juntar?
 	std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
 	std::string caminhoCompleto = "";
-	if (uri != "/")
+	if (uri != "/" && uri != root)
 		caminhoCompleto = root + uriSemParteEmComum; // isso ja vai adicionar todo o caminho que vem da uri, se tiver?
 	else
 		caminhoCompleto = root;
@@ -819,6 +808,56 @@ std::string Response::extractUriAndBuildPathToResource(std::string root, std::ve
 	return caminhoCompleto;
 }
 
+
+/*
+// pra formar o caminho:
+-> chega a uri -> exemplo: /images/web/images
+-> a location vai ser images/, que tem como root web/images/
+-> vamos PRIMEIRO extrair da uri o que tem em relação à location (no caso, )
+std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
+{
+	std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
+	std::cout << parts_uri[0] << " - " << parts_uri[0].size() << " e " << parts_uri[1] << std::endl;
+	std::string this_location = it->first;
+	std::string commonSubstring = "";
+	size_t minlen = std::min(this_location.length(), uri.length());
+	std::cout << RED << "Esse LOCATION: " << this_location << END << std::endl;
+	std::cout << RED << "Essa URI: " << uri << END << std::endl;
+	std::cout << RED << "Min LEN: " << minlen << END << std::endl;
+	size_t j = 0;
+	size_t i = 0;
+	// while (this_location[i] == uri[j])
+	if (!uri.empty() && uri[0] == '/')
+		uri.erase(0, 1);
+	std::cout << BLUE << "Essa URI: " << uri << END << std::endl;
+	while (root[i] == uri[j])
+	{ // é claro que ele nao tira o root porque o uri começa com '/'
+		i++;
+		j++;
+	}
+	std::string newUri = uri.substr(j);
+	std::cout << BLUE << "NOVA URI: " << newUri << std::endl;
+    // for (size_t i = 0; i < minlen; ++i)
+	// {
+
+        // if (this_location[i] == uri[j])
+		// {
+        //     commonSubstring += this_location[i];
+		// 	j++;
+        // }
+    // }
+	// std::cout << "-- PARTE A EXTRAIR PRA FORMAR O CAMINHO REAL: " << commonSubstring << std::endl;
+	// retirar a commonSubstring do uri e juntar?
+	// std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
+	std::string caminhoCompleto = "";
+	if (uri != "/" && newUri != root)
+		caminhoCompleto = root + newUri; // isso ja vai adicionar todo o caminho que vem da uri, se tiver?
+	else
+		caminhoCompleto = root;
+	std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
+	return caminhoCompleto;
+}
+*/
 bool Response::buildPathToResource(std::string root, Request &request, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it)
 {
 	std::string indexPage;
@@ -847,21 +886,26 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 		// (ou seja, não precisa extrair alguma parte da uri, ou a uri é igual à location - e daí é só usar o root, ou basta juntá-la com o root)
 		std::cout << "Tem só o arquivo de caminho ou só diretorio" << std::endl;
 		std::string path;
+		_uri = uri;
 		if (uri == it->first || uri + '/' == it->first || it->first + '/' == uri) //essa terceira condição vai ferrar outros casos do site?
 			path = root;
 		else
 			path = root + parts_uri[0];
 		
-		if (isDirectory(path)) {
+		/* esse que tem que separar*/
+		if (isDirectory(path))
+		{
+			//incluir a funcao para verificar se o caminhoexiste (acho que nao precisa aqui)
 			bool isErrorPageOrAutoIndexPage = isResponseADirectoryListingOrErrorPage(path, server, locationDirectives, it, indexPage);
 			if (isErrorPageOrAutoIndexPage == true)
 				return true;
 		}
-		else
+		else //inserir condição de que existe (porque o isDirectory() retorna se nao existe mas tambem se teve algum erro), senao é pagina de erro
 		{
 			std::cout << path << " é um arquivo" << std::endl;
 			setPath(path);
 		}
+		// mais um else pro caso de nao existir?
 		// Domingo: testar auto_index on com o /assets!!!!!!!!!!
 	}
 	return false;
@@ -923,18 +967,48 @@ void Response::buildResponse(Request &request, SocketS &server)
     // verificar se o método requisitado pela solicitação é permitido pra esse servidor
     std::vector<std::string> allowed_methods = server.getMethods();
     std::string requestMethod = request.getMethod();
-    
+    // std::cout << RED << requestMethod << END << std::endl;
+
+	// -------------------------------
+	// ver antes se tem allowed_methods interno da location...
+	// se tiver, ele em precedencia..
+	// se não, daí olha o do server...
     bool isAllowedMethod = false;
 
-    for (std::vector<std::string>::iterator it = allowed_methods.begin(); it != allowed_methods.end(); ++it)
+	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+	std::map<std::string, LocationDirective>::iterator itLocation = findRequestedLocation(request, server, serverLocations);
+	if (itLocation != serverLocations.end())
 	{
-        if (strcmp(it->c_str(), requestMethod.c_str()) == 0)
+		// procurar o allow_methods interno
+		std::map<std::string, std::vector< std::string > > locationDirectives;
+		locationDirectives = itLocation->second.getDirectives();
+		std::map<std::string, std::vector< std::string > >::iterator itLocationAllowMethods = locationDirectives.find("allow_methods");
+		if (itLocationAllowMethods != locationDirectives.end())
 		{
-            isAllowedMethod = true;
-            break;
-        }
-    }
-    std::string hasRoot;
+			std::vector<std::string> locationAllowedMethods = itLocationAllowMethods->second;
+			for (std::vector<std::string>::iterator it = locationAllowedMethods.begin(); it != locationAllowedMethods.end(); ++it)
+			{
+    		    if (strcmp(it->c_str(), requestMethod.c_str()) == 0)
+				{
+    		        isAllowedMethod = true;
+    		        break;
+    		    }
+    		}
+		}
+		else
+		{
+			for (std::vector<std::string>::iterator it = allowed_methods.begin(); it != allowed_methods.end(); ++it)
+			{
+    		    if (strcmp(it->c_str(), requestMethod.c_str()) == 0)
+				{
+    		        isAllowedMethod = true;
+    		        break;
+    		    }
+    		}
+		}
+	}
+    
+	std::string hasRoot;
     if (isAllowedMethod)
 	{
 		std::string resposta = _methodsFunctions[requestMethod](request, server, this);

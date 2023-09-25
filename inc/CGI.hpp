@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/19 20:23:40 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/24 15:32:20 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,11 @@ class CGI
 		CGI();
 		~CGI();
 
-		void executeScript(int *pipefd);
-		void handleCGIRequest(Request &request);
+		int executeScript(int *pipefd);
+		int handleCGIRequest(Request &request);
+		int uploadImage(std::string request_content, size_t data_init_pos);
 		// void handleCGIRequest(std::string& request);
+		int storeFormInput( std::size_t data_init_pos, const std::string& request_content);
 	
 		void setRoot(const std::string& root);
 		void setCommands(std::vector<std::string> commands);
@@ -37,6 +39,7 @@ class CGI
 		std::vector<std::string> getCommands() const;
 		std::vector<std::string> getExtensions() const;
 		const std::string& getPathToScript(void) const;
+
 
 	private:
 

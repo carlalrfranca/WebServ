@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/18 19:46:12 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/23 21:54:32 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,27 @@ Request::Request(const std::string& request)
     _hostContent = "";
     _domainContent = "";
     _portRequest = "";
+	_method = "";
     _requestStream.str(request);
     std::getline(_requestStream, _firstLine);
+	// -------------
+	size_t headerEndPos = _request.find("\r\n\r\n");
+	std::string body;
+	if (headerEndPos != std::string::npos)
+	{
+		body = _request.substr(headerEndPos + 4);
+		setBody(body);
+		std::cout << RED << "******************" << END << std::endl;
+		std::cout << RED << body << " | Body Size: " << body.size() << END << std::endl;
+		std::cout << RED << "******************" << END << std::endl;
+		size_t methodDelete = body.find("_method=DELETE");
+		if (methodDelete != std::string::npos)
+		{
+			setMethod("DELETE");
+			std::cout << "ENTROOOOOU" << std::endl;
+		}
+		// tambem resgatar o valor do "imagemSelecionada"
+	}
 }
 
 Request::~Request()
@@ -53,7 +72,7 @@ bool Request::isFirstLineValid()
     if(_firstLine.find("GET") == std::string::npos && 
         _firstLine.find("POST") == std::string::npos && 
          _firstLine.find("DELETE") == std::string::npos)
-        throw ErrorException();
+        throw ErrorException(); // statusCode de not allowed method?
     //verifica se tem espaço após o metodo
     size_t spacePos = _firstLine.find(' ');
     if(spacePos == std::string::npos || spacePos == _firstLine.size() - 1 )
@@ -61,7 +80,7 @@ bool Request::isFirstLineValid()
     //valida HTTP após o metodo e espaço
     std::string version = _firstLine.substr(spacePos + 1);
     if(version.find("HTTP/1.1") == std::string::npos)
-        throw ErrorException();
+        throw ErrorException(); //pagina de status 505
     //valida espaço apos a versão
     spacePos = version.find(' ');
     if (spacePos == std::string::npos || spacePos == version.size() - 1)
@@ -70,9 +89,34 @@ bool Request::isFirstLineValid()
     return true;
 }
 
+void Request::setMethod(const std::string& method)
+{
+    _method = method;
+}
+
 void Request::setHasError(bool hasError)
 {
     _hasError = hasError;
+}
+
+void Request::setHeader(const std::string& header)
+{
+    _header = header;
+}
+
+void Request::setBody(const std::string& body)
+{
+    _body = body;
+}
+
+std::string Request::getHeader()const
+{
+    return _header;
+}
+
+std::string Request::getBody()const
+{
+    return _body;
 }
 
 bool Request::getHasError() const
@@ -106,7 +150,8 @@ bool Request::validateRequest()
             break;
         }
     }
-    _method = _tokens[0];
+	if (_method.size() == 0)
+    	_method = _tokens[0];
     _uri = _tokens[1];
     _version = _tokens[2];
     size_t posDiv = _hostContent.find(":");

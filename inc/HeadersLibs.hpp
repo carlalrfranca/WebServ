@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/19 21:39:42 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/24 16:48:28 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@
 #include <string>
 #include <cctype> // to std::isspace
 #include <map>
-
+#include <sys/time.h>
 
 // COLORS DEFINES
 #define YELLOW  "\033[0;33m"
