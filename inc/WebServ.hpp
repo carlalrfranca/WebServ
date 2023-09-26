@@ -38,6 +38,7 @@ class WebServ
     	void checkForDuplicates();
         void printRequest(const std::string &request);
         void configSocket(size_t index);
+		void initServers();
 
         Epoll &getEpollS();
         bool isFirstLineValid(const std::string &request, std::string &_firstLine);

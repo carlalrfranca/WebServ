@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/24 17:26:53 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/25 22:03:36 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,7 @@ WebServ::WebServ(std::string filename)
         configSocket(index - 1);
     fileToParse.close();
 	checkForDuplicates();
+	initServers();
 	mainLoop();
 }
 
@@ -134,7 +135,8 @@ void WebServ::checkForDuplicates()
 
 void WebServ::configSocket(size_t serverIndex)
 {
-	// antes de passar os itens do _configParser para o socket, verificar que todas as diretivas mandatórias estão preenchidas..
+	// antes de passar os itens do _configParser para o socket,
+	// verificar que todas as diretivas mandatórias estão preenchidas..
 	if (_configParser.getRoot().empty())
 		_configParser.setRoot("./");
 	if (_configParser.getAddress().empty())
@@ -144,13 +146,8 @@ void WebServ::configSocket(size_t serverIndex)
 	if (_configParser.getPort().empty())
 		throw ErrorException("Configuration Error: Port not found!");
 	// _configParser.checkDuplicatePorts();
-	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server, a gente vai definir um padrão? (ou deixar sem?)
-
-	// verificar se esse server teve mais de um listen (ip e porta)...
-	// se sim, cria um socket pra cada, cada um escutando em sua respectiva
-	// porta, mas com o resto das configurações semelhantes...
-	// ** ATENÇÃO: a MESMA porta não pode ter sido configurada DUAS VEZES (testar
-	// pra ver se escutar na porta 5005 no ip 127.0.0.1 e na mesma porta do ip 128.??? consegue bindar)
+	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server,
+	// a gente vai definir um padrão? (ou deixar sem?)
 
     SocketS temp_socket;
     temp_socket.setPort(_configParser.getPort());
@@ -167,47 +164,24 @@ void WebServ::configSocket(size_t serverIndex)
 	// iterar o map do Locations pra verificar os valores
 	// std::map<std::string, LocationDirective>::iterator it = _serverSocket.back().getLocations().begin();
 	// int size_locations =  _serverSocket.back().getLocations().size();
-
-
-	// colocar esse prcesso de criação de socket num outro método
-	// quando já tiver o vetor de sockets
-	// e daí ir validando e criando (sem bindar o mesmo ip:port duas vezes)
 	
-	//cria socket -----> deixa isso em outra função pra daí poder avaliar se tem server escutando no msmo ip:port e só fazer bind de um e replicar o fd pro outro?
-	// A PARTIR DAQUI: tá na função initServer() do SocketS!!!! vai ser chamado depois, na initServers() 
-	_serverSocket[serverIndex].setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));//int server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if(_serverSocket[serverIndex].getWebServSocket() == -1){
-        throw ErrorException("Socket Error: Failed to create socket!");
-    }
-    //configura endereço do servidor e inicializa os campos da estrutura com 0
-	std::cout << YELLOW << "Port: " << _serverSocket[serverIndex].getPort() << END << std::endl;
-	std::cout << YELLOW << "Address: " << _serverSocket[serverIndex].getAddress() << END << std::endl;
-    struct sockaddr_in server_address = {0};
-    server_address.sin_family = AF_INET; //socket usará os ends. IPv4
-    server_address.sin_port = htons(std::atoi(_configParser.getPort().c_str())); //usa a função htons para converter8080 para a ordem de bytes da rede e atribui a sin_port
-    server_address.sin_addr.s_addr = INADDR_ANY; //especifica o end.IP que o socket do server será vinculado
-    //chamada para o bind - vincula o socket ao endereço e porta, 0 -1 tem haver com a falha na chamada do bind
-    if(bind(_serverSocket[serverIndex].getWebServSocket(),(struct sockaddr*)&server_address, sizeof(server_address)) == -1){
-        close(_serverSocket[serverIndex].getWebServSocket());
-          throw ErrorException("Socket Error: Bind failed!");
-    }
-    //habilitar o socket para aguardar conexões de entrada. ) 5 representa o tamanho máximo da fila de conexões pendentes.
-    if(listen(_serverSocket[serverIndex].getWebServSocket(), 5) == -1){
-        close(_serverSocket[serverIndex].getWebServSocket());
-        throw ErrorException("Socket Error: Listen failed!");
-    } //std::cout << "--------- Socket atual colocado pra escutar..." << std::endl;
 }
 
 // função pra inicializar os servers depois de todos já estarem setados no vetor
 // (é aqui que vamos verificar se tem algum com ip:address repetida e só dar UM bind e compartilhar o fd!)
 // criar essas estruturas e fazer o bind e o listen é algo que está num método próprio do server (SocketS)
-/*
 
-void Webserv::initServers()
+void WebServ::initServers()
 {
 	int i = 0;
 	while (i < _serverSocket.size())
 	{
+		// verificar se esse server teve mais de um listen (ip e porta)...
+		// se sim, cria um socket pra cada, cada um escutando em sua respectiva
+		// porta, mas com o resto das configurações semelhantes...
+		// ** ATENÇÃO: a MESMA porta não pode ter sido configurada DUAS VEZES (testar
+		// pra ver se escutar na porta 5005 no ip 127.0.0.1 e na mesma porta do ip 128.??? consegue bindar)
+
 		// aqui vai o if testando se a porta e o address é igual -> daí 
 		// replica o fd deles (tem que ser com iteradores - consultar isso)
 		// e continua;
@@ -216,8 +190,6 @@ void Webserv::initServers()
 		i++;
 	}
 }
-
-*/
 
 void WebServ::printRequest(const std::string& request)
 {
@@ -295,23 +267,6 @@ bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index)
 void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString)
 {
     Request request(requestString);
-	// // -------------
-	// size_t headerEndPos = _requestString.find("\r\n\r\n");
-	// std::string body;
-	// if (headerEndPos != std::string::npos)
-	// {
-	// 	body = _requestString.substr(headerEndPos + 4);
-	// 	std::cout << RED << "******************" << END << std::endl;
-	// 	std::cout << RED << body << END << std::endl;
-	// 	std::cout << RED << "******************" << END << std::endl;
-	// 	size_t methodDelete = body.find("_method=DELETE");
-	// 	if (methodDelete != std::string::npos)
-	// 	{
-	// 		request.setMethod("DELETE");
-	// 		std::cout << "ENTROOOOOU" << std::endl;
-	// 	}
-	// 	// tambem resgatar o valor do "imagemSelecionada"
-	// }
 	std::cout << BLUE << request.getMethod() << END << std::endl;
 	// ----------------
     if (!request.isFirstLineValid())
@@ -330,13 +285,9 @@ void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, s
     if (selectedServer != -1) {
         currentResponse.buildResponse(request, _serverSocket[selectedServer]);
         _response = currentResponse.getResponse();
-        // ssize_t bytesSent = send(clientSocket, _response.c_str(), _response.length(), 0);
-        // if (bytesSent == -1)
-        //     throw ErrorException ("Erro ao enviar a resposta ao cliente");
     } 
     else
         std::cout << "Server não encontrado!" << std::endl;
-    // close(clientSocket);
 }
 
 int	WebServ::convertContentLength(std::string& header, size_t contentLengthPos)
