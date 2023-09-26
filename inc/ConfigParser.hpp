@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/26 17:58:28 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/26 19:36:28 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,7 +162,7 @@ class ConfigParser
         void processServerName(std::string &line);
 		void processAllowMethods(std::string &line);
 		void processClientMaxBodySize(std::string &line);
-		void ConfigParser::processListen(const std::vector<std::string> &lines);
+		void processListen(std::string &line);
 
         void setPort(int portNumber);
         void setRoot(std::string root);
@@ -180,6 +180,9 @@ class ConfigParser
         const std::vector<std::string>& getIndexFiles()const;
         std::map<std::string, std::string> getErrorPage()const;
         std::map<std::string, LocationDirective> getLocations() const;
+
+        const std::vector<std::string>& getAllPorts()const;
+        const std::vector<std::string>& getAllIps()const;
 
         void hasMandatoryParameters();
         void listFilesAndGenerateHtml(std::string &line);
@@ -206,6 +209,7 @@ class ConfigParser
 		void removeComments(std::string &line);
 		bool contemApenasLetras(const std::string& str);
 		bool contemApenasNumeros(const std::string& str);
+		bool duplicatedPort(std::string& portNumber);
 		//acrescentado dia 06.09
         
     private:
@@ -233,6 +237,8 @@ class ConfigParser
         
         std::vector<std::string>                            _domains; //server_name
         std::vector<std::string>                            _methods;
+        std::vector<std::string>                            _allPorts;
+        std::vector<std::string>                            _allIps;
         std::map<int, std::string>                          _errorPages;
         std::map<std::string, std::string>                  _errorPage;
 		std::map<std::string, LocationDirective>            _locations;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/26 17:44:08 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/26 20:26:24 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,17 +149,26 @@ void WebServ::configSocket(size_t serverIndex)
 	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server,
 	// a gente vai definir um padrão? (ou deixar sem?)
 
-    SocketS temp_socket;
-    temp_socket.setPort(_configParser.getPort());
-    temp_socket.setAddress(_configParser.getAddress());
-	temp_socket.setLocations(_configParser.getLocations());
-    temp_socket.setMethods(_configParser.getMethods());
-    temp_socket.setRoot(_configParser.getRoot());
-	temp_socket.setIndexFile(_configParser.getIndexFile());
-	temp_socket.setErrorPage(_configParser.getErrorPage());
-	_configParser.resetConfig();
+	std::vector<std::string> tmpPorts = _configParser.getAllPorts();
+	std::vector<std::string> tmpAddress = _configParser.getAllIps();
+	int totalPorts = tmpPorts.size();
+	std::cout << BLUE << "Qtdade Portas: " << totalPorts << " | Quantidade de Ips: " << tmpAddress.size() << END << std::endl;
+	for (int i = 0; i < totalPorts; i++)
+	{
+    	SocketS temp_socket;
+		temp_socket.setPort(tmpPorts[i]);
+		temp_socket.setAddress(tmpAddress[i]);
+	    // temp_socket.setPort(_configParser.getPort());
+	    // temp_socket.setAddress(_configParser.getAddress());
+		temp_socket.setLocations(_configParser.getLocations());
+	    temp_socket.setMethods(_configParser.getMethods());
+	    temp_socket.setRoot(_configParser.getRoot());
+		temp_socket.setIndexFile(_configParser.getIndexFile());
+		temp_socket.setErrorPage(_configParser.getErrorPage());
 
-    _serverSocket.push_back(temp_socket);
+	    _serverSocket.push_back(temp_socket);
+	}
+	_configParser.resetConfig(); // O PROBLEMA DESSA MERDA É AQUI
 
 	// iterar o map do Locations pra verificar os valores
 	// std::map<std::string, LocationDirective>::iterator it = _serverSocket.back().getLocations().begin();
@@ -175,37 +184,11 @@ void WebServ::configSocket(size_t serverIndex)
 void WebServ::initServers()
 {
 	int i = 0;
-	std::set<std::pair<std::string, std::string> > endPoints; //aqui ele  cria um set de endPoints para armazenar pares de Ip e porta
-
+	
 	while (i < _serverSocket.size()) //loop que itera os sockets do servidor
 	{
-		SocketS& serverSocket = _serverSocket[i];
-		std::string ipAddress = serverSocket.getAddress();
-		std::string port = serverSocket.getPort();
-		
-		// aqui ele vai conferir se o mesmo Ip e porta ja foram configurados
-		std::pair<std::set<std::pair<std::string, std::string> >::iterator, bool> it = endPoints.insert(endPoint);
-		if(!it.second)
-			throw ErrorException("Duplicate configuration: IP " + ipAddress + " and port " + port + " already configured.");
-		int serverSocketFD = socket(AF_INET, SOCK_STREAM, 0);
-		if(serverSocketFD == -1)
-			throw ErrorException("Socket Error: Failed to create socket!");
-		struct sockaddr_in server_address = {0};
-		server_address.sin_family = AF_INET; //socket usará os ends. IPv4
-		server_address.sin_port = htons(atoi(port.c_str())); //usa a função htons para converter8080 para a ordem de bytes da rede e atribui a sin_port
-        server_address.sin_addr.s_addr = INADDR_ANY; //especifica o end.IP que o socket do server será vinculado
-        //chamada para o bind - vincula o socket ao endereço e porta, 0 -1 tem haver com a falha na chamada do bind
-        if(bind(serverSocketFD,(struct sockaddr*)&server_address, sizeof(server_address)) == -1)
-		{
-        close(serverSocketFD);
-          throw ErrorException("Socket Error: Bind failed!");
-        }
-         if (listen(serverSocketFD, 5) == -1)
-        {
-            close(serverSocketFD);
-            throw ErrorException("Socket Error: Listen failed!");
-        }
-        i++;	
+		_serverSocket[i].initServer();
+        i++;
 	}
 		// verificar se esse server teve mais de um listen (ip e porta)...
 		// se sim, cria um socket pra cada, cada um escutando em sua respectiva
@@ -217,37 +200,6 @@ void WebServ::initServers()
 		// e continua;
 		// senão:
 }
-
-/*
-
-void SocketS::initServer()
-{
-	setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));
-	if(getWebServSocket() == -1)
-	{
-        throw SocketSException("Socket Error: Failed to create socket!");
-    }
-	//configura endereço do servidor e inicializa os campos da estrutura com 0
-    struct sockaddr_in server_address = {0};
-    server_address.sin_family = AF_INET; //socket usará os ends. IPv4
-    server_address.sin_port = htons(std::atoi(getPort().c_str())); //usa a função htons para converter8080 para a ordem de bytes da rede e atribui a sin_port
-    server_address.sin_addr.s_addr = INADDR_ANY; //especifica o end.IP que o socket do server será vinculado
-    //chamada para o bind - vincula o socket ao endereço e porta, 0 -1 tem haver com a falha na chamada do bind
-    if(bind(getWebServSocket(),(struct sockaddr*)&server_address, sizeof(server_address)) == -1)
-	{
-        close(getWebServSocket());
-          throw SocketSException("Socket Error: Bind failed!");
-    }
-    //habilitar o socket para aguardar conexões de entrada. ) 5 representa o tamanho máximo da fila de conexões pendentes.
-    if(listen(getWebServSocket(), 5) == -1)
-	{
-        close(getWebServSocket());
-        throw SocketSException("Socket Error: Listen failed!");
-	}
-}
-
-
-*/
 
 void WebServ::printRequest(const std::string& request)
 {
