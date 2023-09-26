@@ -39,6 +39,7 @@ class WebServ
         void printRequest(const std::string &request);
         void configSocket(size_t index);
 		void initServers();
+		//void addEndPoint(const std::string& ipAddress, const std::string& port);
 
         Epoll &getEpollS();
         bool isFirstLineValid(const std::string &request, std::string &_firstLine);
@@ -65,6 +66,7 @@ class WebServ
         socklen_t				_clientAddressLength;
         struct sockaddr_in		_clientAddress;
         Utils                   _utils;
+        //std::set<std::pair<std::string, std::string> > _endPoints;
 
     class ErrorException : public std::exception
     {

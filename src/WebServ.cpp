@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/26 12:22:21 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/26 17:44:08 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,25 +171,83 @@ void WebServ::configSocket(size_t serverIndex)
 // (é aqui que vamos verificar se tem algum com ip:address repetida e só dar UM bind e compartilhar o fd!)
 // criar essas estruturas e fazer o bind e o listen é algo que está num método próprio do server (SocketS)
 
+
 void WebServ::initServers()
 {
 	int i = 0;
-	while (i < _serverSocket.size())
+	std::set<std::pair<std::string, std::string> > endPoints; //aqui ele  cria um set de endPoints para armazenar pares de Ip e porta
+
+	while (i < _serverSocket.size()) //loop que itera os sockets do servidor
 	{
+		SocketS& serverSocket = _serverSocket[i];
+		std::string ipAddress = serverSocket.getAddress();
+		std::string port = serverSocket.getPort();
+		
+		// aqui ele vai conferir se o mesmo Ip e porta ja foram configurados
+		std::pair<std::set<std::pair<std::string, std::string> >::iterator, bool> it = endPoints.insert(endPoint);
+		if(!it.second)
+			throw ErrorException("Duplicate configuration: IP " + ipAddress + " and port " + port + " already configured.");
+		int serverSocketFD = socket(AF_INET, SOCK_STREAM, 0);
+		if(serverSocketFD == -1)
+			throw ErrorException("Socket Error: Failed to create socket!");
+		struct sockaddr_in server_address = {0};
+		server_address.sin_family = AF_INET; //socket usará os ends. IPv4
+		server_address.sin_port = htons(atoi(port.c_str())); //usa a função htons para converter8080 para a ordem de bytes da rede e atribui a sin_port
+        server_address.sin_addr.s_addr = INADDR_ANY; //especifica o end.IP que o socket do server será vinculado
+        //chamada para o bind - vincula o socket ao endereço e porta, 0 -1 tem haver com a falha na chamada do bind
+        if(bind(serverSocketFD,(struct sockaddr*)&server_address, sizeof(server_address)) == -1)
+		{
+        close(serverSocketFD);
+          throw ErrorException("Socket Error: Bind failed!");
+        }
+         if (listen(serverSocketFD, 5) == -1)
+        {
+            close(serverSocketFD);
+            throw ErrorException("Socket Error: Listen failed!");
+        }
+        i++;	
+	}
 		// verificar se esse server teve mais de um listen (ip e porta)...
 		// se sim, cria um socket pra cada, cada um escutando em sua respectiva
 		// porta, mas com o resto das configurações semelhantes...
 		// ** ATENÇÃO: a MESMA porta não pode ter sido configurada DUAS VEZES (testar
 		// pra ver se escutar na porta 5005 no ip 127.0.0.1 e na mesma porta do ip 128.??? consegue bindar)
-
 		// aqui vai o if testando se a porta e o address é igual -> daí 
 		// replica o fd deles (tem que ser com iteradores - consultar isso)
 		// e continua;
 		// senão:
-		_serverSocket[i].initServer();
-		i++;
+}
+
+/*
+
+void SocketS::initServer()
+{
+	setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));
+	if(getWebServSocket() == -1)
+	{
+        throw SocketSException("Socket Error: Failed to create socket!");
+    }
+	//configura endereço do servidor e inicializa os campos da estrutura com 0
+    struct sockaddr_in server_address = {0};
+    server_address.sin_family = AF_INET; //socket usará os ends. IPv4
+    server_address.sin_port = htons(std::atoi(getPort().c_str())); //usa a função htons para converter8080 para a ordem de bytes da rede e atribui a sin_port
+    server_address.sin_addr.s_addr = INADDR_ANY; //especifica o end.IP que o socket do server será vinculado
+    //chamada para o bind - vincula o socket ao endereço e porta, 0 -1 tem haver com a falha na chamada do bind
+    if(bind(getWebServSocket(),(struct sockaddr*)&server_address, sizeof(server_address)) == -1)
+	{
+        close(getWebServSocket());
+          throw SocketSException("Socket Error: Bind failed!");
+    }
+    //habilitar o socket para aguardar conexões de entrada. ) 5 representa o tamanho máximo da fila de conexões pendentes.
+    if(listen(getWebServSocket(), 5) == -1)
+	{
+        close(getWebServSocket());
+        throw SocketSException("Socket Error: Listen failed!");
 	}
 }
+
+
+*/
 
 void WebServ::printRequest(const std::string& request)
 {

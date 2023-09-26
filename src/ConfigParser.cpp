@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/25 23:42:21 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/26 18:33:04 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,6 +174,7 @@ bool ConfigParser::getAutoIndex()const
 //     return true;
 // }
 
+/*
 void ConfigParser::processListen(std::string &line)
 {
 	size_t	posInit;
@@ -233,6 +234,74 @@ void ConfigParser::processListen(std::string &line)
 			throw ErrorException("Configuration Error: You must configure a PORT NUMBER!");
 	}
 	_hasDirListen = true;
+}
+*/
+
+
+void ConfigParser::processListen(const std::vector<std::string> &lines)
+{
+	for (std::vector<std::string>::const_iterator it = lines.begin(); it != lines.end(); ++it)
+	{
+		size_t	posInit;
+		size_t	_semicolonIndex;
+	
+		// esse if impede a duplicação (tirar depois?)
+        if(_hasDirListen == true)
+            throw ErrorException("Error: The Directive Listen has been duplicated.");
+            
+		// tem que extrair o ;
+		std::string listenLine = *it;
+		if ( listenLine[listenLine.length() - 1] == ';')
+			listenLine =  listenLine.substr(0,  listenLine.length() - 1);
+		// vamos splitar essa linha
+		std::istringstream listen_values(listenLine);
+		std::string palavra;
+        std::vector<std::string> palavras;
+	
+		while (listen_values >> palavra)
+           	palavras.push_back(palavra);
+		if (palavras.size() != 2)
+			throw ErrorException("Syntax Error: Only ONE value by listen directive.");
+		if (palavras[0] != "listen")
+			throw ErrorException("Syntax Error: Format of line: [directive] [value] ...");
+		posInit = palavras[1].find("https");
+		if (posInit != std::string::npos)
+			throw ErrorException("Configuration Error: Can't configure https protocol.");
+		posInit = palavras[1].find("://");
+		if (posInit != std::string::npos)
+		{
+			posInit += 3;
+			palavras[1] = palavras[1].substr(posInit);
+			std::cout << "Valor da listen sem '://' >> " << palavras[1] << std::endl;
+		}
+		// agora vemos se tem ':'
+		posInit = palavras[1].find(":");
+		if (posInit != std::string::npos)
+		{
+			// quer dizer que é combo ip + porta
+			_ipAddress = palavras[1].substr(0, posInit);
+			_portNumber = palavras[1].substr(posInit + 1);
+			// **** tem que verificar que a porta SÃO APENAS NUMEROS
+			// **** e verificar o FORMATO DO IPADDRESS
+			if (!_utils.containsOnlyNumbers(_portNumber)) //ontemApenasNumeros
+				throw ErrorException("Syntax Error: Port must be ONLY numbers.");
+			// std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
+		}
+		else
+		{
+			// quer dizer que ou é só ipAddress ou é só porta
+			// se for só ipAddress -> não aceitamos -> pode ter apenas porta, mas não apenas o ipAddress..
+			if (_utils.containsOnlyNumbers(palavras[1])) //ontemApenasNumeros
+			{
+				_portNumber = palavras[1];
+				_ipAddress = "localhost";
+				// std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
+			}
+			else
+				throw ErrorException("Configuration Error: You must configure a PORT NUMBER!");
+		}
+		_hasDirListen = true;
+	}
 }
 
 void ConfigParser::processServerName(std::string &line)
