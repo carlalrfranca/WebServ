@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/26 12:45:34 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/26 13:13:14 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,12 @@ std::vector<std::string> CGI::getExtensions(void) const
 
 int CGI::executeScript(int *pipefd)
 {
+	int stdoutPipe[2];
+	if (pipe(stdoutPipe) == -1)
+	{
+	    std::cerr << "ERROR creating STDOUT pipe" << std::endl;
+	    return 500;
+	}
 	pid_t childPid = fork();
 	// signal(SIGCHLD, handleChildExit);
 	// signal(SIGALRM, handleAlarm);
@@ -81,7 +87,7 @@ int CGI::executeScript(int *pipefd)
 		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
 		return 500;
 	}
-	else if (childPid == 0) //é processo filho
+	else if (childPid == 0) //é processo filho || AGORA É SÒ USAR ISSO PRA FAZER O UPLOAD DE ARQUIVOS!!!!
 	{
 		// por estarmos no processo filho nesse bloco, vamos então modificar o valor
 		// do STDOUT pra poder redirecionar a saída do script pra cá
@@ -89,15 +95,16 @@ int CGI::executeScript(int *pipefd)
 		// close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
     	// Fecha o descritor de escrita do pipe, pois não será usado neste processo
     	close(pipefd[1]);
+		close(stdoutPipe[0]);
 		// Redireciona a entrada padrão (stdin) para o pipe de leitura
     	dup2(pipefd[0], STDIN_FILENO);
-	
+		dup2(stdoutPipe[1], STDOUT_FILENO);
     	// Redireciona a saída padrão (stdout) para o pipe de escrita
     	// dup2(pipefd[0], STDOUT_FILENO);
 	
     	// Fecha o descritor de leitura do pipe, pois não será usado neste processo
     	close(pipefd[0]);
-	
+		close(stdoutPipe[1]);
 		// Executamos agora o script de exemplo
 		// quando tiver o método que recupera o path to Script
 		// o nome do arquivo abaixo tem que ser passado atraves de uma variavel
@@ -113,7 +120,8 @@ int CGI::executeScript(int *pipefd)
 		// processo pai
 		// Escreve o corpo da solicitação no pipe de leitura, que será lido pelo processo filho
 		// close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
-    	std::string requestBody = _inputFormData;
+    	close(stdoutPipe[1]);
+		std::string requestBody = _inputFormData;
     	write(pipefd[1], requestBody.c_str(), requestBody.length());
 		close(pipefd[1]);
 		// alarm(timeoutSeconds);
@@ -148,12 +156,12 @@ int CGI::executeScript(int *pipefd)
 		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
 		while (true)
 		{
-			ssize_t bytesRead = read(pipefd[0], buffer, sizeof(buffer)); //lê 1024 bytes do pipefd[0] pro buffer
+			ssize_t bytesRead = read(stdoutPipe[0], buffer, sizeof(buffer)); //lê 1024 bytes do pipefd[0] pro buffer
 			if (bytesRead <= 0)
 				break;
 			_scriptOutput.append(buffer, bytesRead);
 		}
-		close(pipefd[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
+		close(stdoutPipe[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
 		// é aqui que breca se o script demorar demais? (SCRIPT COM LOOP?) -> o statusCode de estouro de limite de tempo seria 504
 		// Agora a saída do script CGI está armazenada em 'scriptOutPut'
 		std::cout << "------ SAÍDA DO SCRIPT --------\n" << _scriptOutput << std::endl;
