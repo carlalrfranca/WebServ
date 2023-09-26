@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/25 22:03:36 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/26 12:22:21 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,7 +204,7 @@ bool WebServ::isFirstLineValid(const std::string& request, std::string& _firstLi
     std::istringstream requestStream(request);
     std::getline(requestStream, _firstLine);
     
-    //valida http
+    //valida htt
     if(_firstLine.find("GET") == std::string::npos && 
         _firstLine.find("POST") == std::string::npos && 
          _firstLine.find("DELETE") == std::string::npos)

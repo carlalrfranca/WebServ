@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/24 17:23:50 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/26 12:45:34 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ int CGI::executeScript(int *pipefd)
 	// Defina um limite de tempo em segundos
     unsigned int timeoutSeconds = 10000;
 
+	std::cout << RED << "Conteúdo input: " << _inputFormData << END << std::endl;
 	if (childPid == -1)
 	{
 		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
@@ -84,9 +85,19 @@ int CGI::executeScript(int *pipefd)
 	{
 		// por estarmos no processo filho nesse bloco, vamos então modificar o valor
 		// do STDOUT pra poder redirecionar a saída do script pra cá
-		dup2(pipefd[1], STDOUT_FILENO);
-		close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
-		
+		// Escreve o corpo da solicitação no pipe, que será lido pelo processo filho
+		// close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
+    	// Fecha o descritor de escrita do pipe, pois não será usado neste processo
+    	close(pipefd[1]);
+		// Redireciona a entrada padrão (stdin) para o pipe de leitura
+    	dup2(pipefd[0], STDIN_FILENO);
+	
+    	// Redireciona a saída padrão (stdout) para o pipe de escrita
+    	// dup2(pipefd[0], STDOUT_FILENO);
+	
+    	// Fecha o descritor de leitura do pipe, pois não será usado neste processo
+    	close(pipefd[0]);
+	
 		// Executamos agora o script de exemplo
 		// quando tiver o método que recupera o path to Script
 		// o nome do arquivo abaixo tem que ser passado atraves de uma variavel
@@ -100,11 +111,15 @@ int CGI::executeScript(int *pipefd)
 		return 500;
 	} else {
 		// processo pai
-		close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
+		// Escreve o corpo da solicitação no pipe de leitura, que será lido pelo processo filho
+		// close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
+    	std::string requestBody = _inputFormData;
+    	write(pipefd[1], requestBody.c_str(), requestBody.length());
+		close(pipefd[1]);
 		// alarm(timeoutSeconds);
 		// Ler a saída do script CGI do pipe e armazená-la numa string
 		// std::string scriptOutPut;
-
+		// Corpo da solicitação HTTP em uma string (substitua pela sua string real)
 		struct timeval startTime;
 		gettimeofday(&startTime, NULL);
 		
