@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/24 15:38:54 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/25 23:42:21 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,6 +283,28 @@ bool ConfigParser::processRoot(std::string &line){
     return _hasRoot;
 }
 
+void ConfigParser::hasprohibitedDirectiveInLocation(std::string &directive)
+{
+	std::vector<std::string> allowedDirectives;
+	allowedDirectives.push_back("allow_methods");
+    allowedDirectives.push_back("index");
+    allowedDirectives.push_back("auto_index");
+    allowedDirectives.push_back("root");
+    allowedDirectives.push_back("client_max_body_size");
+    allowedDirectives.push_back("cgi_path");
+    allowedDirectives.push_back("cgi_ext");
+    allowedDirectives.push_back("upload_store");
+	allowedDirectives.push_back("return");
+
+	std::vector<std::string>::iterator itAllowedDirective;
+    for (itAllowedDirective = allowedDirectives.begin(); itAllowedDirective != allowedDirectives.end(); ++itAllowedDirective) {
+        if (*itAllowedDirective == directive)
+            break;
+    }
+	if (itAllowedDirective == allowedDirectives.end())
+		throw ErrorException("Configuration Error: Prohibited directive in location block");
+}
+
 void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
 	std::string currentLocation = _currentLocationPathOnMap;
 
@@ -301,19 +323,10 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
 		
 		if (splittedLine.size() < 2)
 			throw ErrorException("Syntax Error: Missing values to directive in location block");
-
-		// nao pode ter nem "listen" nem "server_name" dentro de um bloco location...
-		if (splittedLine[0].find("listen") != std::string::npos || splittedLine[0].find("server_name") != std::string::npos
-			|| splittedLine[0].find("location") != std::string::npos)
-			throw ErrorException("Configuration Error: CANNOT have 'listen', 'server_name' or an internal 'location' in location block");
-		// if (splittedLine[0] != "index" || splittedLine[0] != "auto_index" || splittedLine[0] != "root" || splittedLine[0] != "error_page" || splittedLine[0] != "return")
-			// throw ErrorException("Configuration Error: Prohibited directives in location block."); --> tem que distinguir locations normais da de cgi...
-		
-		// precisa verificar se essa diretiva JA EXISTE no location tambem...
+		hasprohibitedDirectiveInLocation(splittedLine[0]);
 		std::map<std::string, std::vector<std::string> >::iterator directiveIt = it->second.getDirectives().find(splittedLine[0]);
 		if (directiveIt != it->second.getDirectives().end())
 			throw ErrorException("Syntax Error: Duplicated directive in location block"); 
-		// ------------------------------
 		// com os argumentos splitados e num vetor, vamos inserir a key no objeto
 		it->second.addDirective(splittedLine[0], splittedLine[1]);
 		// diretiva (se há mais itens)
@@ -370,10 +383,7 @@ void ConfigParser::processLocation(std::string &line)
     if (line.find("location")!= std::string::npos)
     {
 		if (line[line.size() - 1] != '{')
-			throw ErrorException("Syntax Error: Missing '{' to open LOCATION BLOCK"); 
-        // verificar o tipo de location ("/", "/[directorio], etc")
-        // pra isso, teremos que dividir a line em partes pra ver o que é apontado pela location
-		// std::cout << "Line in Location: " << line << std::endl;
+			throw ErrorException("Syntax Error: Missing '{' to open LOCATION BLOCK");
         std::istringstream iss(line);
         std::vector<std::string> parts;
     
@@ -381,19 +391,14 @@ void ConfigParser::processLocation(std::string &line)
         while (iss >> part)
             parts.push_back(part);
         _currentLocationPathOnMap = parts[1];
-		// antes de passar, verifica se em _locationsMap ja nao tem um location desse igual do current...
 		std::map<std::string, std::vector<std::string> >::iterator it = _locationsMap.find(_currentLocationPathOnMap);
 		if (it != _locationsMap.end())
 			throw ErrorException("Syntax Error: DUPLICATED location");
         _locationsMap[_currentLocationPathOnMap];
 		_locations[_currentLocationPathOnMap];
     }
-    else //acho que esse "else" tambem pode ser identificando os caminhos do location (hardcoded) e, dependendo de qual for, encaminha
-    {	//pra um metodo correspondente (entao se for '/' é pra um, se for 'cgi-bin' é outro, se for regex é outro, etc)
-        std::cout << std::endl;
-        // std::cout << "Current location: " << _currentLocationPathOnMap << std::endl;
+    else
         storeCurrentLocationDirectives(line);
-    }
 }
 
 void ConfigParser::processIndex(std::string &line)

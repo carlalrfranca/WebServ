@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/23 21:54:32 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/25 22:02:15 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,7 @@ Request::Request(const std::string& request)
 		std::cout << RED << "******************" << END << std::endl;
 		size_t methodDelete = body.find("_method=DELETE");
 		if (methodDelete != std::string::npos)
-		{
 			setMethod("DELETE");
-			std::cout << "ENTROOOOOU" << std::endl;
-		}
 		// tambem resgatar o valor do "imagemSelecionada"
 	}
 }
