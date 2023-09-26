@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/24 15:38:54 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/25 22:33:59 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,6 +283,27 @@ bool ConfigParser::processRoot(std::string &line){
     return _hasRoot;
 }
 
+void ConfigParser::hasprohibitedDirectiveInLocation(std::string &directive)
+{
+	std::vector<std::string> allowedDirectives;
+	allowedDirectives.push_back("allow_methods");
+    allowedDirectives.push_back("index");
+    allowedDirectives.push_back("auto_index");
+    allowedDirectives.push_back("root");
+    allowedDirectives.push_back("client_max_body_size");
+    allowedDirectives.push_back("cgi_path");
+    allowedDirectives.push_back("cgi_ext");
+    allowedDirectives.push_back("upload_store");
+
+	std::vector<std::string>::iterator itAllowedDirective;
+    for (itAllowedDirective = allowedDirectives.begin(); itAllowedDirective != allowedDirectives.end(); ++itAllowedDirective) {
+        if (*itAllowedDirective == directive)
+            break;
+    }
+	if (itAllowedDirective == allowedDirectives.end())
+		throw ErrorException("Configuration Error: Prohibited directive in location block");
+}
+
 void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
 	std::string currentLocation = _currentLocationPathOnMap;
 
@@ -301,13 +322,7 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
 		
 		if (splittedLine.size() < 2)
 			throw ErrorException("Syntax Error: Missing values to directive in location block");
-
-		// nao pode ter nem "listen" nem "server_name" dentro de um bloco location...
-		if (splittedLine[0].find("listen") != std::string::npos || splittedLine[0].find("server_name") != std::string::npos
-			|| splittedLine[0].find("location") != std::string::npos)
-			throw ErrorException("Configuration Error: CANNOT have 'listen', 'server_name' or an internal 'location' in location block");
-		// if (splittedLine[0] != "index" || splittedLine[0] != "auto_index" || splittedLine[0] != "root" || splittedLine[0] != "error_page" || splittedLine[0] != "return")
-			// throw ErrorException("Configuration Error: Prohibited directives in location block."); --> tem que distinguir locations normais da de cgi...
+		hasprohibitedDirectiveInLocation(splittedLine[0]);
 		
 		// precisa verificar se essa diretiva JA EXISTE no location tambem...
 		std::map<std::string, std::vector<std::string> >::iterator directiveIt = it->second.getDirectives().find(splittedLine[0]);
