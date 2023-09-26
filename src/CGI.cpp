@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/26 13:10:56 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/26 13:13:14 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ int CGI::executeScript(int *pipefd)
 		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
 		return 500;
 	}
-	else if (childPid == 0) //é processo filho
+	else if (childPid == 0) //é processo filho || AGORA É SÒ USAR ISSO PRA FAZER O UPLOAD DE ARQUIVOS!!!!
 	{
 		// por estarmos no processo filho nesse bloco, vamos então modificar o valor
 		// do STDOUT pra poder redirecionar a saída do script pra cá
