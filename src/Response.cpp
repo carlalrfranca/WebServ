@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/24 21:40:13 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/26 23:18:13 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,10 +73,6 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	std::string root_for_response = server.getRoot();
 	// pega o root... encontra o location que tá sendo pedindo na uri
 	// pra post vai ser ou algo com o cgi.. ou um post comum, com /upload, por exemplo
-	// -----> lembre-se: o delete vai vir implicito numa solicitação POST, então..
-	// -----> é preciso identificar se a solicitação POST é mesmo um post OU SE É UM DELETE antes
-	// -----> de chegar aqui -> definir na buildResponse e modificar a variavel do método de acordo
-	// -----> (manipulação mesmo) pra forçar a chamar a função correta...
 	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
 	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, server, serverLocations);
 	std::string uri = request.getURI();
@@ -87,10 +83,6 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	// precisa usar o find de acordo com a URI -> definir se ele é pro /process_data.cgi OU pro /images/
 	// daí cada um tem um fluxo
 	/*
-		PARA ISSO, PRECISA FAZER UM CAMINHO SIMILAR AO DO GET:
-		1 - procurar o location adequado (nesse caso, o do cgi ou do /images/)
-		2 - ver o root (se tiver, senao, usa o default)
-		3 - ver se tem algum allow_methods interno impedindo o POST (isso pode ser feito antes)
 		4 - (depois tem que testar quando chega sem '/' no inicio, o httpGET que não consegue extrair a diferença da URI - aconteceu pra pedir o css do cgi com 'location cgi-bin')
 	*/
 	if (it != serverLocations.end())
@@ -614,12 +606,10 @@ void Response::errorCodeHtml(int statusCode, SocketS &server)
     // return response;
 }
 
-void Response::generateResponse(int statusCode, const Request& request)
+std::string Response::generateHeaders(int statusCode, const Request& request)
 {
-    std::string contentType;
-    std::string content = readFileToString(getPath());
-    std::string response;
-	std::cout << " ----- URI ------------------------ " << request.getURI() << std::endl;
+	std::string response;
+    std::string contentType;	
     if(request.getURI().find("css") != std::string::npos)
         contentType = "text/css";
     else if(request.getURI().find("jpg" ) != std::string::npos || request.getURI().find("jpeg") != std::string::npos)
@@ -630,22 +620,36 @@ void Response::generateResponse(int statusCode, const Request& request)
         contentType = "images/gif";
     else
         contentType = "text/html";
+		
 	std::stringstream toConvertToString;
     toConvertToString << statusCode;
     std::string statusCodeStr = toConvertToString.str();
-	std::stringstream toConvertToStr;
-    toConvertToStr << content.length();
-    std::string contentLenStr = toConvertToStr.str();
-	
-    response += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
-    response += "Content-Type: " + contentType + "\r\n";
-    response += "Content-Length: " + contentLenStr + "\r\n";
-    // response += "Connection: Keep-Alive\r\n";
-    response += "\r\n"; // Linha em branco indica o fim dos cabeçalhos
+
+	std::string contentLenStr = std::to_string(response.length() - response.find("\r\n\r\n") -4);
+
+	setDateAndTime();
+	std::string headers;
+    headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
+    headers += "Content-Type: " + contentType + "\r\n";
+    headers += "Content-Length: " + contentLenStr + "\r\n";
+	headers += getDate() + "\r\n";
+    headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
+
+
+	return headers;
+}
+
+void Response::generateResponse(int statusCode, const Request& request)
+{
+    std::string content = readFileToString(getPath());
+    std::string response;
+	std::cout << " --------------------- URI ------------------- " << request.getURI() << std::endl;
+	std::string headers = generateHeaders(statusCode, request);
+	response += headers;
     response += content;
-    setResponse(response);
+	
+	setResponse(response);
 	std::cout << RED << "Response\n" << getResponse() << END << std::endl;
-    // return response;
 }
 
 bool Response::isDirectory(const std::string& path)
@@ -705,14 +709,10 @@ bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS 
 		indexPage = server.getIndexFile();
 	else
 	{
-		// verificar se tem o autoindex, se não -> retorna pagina de erro
-		std::cout << YELLOW << "Aqui teria que produzir o autoindex" << END << std::endl;
-		// vê se tem auto_index on, se nao, dá erro, se sim, produzir o autoindex
 		std::map<std::string, std::vector< std::string > >::iterator itAutoIndex = locationDirectives.find("auto_index");
 		if (itAutoIndex != locationDirectives.end())
 		{
 			std::cout << BLUE << itAutoIndex->second[0] << END << std::endl;
-			std::cout << BLUE << "Tamanho AUTOINDEX: " << itAutoIndex->second.size() << END << std::endl;
 			if (itAutoIndex->second[0] == "on")
 			{
 				setPath(path);
@@ -738,43 +738,7 @@ bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS 
 	setPath(path);
 	return false;
 }
-/*
 
-std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
-{
-	std::string commonSubstring = "";
-	std::string this_location = it->first;
-	if (!uri.empty() && uri[0] == '/')
-		uri.erase(0, 1);
-	size_t minlen = std::min(this_location.length(), uri.length());
-	for (size_t i = 0; i < minlen; ++i)
-	{
-    	if (this_location[i] == uri[i])
-    	    commonSubstring += root[i];
-    	else
-			break; //aqui leti ele para quando encontra uma diferenca
-	}
-	std::string caminhoCompleto;
-	std::cout << "Uri: " << uri << " | Common Substring: " << commonSubstring << std::endl;
-	// if (commonSubstring == uri)
-	// {
-		// caminhoCompleto = commonSubstring;
-		// return caminhoCompleto;
-	// }
-	std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
-
-	if (uriSemParteEmComum != root)
-		caminhoCompleto = root + uriSemParteEmComum;
-	else
-		caminhoCompleto = root;
-
-	// if (!caminhoCompleto.empty() && caminhoCompleto[caminhoCompleto.length() - 1] == '/')
-		// caminhoCompleto.erase(caminhoCompleto.length() -1);
-	return caminhoCompleto;
-		
-}*/
-
-/**/
 std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
 {
 	std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
@@ -783,7 +747,6 @@ std::string Response::extractUriAndBuildPathToResource(std::string root, std::ve
 	std::string commonSubstring = "";
 	if (!uri.empty() && uri[0] == '/')
 		uri.erase(0, 1);
-	// _uri = uri;
 	size_t minlen = std::min(root.length(), uri.length());
 	size_t j = 0;
 	size_t i = 0;
@@ -795,69 +758,16 @@ std::string Response::extractUriAndBuildPathToResource(std::string root, std::ve
 			j++;
         }
     }
-	// commonSubstring = uri.substr(0, j);
 	std::cout << "-- PARTE A EXTRAIR PRA FORMAR O CAMINHO REAL: " << commonSubstring << std::endl;
-	// retirar a commonSubstring do uri e juntar?
 	std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
 	std::string caminhoCompleto = "";
 	if (uri != "/" && uri != root)
 		caminhoCompleto = root + uriSemParteEmComum; // isso ja vai adicionar todo o caminho que vem da uri, se tiver?
 	else
 		caminhoCompleto = root;
-	// std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
 	return caminhoCompleto;
 }
 
-
-/*
-// pra formar o caminho:
--> chega a uri -> exemplo: /images/web/images
--> a location vai ser images/, que tem como root web/images/
--> vamos PRIMEIRO extrair da uri o que tem em relação à location (no caso, )
-std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
-{
-	std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
-	std::cout << parts_uri[0] << " - " << parts_uri[0].size() << " e " << parts_uri[1] << std::endl;
-	std::string this_location = it->first;
-	std::string commonSubstring = "";
-	size_t minlen = std::min(this_location.length(), uri.length());
-	std::cout << RED << "Esse LOCATION: " << this_location << END << std::endl;
-	std::cout << RED << "Essa URI: " << uri << END << std::endl;
-	std::cout << RED << "Min LEN: " << minlen << END << std::endl;
-	size_t j = 0;
-	size_t i = 0;
-	// while (this_location[i] == uri[j])
-	if (!uri.empty() && uri[0] == '/')
-		uri.erase(0, 1);
-	std::cout << BLUE << "Essa URI: " << uri << END << std::endl;
-	while (root[i] == uri[j])
-	{ // é claro que ele nao tira o root porque o uri começa com '/'
-		i++;
-		j++;
-	}
-	std::string newUri = uri.substr(j);
-	std::cout << BLUE << "NOVA URI: " << newUri << std::endl;
-    // for (size_t i = 0; i < minlen; ++i)
-	// {
-
-        // if (this_location[i] == uri[j])
-		// {
-        //     commonSubstring += this_location[i];
-		// 	j++;
-        // }
-    // }
-	// std::cout << "-- PARTE A EXTRAIR PRA FORMAR O CAMINHO REAL: " << commonSubstring << std::endl;
-	// retirar a commonSubstring do uri e juntar?
-	// std::string uriSemParteEmComum = uri.substr(commonSubstring.length());
-	std::string caminhoCompleto = "";
-	if (uri != "/" && newUri != root)
-		caminhoCompleto = root + newUri; // isso ja vai adicionar todo o caminho que vem da uri, se tiver?
-	else
-		caminhoCompleto = root;
-	std::cout << "Caminho completo quando tem ROOT ESPECIFICA: " << caminhoCompleto << std::endl;
-	return caminhoCompleto;
-}
-*/
 bool Response::buildPathToResource(std::string root, Request &request, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it)
 {
 	std::string indexPage;
@@ -939,7 +849,6 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 		struct stat info;
 		if (stat(this_response->getPath().c_str(), &info) != 0)
 		{
-			// retorna pagina de erro (o caminho pra pagina nao existe)
 			this_response->errorCodeHtml(404, server);
 			return this_response->getResponse();
 		}
@@ -950,7 +859,6 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
         std::cout << "This server doesnt have this location!!" << std::endl;
         this_response->errorCodeHtml(404, server);
 		return this_response->getResponse();
-        //error404Html(response, root);
 	}
 	return this_response->getResponse();
 }
@@ -967,7 +875,6 @@ void Response::buildResponse(Request &request, SocketS &server)
     // verificar se o método requisitado pela solicitação é permitido pra esse servidor
     std::vector<std::string> allowed_methods = server.getMethods();
     std::string requestMethod = request.getMethod();
-    // std::cout << RED << requestMethod << END << std::endl;
 
 	// -------------------------------
 	// ver antes se tem allowed_methods interno da location...
@@ -1018,8 +925,6 @@ void Response::buildResponse(Request &request, SocketS &server)
     else
     {
         std::cout << "MÉTODO NÃO PERMITIDO!";
-        // std::string response = "HTTP/1.1 404 Not found\r\nContent-Type: text/html\r\n\r\n<html><head></head><body><h1>Error 404</h1></body></html>";
-        // setResponse(response);
 		errorCodeHtml(405, server); // statusCode 405 = "Method Not Allowed"
     }
 }

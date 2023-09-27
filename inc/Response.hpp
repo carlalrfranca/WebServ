@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/24 21:06:56 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/26 23:11:08 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ class Response
 		// static std::string postMethod(Request &request, SocketS &server);
 		// static std::string getMethod(Request &request, SocketS &server, Response *this_response);
 		bool isDirectory(const std::string& path);
+        std::string generateHeaders(int statusCode, const Request& request);
 		std::string	_uri;
 
     private:
