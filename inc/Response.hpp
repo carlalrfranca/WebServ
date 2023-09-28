@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/26 23:11:08 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/27 22:05:55 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ class Response
         static std::string httpGet(Request &request, SocketS &server, Response *this_response);
 		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
 		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
+		static std::string buildHeaderReturn(std::string statusCode, std::string resource, Response *this_response);
 		// static std::string postMethod(Request &request, SocketS &server);
 		// static std::string getMethod(Request &request, SocketS &server, Response *this_response);
 		bool isDirectory(const std::string& path);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/26 23:18:13 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/27 22:06:28 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -821,29 +821,63 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 	return false;
 }
 
+
+std::string Response::buildHeaderReturn(std::string statusCode, std::string resource, Response *this_response)
+{
+
+	std::string headers;
+	std::string codeMessage;
+	codeMessage = this_response->_statusMessages.getMessage(statusCode);
+	this_response->setDateAndTime();
+	
+	headers += "HTTP/1.1 " + statusCode + "" + codeMessage + "\r\n";
+    headers += "Location: " + resource + "\r\n";
+    //headers += "Content-Type: " + contentType + "\r\n";
+    //precisa adicionar o date of time
+    headers += "Connection: close\r\n";
+    headers += this_response->getDate() + "\r\n";
+    headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos
+    
+	this_response->setResponse(headers);
+	return this_response->getResponse();
+    
+
+}
+
 std::string Response::httpGet(Request &request, SocketS &server, Response *this_response)
 {
     std::string root;
 	root = server.getRoot();
-
-	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+	std::map<std::string, LocationDirective> serverLocations = server.getLocations(); //obtem as diretivas de localizacao
 	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, server, serverLocations);
 	std::string uri = request.getURI();
-    std::map<std::string, std::vector< std::string > > locationDirectives; //cria map p armazenar diretivas de localizacao
-
+    std::map<std::string, std::vector< std::string > > locationDirectives;
     if (it != serverLocations.end())
 	{
         std::cout << "Location found! >> " << it->first << std::endl;
-        locationDirectives = it->second.getDirectives(); //obtem as diretivas da location
+        locationDirectives = it->second.getDirectives();
+        std::map<std::string, std::vector<std::string> >::iterator itReturn = locationDirectives.find("return");
+        if(itReturn != locationDirectives.end())
+        {
+			std::string headerReturn = buildHeaderReturn(itReturn->second[0], itReturn->second[1], this_response);
+            return this_response->getResponse();
+        }
+        /*
+            tentando encontrar a return
+            se encontrar a return chama o metodo que eu vou criar para lidar com a return que vai 
+            setar essa response apropriada para o return
+            ela tem uma header location que tem um recurso pra resirecionar
+            ...
+            no final precisa -->>	return this_response->getResponse();
+        */
         std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
 		if (itRoot != locationDirectives.end())
 		{
             root = itRoot->second[0];
 		}
-		// 	// Domingo: testar auto_index on com o /assets!!!!!!!!!!
 		bool isErrorPageOrAutoIndexPage = this_response->buildPathToResource(root, request, server, locationDirectives, it);
 		if (isErrorPageOrAutoIndexPage == true)
-			return this_response->getResponse();
+			return this_response->getResponse();	
 		std::cout << "CAMINHO COMPLETO DO RECURSO: " << this_response->getPath() << std::endl;
         std::string bodyHTML = readFileToString(this_response->getPath()); //declara o corpo do HTML
 		struct stat info;
