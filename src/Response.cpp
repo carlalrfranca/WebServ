@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/27 22:06:28 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/30 15:18:12 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,29 +15,18 @@
 Response::Response() : _headers(), _methodsFunctions()
 {
     _chosenSocket = NULL;
-
-	/*
-		--- NOTE 18.09.2023 ---
-		
-		map onde as chaves são os verbos e os valores os métodos:
-		
-		httpGet | A função retorna a resposta HTTP gerada, que pode conter o conteúdo do arquivo solicitado ou uma resposta de erro.
-		postMethod | A função retorna a resposta HTTP gerada, que pode ser a resposta do CGI bem-sucedida ou uma resposta de erro.
-		deleteMethod |
-		
-	*/ 
-	
 	_methodsFunctions["GET"] = &Response::httpGet;
 	_methodsFunctions["POST"] = &Response::postMethod;
 	_methodsFunctions["DELETE"] = &Response::deleteMethod;
     _body = "";
     _code = "";
     _path = "";
-    _response = ""; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
+    _response = "";
     _statusMessages = StatusMessages();
 }
 
-Response::~Response(){}
+Response::~Response()
+{}
 
 Response::Response(Request request)
 {
@@ -61,48 +50,23 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		determinado no arquivo de configuração. Se não estiver, corta na hora reornando uma
 		RESPONSE DE ERRO DE ACORDO COM A SITUAÇÃO)
 	*/
-	/*
-		1) Pegar o root base
-		2) Pegar o location e decidir qual é o location mais adequado
-		3) Se tem .cgi é script -> vai pra um fluxo (que tá feito)
-		4) Se não tem, é porque é /upload/ e segue OUTRO FLUXO
-		---> tem que ter a parte de identificar se a uri tem varias partes e teria que extrair pedaços em comum? talvez..
-	*/
 	
 	// ---------------------------------------------------------------------------------
 	std::string root_for_response = server.getRoot();
-	// pega o root... encontra o location que tá sendo pedindo na uri
-	// pra post vai ser ou algo com o cgi.. ou um post comum, com /upload, por exemplo
 	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
 	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, server, serverLocations);
 	std::string uri = request.getURI();
     std::map<std::string, std::vector< std::string > > locationDirectives;
 
-	// ---- o de antes...
-	std::cout << RED << "Esta é a URI DESSE POST::: " << uri << END << std::endl;
-	// precisa usar o find de acordo com a URI -> definir se ele é pro /process_data.cgi OU pro /images/
 	// daí cada um tem um fluxo
 	/*
-		4 - (depois tem que testar quando chega sem '/' no inicio, o httpGET que não consegue extrair a diferença da URI - aconteceu pra pedir o css do cgi com 'location cgi-bin')
+		- (depois tem que testar quando chega sem '/' no inicio, o httpGET que não consegue extrair a diferença da URI - aconteceu pra pedir o css do cgi com 'location cgi-bin')
+		- tem que tratar uris que podem ter varios '/'? que nem extrair? (acho que sim ne, por praxe)
 	*/
 	if (it != serverLocations.end())
 		std::cout << BLUE << "Location found! >> " << it->first << END << std::endl;
-	// isso abaixo já é pro caso de script cgi - pra retirar o nome do script e coisa do tipo
-	size_t foundLastSlash = uri.find_last_of('/');
-	std::string scriptName;
-	if (foundLastSlash != std::string::npos && foundLastSlash != (uri.size() - 1))
-	{
-		// se nao é uma barra no final da uri... extrai da ultima barra até o final (deve extrair 'process_data.cgi' se for cgi)
-		// tem que verificar isso antes, não? Porque pode ter um POST pra /upload/ tambem...
-		// e daí É UM FLUXO DIFERENTE
-		scriptName = uri.substr(foundLastSlash);
-		std::cout << BLUE << "NOME DO SCRIPT: " << scriptName << END << std::endl;
-		// criar um else pra isso, pra caso haja uma barra no final, daí pegar a anterior,
-		// extrair o in between e verificar se é .cgi? porque daí tudo bem tambem nao?
-		// se nao, daí dar NÃO ENCONTRADO (404)?
-	}
-	size_t found = scriptName.find(".cgi");
-	if (found == std::string::npos)
+	std::string scriptName = this_response->extractScriptName(uri);
+	if (scriptName.size() == 0)
 	{
 		std::cerr << "---- Opa, essa request NÃO tem process_data CGI !!! ----" << std::endl;
 		this_response->errorCodeHtml(404, server);
@@ -111,97 +75,49 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	
 	if (it != serverLocations.end())
 	{
-		CGI script;
 		size_t foundCGIExt = scriptName.find(".cgi");
 		if (foundCGIExt != std::string::npos)
-		{
 			scriptName = scriptName.substr(0, foundCGIExt);
-		}
 		// agora verificamos se há um "root" dentro desse location (um root mais "especifico", portanto)
 		std::map<std::string, std::vector< std::string > > locationDirectives;
 		locationDirectives = it->second.getDirectives();
         std::map<std::string, std::vector< std::string > >::iterator itLocationRoot = locationDirectives.find("root");
 		if (itLocationRoot != locationDirectives.end())
-		{
-			// quer dizer que teve um root mais especifico no location... daí substituímos o root_for_response por essa..
 			root_for_response = itLocationRoot->second[0];
-			std::cout << "Root ESPECIFICO da location do CGI:::: " << root_for_response << std::endl;
-		}
-		// tem que pegar outras duas diretivas dentro do it (ponteiro pra esse location):
-		/*
-			cgi_path --> location of interpreters installed on the current system, mandatory parameter
-			cgi_ext --> extensions for executable files, mandatory parameter
-		*/
-		// passar aqui pra classe de ValidationsPost
 		std::map<std::string, std::vector< std::string > >::iterator commandOfCGI = locationDirectives.find("cgi_path");
-		if (commandOfCGI != locationDirectives.end())
+		std::map<std::string, std::vector< std::string > >::iterator CGIExtension = locationDirectives.find("cgi_ext");
+		if (commandOfCGI == locationDirectives.end() || CGIExtension == locationDirectives.end())
 		{
-			// encontrou CGI-path... LIMITAR ISSO A UM TIPO APENAS?
-			std::vector<std::string> scriptsCommands = commandOfCGI->second;
-			for (int i = 0; i < scriptsCommands.size() ; i++)
-				std::cout << "Comandos para executar os scripts CGI ------> " << scriptsCommands[i] << std::endl;
-			std::cout << "------------------------------------------------------" << std::endl;
-			// bora encontrar a(s) extensão(ões)
-			std::map<std::string, std::vector< std::string > >::iterator CGIExtension = locationDirectives.find("cgi_ext");
-			if (CGIExtension != locationDirectives.end())
+			this_response->errorCodeHtml(404, server);
+			return this_response->getResponse();
+		}
+		// extrair extensoes e comandos pra executar os scripts
+		std::vector<std::string> scriptsCommands = commandOfCGI->second;
+		std::vector<std::string> scriptsExtensions = CGIExtension->second;
+		std::string pathToScript = root_for_response + scriptName;
+		try
+		{
+			CGI script(root_for_response, scriptsCommands, scriptsExtensions, scriptName);
+			std::cout << "CAMINHO INTEIRO PARA O SCRIPT CONSTRUIDO >>" << YELLOW << script.getPathToScript() << END << std::endl;
+			int resultCode = 0;
+			resultCode = script.handleCGIRequest(request); //pode dar um retorno caso precise retornar página de erro?
+			if (resultCode != 204)
 			{
-				std::vector<std::string> scriptsExtensions = CGIExtension->second;
-				for (int j = 0; j < scriptsExtensions.size(); j++)
-					std::cout << "Extensões dos scripts CGI ------> " << scriptsExtensions[j] << std::endl;
-				std::cout << "------------------------------------------------------" << std::endl;
-				std::string pathToScript = root_for_response + scriptName;
-				
-				// setando todas essas variaveis no objeto CGI pra processar o resto A PARTIR DELE
-				script.setRoot(root_for_response);
-				script.setCommands(scriptsCommands);
-				script.setExtensions(scriptsExtensions);
-				script.setPathToScript(scriptName);
-				// std::cout << BLUE << "CAMINHO SCRIPT COM EXTENSÃO >> " << script.getPathToScript() << END << std::endl;
-				struct stat info;
-		 		if (stat(script.getPathToScript().c_str(), &info) != 0)
-		 		{
-					std::cerr << "Error: Config file doesn't exist!" << std::endl;
-					this_response->errorCodeHtml(404, server);
-					return this_response->getResponse();
-		 		}
-				std::cout << YELLOW << "<< CAMINHO INTEIRO PARA O SCRIPT CONSTRUIDO >>" << END << std::endl;
-				std::cout << YELLOW << script.getPathToScript() << END << std::endl;
-				std::cout << std::endl;
-				// podia já declarar um objeto CGI e inserir essas informações (extensão e comando) dentro dele, certo?
-				// e daí prosseguir a partir dele...
-				// chamando seus métodos aqui pra executar e criar a resposta...
-				// daí no final só armazenaria o que ele retorna na _response daqui....
-				int resultCode = 0;
-				resultCode = script.handleCGIRequest(request); //pode dar um retorno caso precise retornar página de erro?
-				if (resultCode != 204)
-				{
-					this_response->errorCodeHtml(resultCode, server);
-					return this_response->getResponse();
-				}
-				std::cout << RED << "RESPONSE DO CGI" << END << std::endl;
-				std::cout << RED << script.getResponse() << END << std::endl;
-				this_response->setResponse(script.getResponse());
-				return script.getResponse(); // retorna a response
-			}
-			else
-			{
-			//  se nao encontrar a diretiva 'cgi-ext'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
-				this_response->setDateAndTime();
-				std::string date = this_response->getDate();
-				this_response->errorCodeHtml(404, server);
+				this_response->errorCodeHtml(resultCode, server);
 				return this_response->getResponse();
 			}
+			this_response->setResponse(script.getResponse());
+			return script.getResponse(); // retorna a response
 		}
-		else
+		catch(const std::exception& e)
 		{
-			// se nao encontrar a diretiva 'cgi-path'.. o que acontece? ele só grava sem nenhum tratamento ou dá resposta de erro?
+			std::cerr << e.what() << '\n';
 			this_response->errorCodeHtml(404, server);
 			return this_response->getResponse();
 		}
 	}
 	// quer dizer que nao teve o locatin do cgi-bin, então lidamos com a postagem da forma "padrão" (grava o conteudo num arquivo no diretorio raiz do projeto)
 	std::cout << "NÃO HÁ um location PRO CGI! Vai pro caminho padrão..." << std::endl;
-	// ou seja, só "posta" o que tiver que postar num arquivo no diretório
 	this_response->errorCodeHtml(404, server);
 	return this_response->getResponse();
 }
@@ -587,6 +503,7 @@ void Response::errorCodeHtml(int statusCode, SocketS &server)
     // le o arquivo
     // monta as headers
     // concatena o arquivo com as headers
+	setDateAndTime();
     std::string errorHtml = readFileToString(errorFileName);
 	size_t content_length = errorHtml.size();
 	std::string response;
@@ -600,6 +517,7 @@ void Response::errorCodeHtml(int statusCode, SocketS &server)
 	response += "HTTP/1.1 " + statusCodeStr + " " + errorDefault + "\r\n";
     response += "Content-Type: text/html\r\n";
 	response += "Content-Length: " + contentLengthStr + "\r\n";
+	response += "Date: " + getDate() + "\r\n";
 	// response += "Connection: close\r\n\r\n" + errorHtml;
 	response += "\r\n" + errorHtml;
 	setResponse(response);
@@ -625,14 +543,26 @@ std::string Response::generateHeaders(int statusCode, const Request& request)
     toConvertToString << statusCode;
     std::string statusCodeStr = toConvertToString.str();
 
-	std::string contentLenStr = std::to_string(response.length() - response.find("\r\n\r\n") -4);
+	std::size_t headerEndPos = response.find("\r\n\r\n");
+
+	// Calcule o tamanho do conteúdo subtraindo a posição do fim do cabeçalho do tamanho total
+	std::size_t contentLength = response.length() - headerEndPos - 4;
+
+	// Converta contentLength para uma string usando std::stringstream
+	std::stringstream ss;
+	ss << contentLength;
+	std::string contentLenStr = ss.str();
+
+	// Agora contentLenStr contém a representação de contentLength como uma string
+	// std::cout << "Content-Length: " << contentLenStr << std::endl;
+	// std::string contentLenStr = std::to_string(response.length() - response.find("\r\n\r\n") -4);
 
 	setDateAndTime();
 	std::string headers;
     headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
     headers += "Content-Type: " + contentType + "\r\n";
     headers += "Content-Length: " + contentLenStr + "\r\n";
-	headers += getDate() + "\r\n";
+	headers += "Date: " + getDate() + "\r\n";
     headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
 
 
@@ -649,7 +579,7 @@ void Response::generateResponse(int statusCode, const Request& request)
     response += content;
 	
 	setResponse(response);
-	std::cout << RED << "Response\n" << getResponse() << END << std::endl;
+	// std::cout << RED << "Response\n" << getResponse() << END << std::endl;
 }
 
 bool Response::isDirectory(const std::string& path)
@@ -827,7 +757,7 @@ std::string Response::buildHeaderReturn(std::string statusCode, std::string reso
 
 	std::string headers;
 	std::string codeMessage;
-	codeMessage = this_response->_statusMessages.getMessage(statusCode);
+	codeMessage = this_response->_statusMessages.getMessage(atoi(statusCode.c_str()));
 	this_response->setDateAndTime();
 	
 	headers += "HTTP/1.1 " + statusCode + "" + codeMessage + "\r\n";
@@ -840,9 +770,30 @@ std::string Response::buildHeaderReturn(std::string statusCode, std::string reso
     
 	this_response->setResponse(headers);
 	return this_response->getResponse();
-    
-
 }
+
+
+std::string Response::extractScriptName(std::string& uri)
+{
+	size_t foundLastSlash = uri.find_last_of('/');
+	std::string scriptName;
+	if (foundLastSlash != std::string::npos && foundLastSlash != (uri.size() - 1))
+	{
+		// se nao é uma barra no final da uri... extrai da ultima barra até o final (deve extrair 'process_data.cgi' se for cgi)
+		// tem que verificar isso antes, não? Porque pode ter um POST pra /upload/ tambem...
+		// e daí É UM FLUXO DIFERENTE
+		scriptName = uri.substr(foundLastSlash);
+		std::cout << BLUE << "NOME DO SCRIPT: " << scriptName << END << std::endl;
+		// criar um else pra isso, pra caso haja uma barra no final, daí pegar a anterior,
+		// extrair o in between e verificar se é .cgi? porque daí tudo bem tambem nao?
+		// se nao, daí dar NÃO ENCONTRADO (404)?
+	}
+	size_t found = scriptName.find(".cgi");
+	if (found == std::string::npos)
+		return "";
+	return scriptName;
+}
+
 
 std::string Response::httpGet(Request &request, SocketS &server, Response *this_response)
 {
@@ -879,7 +830,25 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 		if (isErrorPageOrAutoIndexPage == true)
 			return this_response->getResponse();	
 		std::cout << "CAMINHO COMPLETO DO RECURSO: " << this_response->getPath() << std::endl;
-        std::string bodyHTML = readFileToString(this_response->getPath()); //declara o corpo do HTML
+        // verificar se o location é cgi.. se for, encaminhar pra outra função
+		// pra fazer o CGI do GET
+		// if (it->first.find("cgi") != std::string::npos)
+		/*
+			std::string scriptName = extractScriptName(uri);
+			if (scriptName.size() == 0)
+			{
+				this_response->errorCodeHtml(404, server);
+				return this_response->getResponse();
+			}
+			// agora, depois de resolver o scriptName,
+			// temos que tirar a extensão
+			size_t foundCGiExt = scriptName.find(".cgi");
+			if (foundCGIExt != std::string::npos)
+				scriptName = scriptName.substr(0, foundCGIExt);
+			
+		*/
+		// --------------------------------------------
+		std::string bodyHTML = readFileToString(this_response->getPath()); //declara o corpo do HTML
 		struct stat info;
 		if (stat(this_response->getPath().c_str(), &info) != 0)
 		{

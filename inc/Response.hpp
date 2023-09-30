@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/27 22:05:55 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/30 13:54:09 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ typedef std::string (*Funcao)(Request &request, SocketS &server, Response *this_
 
 class Response
 {
-
     public:
     
         Response();
@@ -42,8 +41,6 @@ class Response
         const std::string getPath()const;
         std::string getResponse()const;//foi criado outro metodo, precisa ajustar .cpp
 		std::string getDate()const;
-		
-		//20.09.2023
 		std::string getMethod()const;
         std::string getParameter(std::string query, std::string parameter)const;
 		
@@ -69,6 +66,7 @@ class Response
 		std::string extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it);
 		bool isResponseADirectoryListingOrErrorPage(std::string path, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it, std::string indexPage);
 		std::map<std::string, LocationDirective>::iterator findRequestedLocation(Request &request, SocketS &server, std::map<std::string, LocationDirective>& serverLocations);
+        std::string extractScriptName(std::string& uri);
 
 		// method for each method
         static std::string httpGet(Request &request, SocketS &server, Response *this_response);

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/24 15:32:20 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/30 15:09:05 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,13 @@ class CGI
 	public:
 
 		CGI();
+		CGI(const std::string& root, std::vector<std::string> commands, std::vector<std::string> extensions, std::string scriptName);
 		~CGI();
 
-		int executeScript(int *pipefd);
+		int executeScript(int *pipefd, std::string fileName);
 		int handleCGIRequest(Request &request);
 		int uploadImage(std::string request_content, size_t data_init_pos);
+		//int uploadImageCGI(std::string request_content, size_t data_init_pos);
 		// void handleCGIRequest(std::string& request);
 		int storeFormInput( std::size_t data_init_pos, const std::string& request_content);
 	
@@ -40,6 +42,21 @@ class CGI
 		std::vector<std::string> getExtensions() const;
 		const std::string& getPathToScript(void) const;
 
+		 class ErrorException : public std::exception
+    	{
+    	    public:
+	
+    	        ErrorException(const std::string& message) throw() : _errorMessage(message) {}
+    			virtual ~ErrorException() throw() {}
+    			virtual const char* what() const throw()
+    	        {
+    	            return  _errorMessage.c_str();
+    	        }
+	
+    	    private:
+	
+    	        std::string _errorMessage;
+    	};
 
 	private:
 
@@ -53,7 +70,7 @@ class CGI
 		std::string _scriptName;
 		std::vector<std::string> _scriptCommands;
 		std::vector<std::string> _scriptExtensions;
-		
+	
 		
 };
 #endif
