@@ -3,18 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/23 22:42:33 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/29 21:55:25 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Utils.hpp"
 
-Utils::Utils(){}
+Utils::Utils()
+{}
 
-Utils::~Utils(){}
+Utils::~Utils()
+{}
 
 void Utils::trimSpaces(std::string &str)
 {

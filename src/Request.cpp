@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/25 22:02:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/29 22:03:05 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,11 @@ Request::Request(const std::string& request)
 {
     _request = request;
     _hasError = false;
+	_method = "";
     _hostLine = "";
     _hostContent = "";
-    _domainContent = "";
     _portRequest = "";
-	_method = "";
+    _domainContent = "";
     _requestStream.str(request);
     std::getline(_requestStream, _firstLine);
 	// -------------
@@ -140,8 +140,10 @@ bool Request::validateRequest()
         _tokens.push_back(_token);
     for (size_t i = 0; i < _tokens.size(); ++i)
         std::cout << "Token " << i << ": " << _tokens[i] << std::endl;
-    while (std::getline(_requestStream, _hostLine)){
-        if (_hostLine.substr(0, 6) == "Host: "){
+    while (std::getline(_requestStream, _hostLine))
+    {
+        if (_hostLine.substr(0, 6) == "Host: ")
+        {
             _hostContent = _hostLine.substr(6);
             std::cout << "Host content: " << _hostContent << std::endl;
             break;
@@ -156,15 +158,12 @@ bool Request::validateRequest()
     {
         _domainContent = _hostContent.substr(0, posDiv);
         _portRequest = _hostContent.substr(posDiv+1, (_hostContent.size() - 1));
-        
         _utils.trimSpaces((_portRequest));
         
         std::cout << "este é domainContent " << _domainContent << std::endl;
         std::cout << "este é o  portRequest " << _portRequest << "a" << std::endl;
         std::cout << "TAMANHO DO PORT REQUEST: " << _portRequest.size() << std::endl;  
-    }
-    else
-    {
+    } else {
         _domainContent = _hostContent;
         _portRequest = "80";
         std::cout << "este é o domainContent sem a porta " << _domainContent << std::endl;

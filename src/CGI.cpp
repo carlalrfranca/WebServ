@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/26 20:39:42 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/29 21:31:31 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,28 +131,28 @@ int CGI::executeScript(int *pipefd)
 		struct timeval startTime;
 		gettimeofday(&startTime, NULL);
 		
-		while (true) {
+		while (true)
+		{
 		    pid_t result = waitpid(childPid, NULL, WNOHANG);
-		    if (result == -1) {
+		    if (result == -1)
+		    {
 		        perror("waitpid");
 		        throw std::exception();
 		    }
-		
 		    if (result != 0)
 		        break;
-		
 		    struct timeval currentTime;
 		    gettimeofday(&currentTime, NULL);
 		    unsigned int elapsedTime = (currentTime.tv_sec - startTime.tv_sec) * 1000
 		        + (currentTime.tv_usec - startTime.tv_usec) / 1000;
-		    if (elapsedTime >= timeoutSeconds) {
+		    if (elapsedTime >= timeoutSeconds)
+		    {
 				std::cout << "ESTOUROU O TEMPO" << std::endl;
 		        kill(childPid, SIGKILL);
 		        return 504;
 		    }
 		    usleep(1000);
 		}
-
 		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
 		while (true)
 		{
@@ -173,7 +173,6 @@ int CGI::uploadImage(std::string request_content, size_t data_init_pos)
 {
 	std::string image_content = request_content.substr(data_init_pos + 4);
 	size_t content_type_pos = image_content.find("Content-Type");
-
 	std::size_t contentTypeEnd = image_content.find("\r\n", content_type_pos);
 	if (contentTypeEnd != std::string::npos)
 	{
@@ -187,9 +186,7 @@ int CGI::uploadImage(std::string request_content, size_t data_init_pos)
 			imageFile.write(image_content_cleaned.c_str(), image_content_cleaned.size());
 			imageFile.close();
 		}
-	}
-	else
-	{
+	} else {
 		return 404; //seria outro erro?
 		// std::cout << RED << "[[NÃO]] ENCONTROU o fim CONTENT-TYPE NA RESPONSE" << END << std::endl;
 		// _response = "HTTP/1.1 404 Not Found\r\nDate: Sat, 03 Sep 2023 12:34:56 GMT\r\nConnection: keep-alive\r\n\r\n";

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/26 20:26:21 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/29 21:46:53 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,8 @@ ConfigParser::ConfigParser()
 	_errorPage["500"] = "./web/error/Error500.html";
 }
 
-ConfigParser::~ConfigParser(){}
+ConfigParser::~ConfigParser()
+{}
 
 void ConfigParser::resetConfig()
 {
@@ -251,10 +252,10 @@ void ConfigParser::processListen(std::string &line)
 */
 bool ConfigParser::duplicatedPort(std::string& portNumber)
 {
-	for (std::vector<std::string>::iterator it = _allPorts.begin(); it != _allPorts.end(); ++it) {
-    	if (*it == portNumber) {
+	for (std::vector<std::string>::iterator it = _allPorts.begin(); it != _allPorts.end(); ++it)
+	{
+    	if (*it == portNumber)
     	    return true;
-    	}
 	}
 	return false;
 }
@@ -308,9 +309,7 @@ void ConfigParser::processListen(std::string &line)
 		if (!_utils.containsOnlyNumbers(_portNumber)) //ontemApenasNumeros
 			throw ErrorException("Syntax Error: Port must be ONLY numbers.");
 		// std::cout << "Combo IP + Porta: " << _ipAddress << " | " << _portNumber << std::endl;
-	}
-	else
-	{
+	} else {
 		// quer dizer que ou é só ipAddress ou é só porta
 		// se for só ipAddress -> não aceitamos -> pode ter apenas porta, mas não apenas o ipAddress..
 		if (_utils.containsOnlyNumbers(palavras[1])) //ontemApenasNumeros
@@ -326,7 +325,7 @@ void ConfigParser::processListen(std::string &line)
 		else
 			throw ErrorException("Configuration Error: You must configure a PORT NUMBER!");
 	}
-		// _hasDirListen = true;
+	// _hasDirListen = true;
 }
 
 void ConfigParser::processServerName(std::string &line)
@@ -356,10 +355,10 @@ void ConfigParser::processServerName(std::string &line)
     _hasDirServerName = true;
 }
 
-bool ConfigParser::processRoot(std::string &line){
+bool ConfigParser::processRoot(std::string &line)
+{
 	std::istringstream iss(line);
     std::vector<std::string> partes;
-
     std::string palavra;
 	if (_root.empty() == false)
 		throw ErrorException("Error: The Directive Root has been duplicated.");
@@ -399,9 +398,9 @@ void ConfigParser::hasprohibitedDirectiveInLocation(std::string &directive)
 		throw ErrorException("Configuration Error: Prohibited directive in location block");
 }
 
-void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
+void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine)
+{
 	std::string currentLocation = _currentLocationPathOnMap;
-
 	std::map<std::string, LocationDirective>::iterator it = _locations.find(currentLocation);
 	if (it != _locations.end())
 	{
@@ -414,7 +413,6 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
 		std::string singleValue;
 		while (iss >> singleValue)
 			splittedLine.push_back(singleValue);
-		
 		if (splittedLine.size() < 2)
 			throw ErrorException("Syntax Error: Missing values to directive in location block");
 		hasprohibitedDirectiveInLocation(splittedLine[0]);
@@ -440,7 +438,6 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine){
 
 void ConfigParser::validateFile(std::ifstream& fileToParse)
 {
- 
     if (!fileToParse.is_open())
         throw ErrorException("File is not accessible");
     fileToParse.seekg(0, std::ios::end);
@@ -473,7 +470,6 @@ void ConfigParser::hasMandatoryParameters(){
 void ConfigParser::processLocation(std::string &line)
 {
     std::vector<std::string> filesForPath1;
-
     if (line.find("location")!= std::string::npos)
     {
 		if (line[line.size() - 1] != '{')
@@ -498,7 +494,6 @@ void ConfigParser::processLocation(std::string &line)
 void ConfigParser::processIndex(std::string &line)
 {
 	std::vector<std::string>	_indexFiles;
-
     if(_hasDirIndex == true)
         throw ErrorException("Error: The Directive Index has been duplicated.");
     if(line.find("index") != std::string::npos)

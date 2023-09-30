@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 21:13:30 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/22 18:55:47 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/29 21:47:30 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,11 +38,8 @@ std::vector<std::string> LocationDirective::getSpecificDirective(std::string dir
     {
         std::cout << "Key found! Value: " << it->second[0] << std::endl;
         return it->second;
-    }
-    else
-    {
+    } else
         std::cout << "Key not found!" << std::endl;
-    }
     return std::vector<std::string>();
 
 }

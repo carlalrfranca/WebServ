@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/27 22:06:28 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/09/29 22:14:39 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -517,7 +517,8 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, s
 	std::string location = it->first;
 	std::string path = getPath();
 	std::cout << "Path: " << path << std::endl;
-	if (!location.empty() && location[location.size() - 1] != '/') {
+	if (!location.empty() && location[location.size() - 1] != '/')
+	{
         location += '/';
     }
     html += "<html>\n";
@@ -620,13 +621,10 @@ std::string Response::generateHeaders(int statusCode, const Request& request)
         contentType = "images/gif";
     else
         contentType = "text/html";
-		
 	std::stringstream toConvertToString;
     toConvertToString << statusCode;
     std::string statusCodeStr = toConvertToString.str();
-
 	std::string contentLenStr = std::to_string(response.length() - response.find("\r\n\r\n") -4);
-
 	setDateAndTime();
 	std::string headers;
     headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
@@ -634,8 +632,6 @@ std::string Response::generateHeaders(int statusCode, const Request& request)
     headers += "Content-Length: " + contentLenStr + "\r\n";
 	headers += getDate() + "\r\n";
     headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
-
-
 	return headers;
 }
 
@@ -647,7 +643,6 @@ void Response::generateResponse(int statusCode, const Request& request)
 	std::string headers = generateHeaders(statusCode, request);
 	response += headers;
     response += content;
-	
 	setResponse(response);
 	std::cout << RED << "Response\n" << getResponse() << END << std::endl;
 }
@@ -702,13 +697,12 @@ bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS 
 	std::cout << BLUE << "LOCAAAAATION>>> " << it->first << END << std::endl;
 	locationDirectives = it->second.getDirectives();
        std::map<std::string, std::vector< std::string > >::iterator itIndex = locationDirectives.find("index");
-    if (itIndex != locationDirectives.end()){ //não é o oposto? primeiro ve que se tem autoindex, se nao tiver (ou tiver off?) ve se tem index e serve se tiver? (ou gera pagina de erro se nao?)
+    if (itIndex != locationDirectives.end())
+    { //não é o oposto? primeiro ve que se tem autoindex, se nao tiver (ou tiver off?) ve se tem index e serve se tiver? (ou gera pagina de erro se nao?)
 		indexPage = itIndex->second[0];
-	}
-	else if (server.getIndexFile().size() > 0)
+	} else if (server.getIndexFile().size() > 0)
 		indexPage = server.getIndexFile();
-	else
-	{
+	else {
 		std::map<std::string, std::vector< std::string > >::iterator itAutoIndex = locationDirectives.find("auto_index");
 		if (itAutoIndex != locationDirectives.end())
 		{
@@ -718,15 +712,11 @@ bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS 
 				setPath(path);
 				listFilesAndGenerateHtml(it);
 				return true;
-			}
-			else
-			{
+			} else {
 				errorCodeHtml(403, server);
 				return true;
 			}
-		}
-		else
-		{
+		} else {
 			errorCodeHtml(404, server);
 			return true;
 		}
@@ -751,7 +741,6 @@ std::string Response::extractUriAndBuildPathToResource(std::string root, std::ve
 	size_t j = 0;
 	size_t i = 0;
 	std::cout << BLUE << "Root | " << root << " URI: " << uri << END << std::endl;
-
     for (size_t i = 0; i < minlen; ++i) {
         if (this_location[i] == uri[j]) {
             commonSubstring += this_location[i];
@@ -781,7 +770,8 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 		std::string pathToResource = extractUriAndBuildPathToResource(root, parts_uri, uri, it);
 		std::cout << YELLOW << "Caminho completo quando tem ROOT ESPECIFICA: " << pathToResource << END << std::endl;
 		
-		if (isDirectory(pathToResource)) {
+		if (isDirectory(pathToResource))
+		{
 			bool isErrorPageOrAutoIndexPage = isResponseADirectoryListingOrErrorPage(pathToResource, server, locationDirectives, it, indexPage);
 			if (isErrorPageOrAutoIndexPage == true)
 				return true;
@@ -789,9 +779,7 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
     	    std::cout << YELLOW << pathToResource << " é um arquivo." << END << std::endl;
 			setPath(pathToResource);
     	}
-	}
-	else
-	{
+	} else {
 		// NESSE ELSE: a uri NÃO teve várias partes, exemplo: about.html ou /images/ | /images
 		// (ou seja, não precisa extrair alguma parte da uri, ou a uri é igual à location - e daí é só usar o root, ou basta juntá-la com o root)
 		std::cout << "Tem só o arquivo de caminho ou só diretorio" << std::endl;
@@ -809,9 +797,7 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 			bool isErrorPageOrAutoIndexPage = isResponseADirectoryListingOrErrorPage(path, server, locationDirectives, it, indexPage);
 			if (isErrorPageOrAutoIndexPage == true)
 				return true;
-		}
-		else //inserir condição de que existe (porque o isDirectory() retorna se nao existe mas tambem se teve algum erro), senao é pagina de erro
-		{
+		} else { //inserir condição de que existe (porque o isDirectory() retorna se nao existe mas tambem se teve algum erro), senao é pagina de erro
 			std::cout << path << " é um arquivo" << std::endl;
 			setPath(path);
 		}
@@ -821,15 +807,13 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 	return false;
 }
 
-
 std::string Response::buildHeaderReturn(std::string statusCode, std::string resource, Response *this_response)
 {
-
 	std::string headers;
 	std::string codeMessage;
-	codeMessage = this_response->_statusMessages.getMessage(statusCode);
+	int status = atoi(statusCode.c_str());
+	codeMessage = this_response->_statusMessages.getMessage(status);
 	this_response->setDateAndTime();
-	
 	headers += "HTTP/1.1 " + statusCode + "" + codeMessage + "\r\n";
     headers += "Location: " + resource + "\r\n";
     //headers += "Content-Type: " + contentType + "\r\n";
@@ -837,11 +821,8 @@ std::string Response::buildHeaderReturn(std::string statusCode, std::string reso
     headers += "Connection: close\r\n";
     headers += this_response->getDate() + "\r\n";
     headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos
-    
 	this_response->setResponse(headers);
 	return this_response->getResponse();
-    
-
 }
 
 std::string Response::httpGet(Request &request, SocketS &server, Response *this_response)
@@ -872,9 +853,7 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
         */
         std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
 		if (itRoot != locationDirectives.end())
-		{
             root = itRoot->second[0];
-		}
 		bool isErrorPageOrAutoIndexPage = this_response->buildPathToResource(root, request, server, locationDirectives, it);
 		if (isErrorPageOrAutoIndexPage == true)
 			return this_response->getResponse();	
@@ -887,9 +866,7 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 			return this_response->getResponse();
 		}
 		this_response->generateResponse(200, request);
-    }
-	else
-	{
+    } else {
         std::cout << "This server doesnt have this location!!" << std::endl;
         this_response->errorCodeHtml(404, server);
 		return this_response->getResponse();
@@ -904,7 +881,6 @@ void Response::buildResponse(Request &request, SocketS &server)
     	Incluir os cabeçalhos necessários, como Content-Length e outros
     	Retorne a resposta completa construída
     */
-
 	std::cout << YELLOW << "-------> CHEGAMOS AO BUILD RESPONSE <--------" << END << std::endl;
     // verificar se o método requisitado pela solicitação é permitido pra esse servidor
     std::vector<std::string> allowed_methods = server.getMethods();
@@ -935,9 +911,7 @@ void Response::buildResponse(Request &request, SocketS &server)
     		        break;
     		    }
     		}
-		}
-		else
-		{
+		} else {
 			for (std::vector<std::string>::iterator it = allowed_methods.begin(); it != allowed_methods.end(); ++it)
 			{
     		    if (strcmp(it->c_str(), requestMethod.c_str()) == 0)
@@ -948,16 +922,13 @@ void Response::buildResponse(Request &request, SocketS &server)
     		}
 		}
 	}
-    
 	std::string hasRoot;
     if (isAllowedMethod)
 	{
 		std::string resposta = _methodsFunctions[requestMethod](request, server, this);
 		// std::cout << BLUE << " ***** A resposta é *****\n" << getResponse() << END << std::endl;
 		/// consta a delete aqui
-    }
-    else
-    {
+    } else {
         std::cout << "MÉTODO NÃO PERMITIDO!";
 		errorCodeHtml(405, server); // statusCode 405 = "Method Not Allowed"
     }

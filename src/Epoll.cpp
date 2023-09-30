@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Epoll.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 20:22:28 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/20 21:46:00 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/29 20:21:05 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,19 +56,16 @@ void Epoll::setIsServerFdTriggered(bool isServerTriggered)
 
 int Epoll::addServersToEpoll(std::vector<SocketS>& servers)
 {
-	
 	_epollFd = epoll_create1(0);
-
 	if (_epollFd == -1)
 	{
 		perror("Error creating epoll");
 		return -1;
 	}
-	// 
-
     //Imprimir detalhes de cada servidor
 	struct epoll_event event;
-    for (size_t serverIndex = 0; serverIndex < servers.size(); ++serverIndex){
+    for (size_t serverIndex = 0; serverIndex < servers.size(); ++serverIndex)
+    {
         std::cout << "Detalhes do servidor " << serverIndex << ":" << std::endl;
         std::cout << "Porta: " << servers[serverIndex].getPort() << std::endl;
         std::cout << "Endereço: " << servers[serverIndex].getAddress() << std::endl;
@@ -78,7 +75,8 @@ int Epoll::addServersToEpoll(std::vector<SocketS>& servers)
 		event.data.u64 = 0;
         event.data.fd = servers[serverIndex].getWebServSocket();
         event.events = EPOLLIN | EPOLLOUT;
-        if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, event.data.fd, &event) == -1) {
+        if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, event.data.fd, &event) == -1)
+        {
             perror("Error adding socket to epoll");
             return -2;
         }
@@ -93,7 +91,8 @@ int Epoll::addNewClientToEpoll(struct epoll_event *event_ptr, int i)
 	socklen_t clientAddressLength = sizeof(clientAddress);
 	int clientSocket = accept(event_ptr[i].data.fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
 	
-	if (clientSocket == -1) {
+	if (clientSocket == -1)
+	{
 	    perror("Error accepting client connection");
 	    return -3; // Move to the next event
 	}
@@ -104,7 +103,8 @@ int Epoll::addNewClientToEpoll(struct epoll_event *event_ptr, int i)
 	_event.data.fd = clientSocket;
 	_event.events = EPOLLIN;
 	
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSocket, &_event) == -1) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSocket, &_event) == -1)
+	{
 	    perror("Error adding client socket to epoll");
 	    close(clientSocket); // Close the socket on error
 	}
