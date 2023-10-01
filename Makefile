@@ -3,49 +3,93 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+         #
+#    By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/03 13:28:38 by cleticia          #+#    #+#              #
-#    Updated: 2023/08/24 17:45:41 by cleticia         ###   ########.fr        #
+#    Updated: 2023/09/30 22:20:00 by lfranca-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME	= webserv
+# program name
+NAME = webserv
 
-CC		= c++
+# compiler
+CC = g++
 
-CFLAGS	= -Wall -Wextra -Werror -g -std=c++98  
+# directories
+DIR_SRCS = src
+DIR_OBJ = obj
+#DIR_CFGS = cfgs/tests  # Diretório de configuração de testes
 
-SRC		= src/main.cpp\
-		src/ConfigParser.cpp\
-		src/WebServ.cpp\
-		src/SocketS.cpp\
+# origin files
+SRCS = $(wildcard $(DIR_SRCS)/*.cpp)
+OBJS = $(patsubst $(DIR_SRCS)/%.cpp,$(DIR_OBJ)/%.o,$(SRCS))
 
-INC		= -I ./inc/ 
+# compilation options
+#BANNER = web/.banner
+CFLAGS = -Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-missing-braces -g -std=c++98
 
-RM		= rm -rf
+ifeq ($(SANITIZE_A),true)
+    CFLAGS += -fsanitize=address -fno-omit-frame-pointer
+endif
 
-OBJ		= ${SRC:.cpp=.o}
+ifeq ($(SANITIZE_L),true)
+    CFLAGS += -fsanitize=leak -fno-omit-frame-pointer
+endif
+
+ifeq ($(DEBUG),true)
+    CFLAGS += -g -fno-limit-debug-info -DDEBUG
+endif
+
+# headers
+INC	= -I ./inc/ 
+
+# command remove
+RM	= rm -rf
+#TEST_CMD = ./$(NAME) < $(TESTS_DIR)/test_file.txt
 
 all: $(NAME)
 
-$(NAME): ${OBJ}
-	@$(CC) $(CFLAGS) $(SRC) $(INC) -o $@
+banner:
+	@printf "\n"
+	@printf "█▄─█▀▀▀█─▄█▄─▄▄─█▄─▄─▀█─▄▄▄▄█▄─▄▄─█▄─▄▄▀█▄─█─▄█\n"
+	@printf "██─█─█─█─███─▄█▀██─▄─▀█▄▄▄▄─██─▄█▀██─▄─▄██▄▀▄██\n"
+	@printf "▀▀▄▄▄▀▄▄▄▀▀▄▄▄▄▄▀▄▄▄▄▀▀▄▄▄▄▄▀▄▄▄▄▄▀▄▄▀▄▄▀▀▀▄▀▀▀\n"
+	@printf "	By Lfranca- & Cleticia\n"
+	@printf "\n"
+
+$(NAME): $(OBJS)
+	@$(CC) $(CFLAGS) $(INC) -o $@ $^
 	@echo "\033[1;36m[SUCCESS] Compilation completed!\033[0m"
 	@echo "To run the program, type: \033[1;36m./$(NAME)\033[0m"
 
-.cpp.o:
-	@$(CC) -g $(CFLAGS) $(INC) -c $< -o $@
-	@echo "Compiling \033[1;36m./$<\033[0m"	
+$(DIR_OBJ)/%.o: $(DIR_SRCS)/%.cpp
+	@mkdir -p $(DIR_OBJ)
+	@$(CC) $(CFLAGS) $(INC) -c $< -o $@
+	@echo "Compiling \033[1;36m$<\033[0m"	
+
+run: $(NAME)
+	@make banner
+	@./$(NAME) ./cfgs/config_com_pages_another_structure.txt
 
 clean:
-	@$(RM) ${OBJ}
+	@$(RM) $(DIR_OBJ)
 	@echo "\33[1;93m[SUCCESS] Objects removed!\33[0m"
 
 fclean: clean
-	@$(RM) $(NAME) ${OBJ}
-	@echo "\033[1;93m[SUCCESS] Full clean done!\33[0m"
+	@$(RM) $(NAME)
+	@echo "\033[1;93m[SUCCESS] Executable removed!\033[0m"
+	@$(RM) -r $(DIR_OBJ)
+	@echo "\033[1;93m[SUCCESS] Object directory removed!\033[0m"
 
 re: fclean all
 
-.PHONY: all clean fclean re
+# Test Commands: 
+#test: run_test
+#
+#run_test:
+#	@echo "Running test..."
+#	@$(TEST_CMD)
+#	@echo "Test completed."
+
+.PHONY: all clean fclean re #run_test

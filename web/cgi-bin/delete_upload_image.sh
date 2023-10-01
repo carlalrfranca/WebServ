@@ -4,14 +4,17 @@
 echo "Content-Type: text/html"
 echo ""
 
-# Lê o nome do arquivo a ser impresso da variável de ambiente QUERY_STRING
-read -r QUERY_STRING
+# Verifique se foi fornecido um argumento com o nome da página
+if [ $# -ne 1 ]; then
+  echo "Uso: $0 <nome_da_pagina>"
+  exit 1
+fi
 
-# Remove a parte "file=" do QUERY_STRING para obter o nome do arquivo
-arquivo="${QUERY_STRING#file=}"
+# Caminho da imagem passado como argumento
+caminho_da_imagem="$1"
 
 # Verifica se o arquivo existe
-if [ -f "$arquivo" ]; then
+if [ -f "$caminho_da_imagem" ]; then
     # Substitui "imagem1.jpg" pelo caminho do arquivo passado por env
     html=$(cat <<EOF
 <!DOCTYPE html>
@@ -20,15 +23,15 @@ if [ -f "$arquivo" ]; then
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delete - Enviar Solicitação</title>
-    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="../assets/styles.css">
 </head>
 <body>
     <section class="main-section">
         <div class="navMenu">
             <a href="/">home</a>
-            <a href="about.html">about</a>
-            <a href="delete.html">delete</a>
-            <a href="tour.html">tour</a>
+            <a href="../pages/about.html">about</a>
+            <a href="../pages/delete.html">delete</a>
+            <a href="../pages/tour.html">tour</a>
             <a href="#">tests</a>
             <div class="dot"></div>
         </div>
@@ -36,10 +39,11 @@ if [ -f "$arquivo" ]; then
     <section class="section-container">
         <div class="section-button">
             <h1>Imagem a ser excluída </h1>
-            <form method="POST" action="/images/imagem-salva.jpg">
+			<img src="$caminho_da_imagem" alt="Imagem de alguma coisa">
+            <form method="POST" action="$caminho_da_imagem">
                 <input type="hidden" name="_method" value="DELETE"> <!--form com campo oculto para especificar o método DELETE -->
                 <select name="imagemSelecionada">
-                    <option value="$arquivo">Arquivo Gravado</option>
+                    <option value="$caminho_da_imagem">Arquivo Gravado</option>
                 </select>
                 <button type="submit">excluir arquivo</button>
             </form>
@@ -61,5 +65,5 @@ EOF
     echo "$html"
 else
     # Imprime uma mensagem de erro caso o arquivo não seja encontrado
-    echo "Arquivo não encontrado: $arquivo"
+    echo "Arquivo não encontrado: $caminho_da_imagem"
 fi

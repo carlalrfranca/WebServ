@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Epoll.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 20:22:28 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/29 20:21:05 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/01 13:23:30 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,8 @@ int Epoll::addServersToEpoll(std::vector<SocketS>& servers)
 int Epoll::addNewClientToEpoll(struct epoll_event *event_ptr, int i)
 {
 	// NOTA:  aqui criamos e adicionamos um novo objeto Client (ainda não foi incorporado) ao vetor [ou map?] de clients no Webserv. 
-	struct sockaddr_in clientAddress = {0};
+	//struct sockaddr_in clientAddress = {0};
+	struct sockaddr_in clientAddress = {0, AF_INET, 0, INADDR_ANY};
 	socklen_t clientAddressLength = sizeof(clientAddress);
 	int clientSocket = accept(event_ptr[i].data.fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
 	

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/26 22:51:29 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/30 19:27:47 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ WebServ::WebServ(std::string filename)
 					throw ErrorException("Configuration Error: Server Block INSIDE another Server or Location block!");
                 std::cout << "Index: " << index << std::endl;
                 if (index > 0)
-                    configSocket(index - 1);
+                    configSocket();
 				index++;
 			    isInsideServerBlock = true; // Entramos em um bloco "server"
             }
@@ -107,7 +107,7 @@ WebServ::WebServ(std::string filename)
     }else
         throw ErrorException("File Error : file cannot be opened");
     if (index != 0)
-        configSocket(index - 1);
+        configSocket();
     fileToParse.close();
 	checkForDuplicates();
 	initServers();
@@ -133,7 +133,7 @@ void WebServ::checkForDuplicates()
     }
 }
 
-void WebServ::configSocket(size_t serverIndex)
+void WebServ::configSocket()
 {
 	// antes de passar os itens do _configParser para o socket,
 	// verificar que todas as diretivas mandatórias estão preenchidas..
@@ -183,7 +183,7 @@ void WebServ::configSocket(size_t serverIndex)
 
 void WebServ::initServers()
 {
-	int i = 0;
+	std::vector<SocketS>::size_type i = 0;
 	
 	while (i < _serverSocket.size()) //loop que itera os sockets do servidor
 	{
@@ -274,7 +274,7 @@ bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index)
     return false; // Retorna false se não encontrar nenhum socket do servidor
 }
 
-void WebServ::handleRequest(int clientSocket, char* buffer, ssize_t bytesRead, std::string& requestString)
+void WebServ::handleRequest(int clientSocket, std::string& requestString)
 {
     Request request(requestString);
 	std::cout << BLUE << request.getMethod() << END << std::endl;
@@ -349,7 +349,7 @@ void WebServ::readRequest(int clientSocket)
 		std::cout << RED << "Request JÁ TEM COISA!!!" << END << std::endl;
 	ssize_t totalBytesRead = 0;
 	// loop para receber e acumular os chunks da solicitação
-	ssize_t bytesRead = 0;
+	//ssize_t bytesRead = 0;
 	std::cout << BLUE << "ENTERING READ REQUEST" << END << std::endl;
 	while (true)
 	{
@@ -394,18 +394,18 @@ void WebServ::readRequest(int clientSocket)
 			{
 				std::cout << YELLOW << _contentLength << END << std::endl;
 				std::cout << YELLOW << totalBytesRead << END << std::endl;
-        		printRequest(_requestString);
-				handleRequest(clientSocket, buffer, _requestString.length(), _requestString);
+        		// printRequest(_requestString);
+				handleRequest(clientSocket, _requestString);
 				_epollS._event.events = EPOLLOUT;
 				epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &_epollS._event);
 				_requestString = "";
 				_contentLength = 0;
 				_totalBytesRead = 0;
 			}
-			else if (_contentLength == -1)
+			else if (_contentLength == (size_t)-1)
 			{
-				printRequest(_requestString);
-				handleRequest(clientSocket, buffer, _requestString.length(), _requestString);
+				// printRequest(_requestString);
+				handleRequest(clientSocket, _requestString);
 				_epollS._event.events = EPOLLOUT;
 				epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &_epollS._event);
 				_requestString = "";
@@ -439,7 +439,7 @@ void WebServ::mainLoop()
         }
         for (int index = 0; index < _epollS.getNumberEvents(); ++index)
         {
-			int current_fd = events[index].data.fd;
+			//int current_fd = events[index].data.fd;
 			isEventFromServerSocket(events,index);
 			if (events[index].events & EPOLLIN)
 			{
