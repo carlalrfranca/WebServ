@@ -3,18 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/13 22:40:19 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/17 19:57:29 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/29 21:41:06 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Client.hpp"
 
-Client::Client(){}
+Client::Client()
+{}
 
-Client::~Client(){}
+Client::~Client()
+{}
 
 void Client::setFd(size_t clientFd)
 {
@@ -46,4 +48,5 @@ Response Client::getResponse()const
     return _response;
 }
 
-void Client::clearClient(){}
+void Client::clearClient()
+{}

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/30 19:43:40 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/01 13:44:57 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class SocketS
         SocketS();
         ~SocketS();
         void loadConfiguration();
-
+        
         void setPort(std::string portNumber);
         void setAddress(std::string ipAddress);
         void setWebServSocket(int webServSocket);
@@ -49,6 +49,7 @@ class SocketS
 		const std::string getErrorPage(int statusCode)const;
 		void setErrorPage(std::map<std::string, std::string> errorPages);
 		void initServer();
+		void addAliasToHostsFile(const std::string& alias);
         
     private:
         

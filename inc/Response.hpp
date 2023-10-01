@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/30 18:44:27 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/01 13:45:27 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define _RESPONSE_HPP_
 
 #include "StatusMessages.hpp"
+#include "LocationDirective.hpp"
 #include "HeadersLibs.hpp"
 #include "SocketS.hpp"
 #include "Request.hpp"
@@ -73,6 +74,7 @@ class Response
         static std::string httpGet(Request &request, SocketS &server, Response *this_response);
 		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
 		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
+		
 		static std::string buildHeaderReturn(std::string statusCode, std::string resource, Response *this_response);
 		bool isDirectory(const std::string& path);
         std::string generateHeaders(int statusCode, const Request& request);

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/30 19:27:38 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/01 13:41:13 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,8 @@ SocketS::SocketS()
 }
 
 
-SocketS::~SocketS(){}
+SocketS::~SocketS()
+{}
 
 // getter e setter do locations
 
@@ -140,6 +141,14 @@ void SocketS::setErrorPage(std::map<std::string, std::string> errorPages)
 	_errorPage = errorPages;
 }
 
+void SocketS::addAliasToHostsFile(const std::string& alias)
+{
+    std::string command = "echo '127.0.0.1 " + alias + "' >> /etc/hosts";
+    int result = system(command.c_str());
+    if(result != 0)
+        throw SocketSException("Error while adding the alias to the file /etc/hosts.");
+}
+
 void SocketS::initServer()
 {
 	setWebServSocket(socket(AF_INET, SOCK_STREAM, 0));
@@ -167,13 +176,13 @@ void SocketS::initServer()
         close(getWebServSocket());
         throw SocketSException("Socket Error: Listen failed!");
 	}
-    //depois da inicializacao, é add o alias
-    // for(std::vector<std::string>::const_iterator it = _serverName.begin(); it != _serverName.end(); ++it)
-        // const std::string& serverName = *it;
-    // if(!_serverName.empty())
-    // {
-        // const std::string&
-    // }
+	for(std::vector<std::string>::const_iterator it = _serverName.begin(); it != _serverName.end(); ++it)
+        const std::string& serverName = *it;
+    if(!_serverName.empty())
+    {
+        const std::string& serverName = _serverName[0];
+        addAliasToHostsFile(serverName);
+    }
 }
 
 // int SocketS::bindSocketListenConnections(){
@@ -217,9 +226,7 @@ void SocketS::initServer()
     }
     
     */
-    
-    
-    
+
 
     // aqui vão ser chamados os métodos (que serão criados ainda)
     // pra parseamento do arquivo de configuração
@@ -237,4 +244,5 @@ void SocketS::initServer()
     server_address.sin_port = htons(8080); 
     server_address.sin_addr.s_addr = INADDR_ANY;
     */
+    
  

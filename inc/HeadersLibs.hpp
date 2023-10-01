@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/30 19:31:18 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/01 13:42:44 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@
 #include <stdexcept>
 #include <exception>
 #include <iostream>
+#include <cstdlib>
 #include <sstream>
 #include <fstream>
 #include <cstdlib>
@@ -52,5 +53,4 @@
 #define END     "\033[0m"
 
 // HTTP DEFINES
-
 #endif

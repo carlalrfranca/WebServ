@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ValidatePost.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/03 21:07:55 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/17 19:35:50 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/29 20:33:08 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,8 @@
 
 #include "HeadersLibs.hpp"
 
-class ValidatePost {
+class ValidatePost
+{
 
 	public:
 	
