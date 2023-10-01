@@ -1,5 +1,5 @@
 server{
-    listen localhost:5006;
+    listen localhost:2002;
     server_name example.com;
 	allow_methods GET POST DELETE
     root web/pages/;
@@ -7,6 +7,10 @@ server{
 	location / {
 		index index.html
 		auto_index off
+	}
+
+	location /pages {
+		root web/pages/
 	}
 
 	location /images {
@@ -29,6 +33,5 @@ server{
       root web/cgi-bin/;
       cgi_path /bin/bash;
       cgi_ext .sh;
-	  
   	}
 }

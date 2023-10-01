@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/19 21:20:40 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/30 19:43:40 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ class SocketS
         SocketS();
         ~SocketS();
         void loadConfiguration();
-        
 
         void setPort(std::string portNumber);
         void setAddress(std::string ipAddress);
@@ -46,24 +45,24 @@ class SocketS
         
         std::vector<std::string> getServerName()const;
         std::vector<std::string> getMethods() const;
-		std::map<std::string, LocationDirective> getLocations() const;
+		std::map<std::string, LocationDirective> getLocations()const;
 		const std::string getErrorPage(int statusCode)const;
 		void setErrorPage(std::map<std::string, std::string> errorPages);
 		void initServer();
         
     private:
         
-        int             _webServSocket; //FD
-        std::string     _statusCode;
-		std::string		_indexFile;
-        std::string     _root;
-        std::string     _portNumber;
-        std::string     _ipAddress;
-        std::string     _response; //talvez na response class
+        int                                 _webServSocket; //FD
+        std::string                         _statusCode;
+		std::string		                    _indexFile;
+        std::string                         _root;
+        std::string                         _portNumber;
+        std::string                         _ipAddress;
+        std::string                         _response;
         // std::string     _cssContent;
+        std::vector<std::string>            _serverName;
+        std::vector<std::string>            _methods;
 		std::map<std::string, std::string>  _errorPage;
-        std::vector<std::string> _serverName;
-        std::vector<std::string> _methods;
         // struct sockaddr_in _socketAddress;
         // int bindSocketSListenConnections(); //vincula socket a um endereço e porta 
         std::map<std::string, LocationDirective> _locations;

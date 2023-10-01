@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/25 22:02:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/30 18:00:17 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,9 @@ Request::Request(const std::string& request)
 	{
 		body = _request.substr(headerEndPos + 4);
 		setBody(body);
-		std::cout << RED << "******************" << END << std::endl;
-		std::cout << RED << body << " | Body Size: " << body.size() << END << std::endl;
-		std::cout << RED << "******************" << END << std::endl;
+		// std::cout << RED << "******************" << END << std::endl;
+		// std::cout << RED << body << " | Body Size: " << body.size() << END << std::endl;
+		// std::cout << RED << "******************" << END << std::endl;
 		size_t methodDelete = body.find("_method=DELETE");
 		if (methodDelete != std::string::npos)
 			setMethod("DELETE");
@@ -69,19 +69,19 @@ bool Request::isFirstLineValid()
     if(_firstLine.find("GET") == std::string::npos && 
         _firstLine.find("POST") == std::string::npos && 
          _firstLine.find("DELETE") == std::string::npos)
-        throw ErrorException(); // statusCode de not allowed method?
+        throw ErrorException(); // 405 Method Not Allowed
     //verifica se tem espaço após o metodo
     size_t spacePos = _firstLine.find(' ');
     if(spacePos == std::string::npos || spacePos == _firstLine.size() - 1 )
-        throw ErrorException();
+        throw ErrorException(); //dar returns em vez de exceptions?
     //valida HTTP após o metodo e espaço
     std::string version = _firstLine.substr(spacePos + 1);
     if(version.find("HTTP/1.1") == std::string::npos)
-        throw ErrorException(); //pagina de status 505
+        throw ErrorException(); //pagina de status 505 (HTTP Version Not Supported)
     //valida espaço apos a versão
     spacePos = version.find(' ');
     if (spacePos == std::string::npos || spacePos == version.size() - 1)
-        throw ErrorException(); 
+        throw ErrorException(); // retorna 400 (Bad Request)
     //demais validacoes aqui, se houver
     return true;
 }

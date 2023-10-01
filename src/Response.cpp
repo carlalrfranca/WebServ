@@ -6,40 +6,37 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/30 15:18:12 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/30 23:59:55 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Response.hpp"
 
-Response::Response() : _headers(), _methodsFunctions()
+Response::Response() : _headers(), _body(""), _response(""), _code(""),
+	_path("")
 {
     _chosenSocket = NULL;
 	_methodsFunctions["GET"] = &Response::httpGet;
 	_methodsFunctions["POST"] = &Response::postMethod;
 	_methodsFunctions["DELETE"] = &Response::deleteMethod;
-    _body = "";
-    _code = "";
-    _path = "";
-    _response = "";
     _statusMessages = StatusMessages();
 }
 
 Response::~Response()
 {}
 
-Response::Response(Request request)
-{
-    // define corpo da resposta lendo o conteudo do arquivo html
-    // _body = readHtmlFile("web/html_upload_arquivo/index.html");
+// Response::Response(Request request)
+// {
+//     // define corpo da resposta lendo o conteudo do arquivo html
+//     // _body = readHtmlFile("web/html_upload_arquivo/index.html");
     
-    // precisa definir os campos do cabeçalho aqui, entao se for inserir mais É AQUI
-    // setStatusCode("200 OK");
-    // setContentType("text/html");
-    // setDateAndTime();
-    // setContentLength(_body.length());
-    _chosenSocket = NULL;
-}
+//     // precisa definir os campos do cabeçalho aqui, entao se for inserir mais É AQUI
+//     // setStatusCode("200 OK");
+//     // setContentType("text/html");
+//     // setDateAndTime();
+//     // setContentLength(_body.length());
+//     _chosenSocket = NULL;
+// }
 
 std::string Response::postMethod(Request &request, SocketS &server, Response *this_response)
 {
@@ -54,7 +51,7 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	// ---------------------------------------------------------------------------------
 	std::string root_for_response = server.getRoot();
 	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, server, serverLocations);
+	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, serverLocations);
 	std::string uri = request.getURI();
     std::map<std::string, std::vector< std::string > > locationDirectives;
 
@@ -116,18 +113,11 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 			return this_response->getResponse();
 		}
 	}
-	// quer dizer que nao teve o locatin do cgi-bin, então lidamos com a postagem da forma "padrão" (grava o conteudo num arquivo no diretorio raiz do projeto)
-	std::cout << "NÃO HÁ um location PRO CGI! Vai pro caminho padrão..." << std::endl;
 	this_response->errorCodeHtml(404, server);
 	return this_response->getResponse();
 }
 
-
-// std::string OLAR = "TAMO NO DELETE METHOD";
-// return OLAR;
 // curl -X DELETE -i -v http://google.com.br
-	
-	
 
 std::string Response::getParameter(std::string query, std::string parameter)const
 {
@@ -165,7 +155,7 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 	// std::string caminhoDoRecurso = //constroi aqui
 
 	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, server, serverLocations);
+	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, serverLocations);
 	std::string uri = request.getURI();
 
 	std::cout << BLUE << "CHAMAMOS O METODO DELETE" << END << std::endl;
@@ -193,7 +183,7 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 	}
 	if(remove(resourcePath.c_str()) == 0)
 	{
-		std::cout << BLUE << "Excluiu [aparentmente]" << END << std::endl;
+		std::cout << BLUE << "Excluiu [aparentemente]" << END << std::endl;
 		this_response->generateResponse(204, request); //exclusão bem-sucedida
 	}
 	else
@@ -253,14 +243,14 @@ void Response::setResponse(const std::string& response)
     _response = response;
 }
 
-const std::string& Response::getHeader(const std::string& header)const
+const std::map<std::string, std::string>& Response::getHeader(void) const
 {
-    static std::string emptyHeader = ""; // Cria uma string vazia para retorno padrão
+    // static std::string emptyHeader = ""; // Cria uma string vazia para retorno padrão
 
     // Implementação para buscar e retornar o cabeçalho específico
     // Se o cabeçalho não existir, retorne a string vazia criada acima
 
-    return emptyHeader;
+    return _headers;
 }
 
 int Response::selectServer(Request& stringDomain, std::vector<SocketS> serverSocket)
@@ -381,50 +371,29 @@ std::string readFileToString(const std::string& filename)
 
 void Response::listFilesAndGenerateHtml(std::map<std::string, LocationDirective>::iterator& it)
 {
-
-	//passar essa função pra parte de execução do autoIndex:
     std::string path = getPath();
 	try
 	{
-        // if (path == "on")
-		// {
-            // const char *directoryPath = ".";
-            // DIR *directory = opendir(directoryPath);
-			std::cout << "PATH> " << path << std::endl;
-			DIR *directory = opendir(path.c_str());
-            if (directory){
-                struct dirent *entry;
-                std::vector<std::string> fileList;
-                while ((entry = readdir(directory)) != NULL)
-				{
-                    fileList.push_back(std::string(entry->d_name));
-				}
-                closedir(directory);
-				std::cout << "Tamanho da Lista de Itens do Diretório > " << fileList.size() << std::endl;
-                for (size_t i = 0; i < fileList.size(); ++i){
-					// aqui tá só listando, mas vamos precisar gerar um html com isso
-                    std::cout << i << " - " << fileList[i] << std::endl;
-				}
-				std::cout << BLUE << "cabo listagem..." << END << std::endl;
-				generateHtmlFromFiles(fileList, it);
-				std::cout << BLUE << "Passou do generate HTML com base na lista" << END << std::endl;
-            } else 
-			{
-                throw std::runtime_error("Error when open directory.");
-            }
-        // } else if (path == "off")
-		// {
-        //     std::cout << "Autoindex is on." << std::endl;
-        // } else
-		// {
-        //     throw std::runtime_error("Invalid value to autoindex.");
-        // }
+		std::cout << "PATH> " << path << std::endl;
+		DIR *directory = opendir(path.c_str());
+		if (directory){
+			struct dirent *entry;
+			std::vector<std::string> fileList;
+			while ((entry = readdir(directory)) != NULL)
+				fileList.push_back(std::string(entry->d_name));
+			closedir(directory);
+			std::cout << "Tamanho da Lista de Itens do Diretório > " << fileList.size() << std::endl;
+			// for (size_t i = 0; i < fileList.size(); ++i)
+			// 	std::cout << i << " - " << fileList[i] << std::endl;
+			generateHtmlFromFiles(fileList, it);
+		}
+		else
+			throw std::runtime_error("Error when open directory.");
     } catch (const std::exception &e)
 	{
         std::cout << "Error: " << e.what() << std::endl;
 		// produz a pagina de erro 403 Forbidden (ou 404?)
     }
-	std::cout << BLUE << "Depois do try catch mas ainda na função" << END << std::endl;
 }
 
 void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, std::map<std::string, LocationDirective>::iterator& it){
@@ -441,12 +410,6 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, s
     html += "<body>\n";
     html += "<h1>File List</h1>\n";
     html += "<ul>\n";
-	std::cout << BLUE << "cabo listagem...2" << END << std::endl;
-	// se é um arquivo, será um li
-	// se é um diretorio, tem que ser um link, e esse link tem que começar com /images
-	//    -> porque ele substitui pelo root do location, que é web/images (e daí teria que completar com o resto do uri,
-	// 		 e se estiver sem '/' final, tem que incluir)
-
 	if (!_uri.empty() && _uri[_uri.size() - 1] != '/')
        	_uri += '/';
     for(size_t i = 0; i < fileList.size(); ++i)
@@ -467,9 +430,7 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, s
 			std::cout << YELLOW << "É arquivo: " << _uri + itemName << END << std::endl;
 			html += "<li>" + itemName + "</li>\n";		
 		}
-
     }
-	std::cout << BLUE << "cabo listagem...3" << END << std::endl;
     html += "</ul>\n";
     html += "</body>\n";
     html += "</html>\n";
@@ -527,17 +488,17 @@ void Response::errorCodeHtml(int statusCode, SocketS &server)
 std::string Response::generateHeaders(int statusCode, const Request& request)
 {
 	std::string response;
-    std::string contentType;	
-    if(request.getURI().find("css") != std::string::npos)
-        contentType = "text/css";
-    else if(request.getURI().find("jpg" ) != std::string::npos || request.getURI().find("jpeg") != std::string::npos)
-        contentType = "images/jpeg";
-    else if(request.getURI().find("png") != std::string::npos)
-        contentType = "images/png";
-    else if(request.getURI().find("gif") != std::string::npos)
-        contentType = "images/gif";
-    else
-        contentType = "text/html";
+	std::string contentType;	
+	if(request.getURI().find("css") != std::string::npos)
+		contentType = "text/css";
+	else if(request.getURI().find("jpg" ) != std::string::npos || request.getURI().find("jpeg") != std::string::npos)
+		contentType = "images/jpeg";
+	else if(request.getURI().find("png") != std::string::npos)
+		contentType = "images/png";
+	else if(request.getURI().find("gif") != std::string::npos)
+		contentType = "images/gif";
+	else
+		contentType = "text/html";
 		
 	std::stringstream toConvertToString;
     toConvertToString << statusCode;
@@ -593,9 +554,8 @@ bool Response::isDirectory(const std::string& path)
     return (info.st_mode & S_IFDIR) != 0;
 }
 
-std::map<std::string, LocationDirective>::iterator Response::findRequestedLocation(Request &request, SocketS &server, std::map<std::string, LocationDirective>& serverLocations)
+std::map<std::string, LocationDirective>::iterator Response::findRequestedLocation(Request &request, std::map<std::string, LocationDirective>& serverLocations)
 {
-	//obtenho informações das loalizacoes
     std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI()); //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
 	std::string uri = request.getURI();
 	if (it == serverLocations.end())
@@ -677,9 +637,8 @@ std::string Response::extractUriAndBuildPathToResource(std::string root, std::ve
 	std::string commonSubstring = "";
 	if (!uri.empty() && uri[0] == '/')
 		uri.erase(0, 1);
-	size_t minlen = std::min(root.length(), uri.length());
+	size_t minlen = std::min(this_location.length(), uri.length());
 	size_t j = 0;
-	size_t i = 0;
 	std::cout << BLUE << "Root | " << root << " URI: " << uri << END << std::endl;
 
     for (size_t i = 0; i < minlen; ++i) {
@@ -800,7 +759,7 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
     std::string root;
 	root = server.getRoot();
 	std::map<std::string, LocationDirective> serverLocations = server.getLocations(); //obtem as diretivas de localizacao
-	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, server, serverLocations);
+	std::map<std::string, LocationDirective>::iterator it = this_response->findRequestedLocation(request, serverLocations);
 	std::string uri = request.getURI();
     std::map<std::string, std::vector< std::string > > locationDirectives;
     if (it != serverLocations.end())
@@ -829,24 +788,61 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 		bool isErrorPageOrAutoIndexPage = this_response->buildPathToResource(root, request, server, locationDirectives, it);
 		if (isErrorPageOrAutoIndexPage == true)
 			return this_response->getResponse();	
-		std::cout << "CAMINHO COMPLETO DO RECURSO: " << this_response->getPath() << std::endl;
+		std::cout << "**** CAMINHO COMPLETO DO RECURSO: " << this_response->getPath() << std::endl;
         // verificar se o location é cgi.. se for, encaminhar pra outra função
 		// pra fazer o CGI do GET
-		// if (it->first.find("cgi") != std::string::npos)
-		/*
-			std::string scriptName = extractScriptName(uri);
+		// se o location nao tem cgi, entao procurar se nao ha
+		// essas diretivas dentro do location
+		if (it->first.find("cgi") != std::string::npos && this_response->getPath().find(".cgi") != std::string::npos)
+		{
+			std::string scriptName = this_response->extractScriptName(uri);
 			if (scriptName.size() == 0)
 			{
 				this_response->errorCodeHtml(404, server);
 				return this_response->getResponse();
 			}
 			// agora, depois de resolver o scriptName,
-			// temos que tirar a extensão
-			size_t foundCGiExt = scriptName.find(".cgi");
+			// temos que tirar a extensão .cgi pra poder substituir pela extensao correta
+			size_t foundCGIExt = this_response->getPath().find(".cgi");
+			std::string scriptPath;
 			if (foundCGIExt != std::string::npos)
-				scriptName = scriptName.substr(0, foundCGIExt);
-			
-		*/
+				scriptPath = this_response->getPath().substr(0, foundCGIExt);
+			else
+				std::cout << RED << "Isso não é pra script" << END << std::endl;
+			std::cout << "**** CAMINHO DO SCRIPT PRA GET METHOD: " << scriptPath << std::endl;
+			// vai precisar declarar um objeto CGI e se basear nesse trecho do método pro POST
+			std::map<std::string, std::vector< std::string > >::iterator commandOfCGI = locationDirectives.find("cgi_path");
+			std::map<std::string, std::vector< std::string > >::iterator CGIExtension = locationDirectives.find("cgi_ext");
+			if (commandOfCGI == locationDirectives.end() || CGIExtension == locationDirectives.end())
+			{
+				this_response->errorCodeHtml(404, server);
+				return this_response->getResponse();
+			}
+			std::vector<std::string> scriptsCommands = commandOfCGI->second;
+			std::vector<std::string> scriptsExtensions = CGIExtension->second;
+			CGI script;
+			script.setCommands(scriptsCommands);
+			script.setExtensions(scriptsExtensions);
+			script.setRoot("");
+			script.setPathToScript(scriptPath);
+			std::cout << "**** CAMINHO A PARTIR DO OBJ SCRIPT: " << script.getPathToScript() << std::endl;
+			int resultCode = 0;
+			resultCode = script.handleCGIRequest(request);
+			if (resultCode != 200)
+			{
+				this_response->errorCodeHtml(404, server);
+				return this_response->getResponse();
+			}
+			std::string headers = this_response->generateHeaders(200, request);
+			std::string bodyResponse = script.getResponse();
+			std::string response = headers + bodyResponse;
+			this_response->setResponse(response);
+			return this_response->getResponse();
+			// chama o handleCGI, ele vai retornar 200 e,
+			// nisso, só precisa pegar o getResponse() do CGI
+			// e retornar isso
+		}
+		
 		// --------------------------------------------
 		std::string bodyHTML = readFileToString(this_response->getPath()); //declara o corpo do HTML
 		struct stat info;
@@ -866,27 +862,10 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 	return this_response->getResponse();
 }
 
-void Response::buildResponse(Request &request, SocketS &server)
+bool Response::isThisMethodAllowed(std::map<std::string, LocationDirective>& serverLocations, Request &request, SocketS &server, std::string& requestMethod)
 {
-    /*
-    	Implementação para construir a resposta completa, incluindo cabeçalho e corpo
-    	Incluir os cabeçalhos necessários, como Content-Length e outros
-    	Retorne a resposta completa construída
-    */
-
-	std::cout << YELLOW << "-------> CHEGAMOS AO BUILD RESPONSE <--------" << END << std::endl;
-    // verificar se o método requisitado pela solicitação é permitido pra esse servidor
-    std::vector<std::string> allowed_methods = server.getMethods();
-    std::string requestMethod = request.getMethod();
-
-	// -------------------------------
-	// ver antes se tem allowed_methods interno da location...
-	// se tiver, ele em precedencia..
-	// se não, daí olha o do server...
-    bool isAllowedMethod = false;
-
-	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
-	std::map<std::string, LocationDirective>::iterator itLocation = findRequestedLocation(request, server, serverLocations);
+	std::vector<std::string> allowed_methods = server.getMethods();
+	std::map<std::string, LocationDirective>::iterator itLocation = findRequestedLocation(request, serverLocations);
 	if (itLocation != serverLocations.end())
 	{
 		// procurar o allow_methods interno
@@ -899,10 +878,7 @@ void Response::buildResponse(Request &request, SocketS &server)
 			for (std::vector<std::string>::iterator it = locationAllowedMethods.begin(); it != locationAllowedMethods.end(); ++it)
 			{
     		    if (strcmp(it->c_str(), requestMethod.c_str()) == 0)
-				{
-    		        isAllowedMethod = true;
-    		        break;
-    		    }
+    		        return true;
     		}
 		}
 		else
@@ -910,25 +886,28 @@ void Response::buildResponse(Request &request, SocketS &server)
 			for (std::vector<std::string>::iterator it = allowed_methods.begin(); it != allowed_methods.end(); ++it)
 			{
     		    if (strcmp(it->c_str(), requestMethod.c_str()) == 0)
-				{
-    		        isAllowedMethod = true;
-    		        break;
-    		    }
+					return true;
     		}
 		}
 	}
-    
-	std::string hasRoot;
-    if (isAllowedMethod)
+	return false;
+}
+
+void Response::buildResponse(Request &request, SocketS &server)
+{
+	std::cout << YELLOW << "-------> CHEGAMOS AO BUILD RESPONSE <--------" << END << std::endl;
+    // verificar se o método requisitado pela solicitação é permitido pra esse servidor
+    std::vector<std::string> allowed_methods = server.getMethods();
+    std::string requestMethod = request.getMethod();
+	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+    if (isThisMethodAllowed(serverLocations, request, server, requestMethod))
 	{
 		std::string resposta = _methodsFunctions[requestMethod](request, server, this);
-		// std::cout << BLUE << " ***** A resposta é *****\n" << getResponse() << END << std::endl;
-		/// consta a delete aqui
     }
     else
     {
-        std::cout << "MÉTODO NÃO PERMITIDO!";
-		errorCodeHtml(405, server); // statusCode 405 = "Method Not Allowed"
+        std::cerr << "MÉTODO NÃO PERMITIDO!" << std::endl;
+		errorCodeHtml(405, server);
     }
 }
 

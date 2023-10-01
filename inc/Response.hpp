@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/30 13:54:09 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/30 18:44:27 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,10 @@ class Response
     
         Response();
         ~Response();
-        Response(Request request); //precisa desses dois
+        // Response(Request request); //precisa desses dois
         
         //getters and setters
-        const std::string& getHeader(const std::string& header)const; // busca pelo campo de cabeçalho na lista de cabeçalhos
+        const std::map<std::string, std::string>& getHeader()const; // busca pelo campo de cabeçalho na lista de cabeçalhos
         const std::string getPath()const;
         std::string getResponse()const;//foi criado outro metodo, precisa ajustar .cpp
 		std::string getDate()const;
@@ -65,7 +65,8 @@ class Response
 		bool buildPathToResource(std::string root, Request &request, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it);
 		std::string extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it);
 		bool isResponseADirectoryListingOrErrorPage(std::string path, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it, std::string indexPage);
-		std::map<std::string, LocationDirective>::iterator findRequestedLocation(Request &request, SocketS &server, std::map<std::string, LocationDirective>& serverLocations);
+		
+		std::map<std::string, LocationDirective>::iterator findRequestedLocation(Request &request, std::map<std::string, LocationDirective>& serverLocations);
         std::string extractScriptName(std::string& uri);
 
 		// method for each method
@@ -73,10 +74,9 @@ class Response
 		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
 		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
 		static std::string buildHeaderReturn(std::string statusCode, std::string resource, Response *this_response);
-		// static std::string postMethod(Request &request, SocketS &server);
-		// static std::string getMethod(Request &request, SocketS &server, Response *this_response);
 		bool isDirectory(const std::string& path);
         std::string generateHeaders(int statusCode, const Request& request);
+		bool isThisMethodAllowed(std::map<std::string, LocationDirective>& serverLocations, Request &request, SocketS &server, std::string& requestMethod);
 		std::string	_uri;
 
     private:
@@ -94,7 +94,6 @@ class Response
     class ErrorException: public std::exception
     {
         public:
-    
             ErrorException(const char* errorMessage) : _msg(errorMessage){}
             virtual const char* what()const throw()
             {
@@ -102,7 +101,6 @@ class Response
             }
         
         private:
-        
             const char* _msg;
     };
 };

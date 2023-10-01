@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/30 15:09:05 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/30 20:45:42 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,9 @@ class CGI
 		//int uploadImageCGI(std::string request_content, size_t data_init_pos);
 		// void handleCGIRequest(std::string& request);
 		int storeFormInput( std::size_t data_init_pos, const std::string& request_content);
-	
+		int CGIForGetRequest(std::string requestedFilePath);
+		int executeScriptForGET(int *pipefd, std::string requestedFilePath);
+
 		void setRoot(const std::string& root);
 		void setCommands(std::vector<std::string> commands);
 		void setExtensions(std::vector<std::string> extensions);
