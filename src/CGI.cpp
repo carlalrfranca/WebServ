@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/26 20:39:42 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/30 20:54:16 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,21 @@
 
 CGI::CGI() : _response(""), _method(""), _inputFormData(""), _scriptOutput("")
 {} 
+
+CGI::CGI(const std::string& root, std::vector<std::string> commands, std::vector<std::string> extensions, std::string scriptName)
+	: _response(""), _method(""), _inputFormData(""), _scriptOutput("")
+{
+	setRoot(root);
+	setCommands(commands);
+	setExtensions(extensions);
+	setPathToScript(scriptName);
+	struct stat info;
+	if (stat(_scriptName.c_str(), &info) != 0)
+	{
+		std::cerr << "Error: Config file doesn't exist!" << std::endl;
+		throw ErrorException("Script Error: Path doesn't exist");
+	}
+}
 
 CGI::~CGI()
 {}
@@ -61,13 +76,7 @@ std::vector<std::string> CGI::getExtensions(void) const
 	return _scriptExtensions;
 }
 
-// volatile sig_atomic_t timedOut = 0;
-
-// void handleAlarm(int signum) {
-//     timedOut = 1;
-// }
-
-int CGI::executeScript(int *pipefd)
+int CGI::executeScript(int *pipefd, std::string fileName)
 {
 	int stdoutPipe[2];
 	if (pipe(stdoutPipe) == -1)
@@ -76,9 +85,6 @@ int CGI::executeScript(int *pipefd)
 	    return 500;
 	}
 	pid_t childPid = fork();
-	// signal(SIGCHLD, handleChildExit);
-	// signal(SIGALRM, handleAlarm);
-	// Defina um limite de tempo em segundos
     unsigned int timeoutSeconds = 10000;
 
 	std::cout << RED << "Conteúdo input: " << _inputFormData << END << std::endl;
@@ -87,47 +93,25 @@ int CGI::executeScript(int *pipefd)
 		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
 		return 500;
 	}
-	else if (childPid == 0) //é processo filho || AGORA É SÒ USAR ISSO PRA FAZER O UPLOAD DE ARQUIVOS!!!!
+	else if (childPid == 0) //é processo filho
 	{
-		// por estarmos no processo filho nesse bloco, vamos então modificar o valor
-		// do STDOUT pra poder redirecionar a saída do script pra cá
-		// Escreve o corpo da solicitação no pipe, que será lido pelo processo filho
-		// close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
-    	// Fecha o descritor de escrita do pipe, pois não será usado neste processo
     	close(pipefd[1]);
 		close(stdoutPipe[0]);
-		// Redireciona a entrada padrão (stdin) para o pipe de leitura
     	dup2(pipefd[0], STDIN_FILENO);
 		dup2(stdoutPipe[1], STDOUT_FILENO);
-    	// Redireciona a saída padrão (stdout) para o pipe de escrita
-    	// dup2(pipefd[0], STDOUT_FILENO);
-	
-    	// Fecha o descritor de leitura do pipe, pois não será usado neste processo
     	close(pipefd[0]);
 		close(stdoutPipe[1]);
-		// Executamos agora o script de exemplo
-		// quando tiver o método que recupera o path to Script
-		// o nome do arquivo abaixo tem que ser passado atraves de uma variavel
-		// talvez atraves dos parametros da funcao
-		// porque daí essa função também fica flexível para o caso em que queremos criar o html
-		// com a imagem que foi feita upload -> só passar o caminho dela e o script cuida
-		execl(getPathToScript().c_str(), getPathToScript().c_str(), "./info_usuario.txt", static_cast<char*>(0));
-		// execl("./web/cgi-bin/process_data.sh", "./web/cgi-bin/process_data.sh", static_cast<char*>(0));
-		// Se chegou aqui, houve um erro no execl
+		execl(getPathToScript().c_str(), getPathToScript().c_str(), fileName.c_str(), static_cast<char*>(0));
 		std::cerr << "ERROR executing SCRIPT" << std::endl;
 		return 500;
-	} else {
+	}
+	else 
+	{
 		// processo pai
-		// Escreve o corpo da solicitação no pipe de leitura, que será lido pelo processo filho
-		// close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
     	close(stdoutPipe[1]);
 		std::string requestBody = _inputFormData;
     	write(pipefd[1], requestBody.c_str(), requestBody.length());
 		close(pipefd[1]);
-		// alarm(timeoutSeconds);
-		// Ler a saída do script CGI do pipe e armazená-la numa string
-		// std::string scriptOutPut;
-		// Corpo da solicitação HTTP em uma string (substitua pela sua string real)
 		struct timeval startTime;
 		gettimeofday(&startTime, NULL);
 		
@@ -153,18 +137,15 @@ int CGI::executeScript(int *pipefd)
 		    usleep(1000);
 		}
 
-		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
+		char buffer[1024];
 		while (true)
 		{
-			ssize_t bytesRead = read(stdoutPipe[0], buffer, sizeof(buffer)); //lê 1024 bytes do pipefd[0] pro buffer
+			ssize_t bytesRead = read(stdoutPipe[0], buffer, sizeof(buffer));
 			if (bytesRead <= 0)
 				break;
 			_scriptOutput.append(buffer, bytesRead);
 		}
-		close(stdoutPipe[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
-		// é aqui que breca se o script demorar demais? (SCRIPT COM LOOP?) -> o statusCode de estouro de limite de tempo seria 504
-		// Agora a saída do script CGI está armazenada em 'scriptOutPut'
-		std::cout << "------ SAÍDA DO SCRIPT --------\n" << _scriptOutput << std::endl;
+		close(stdoutPipe[0]);
 		return 204;
 	}
 }
@@ -172,15 +153,35 @@ int CGI::executeScript(int *pipefd)
 int CGI::uploadImage(std::string request_content, size_t data_init_pos)
 {
 	std::string image_content = request_content.substr(data_init_pos + 4);
-	size_t content_type_pos = image_content.find("Content-Type");
+	std::string contentTypeField = "Content-Type:";
+	std::string fileNameField = "filename=";
+	size_t content_type_pos = image_content.find(contentTypeField);
+	size_t content_type_value = content_type_pos + contentTypeField.size();
 
 	std::size_t contentTypeEnd = image_content.find("\r\n", content_type_pos);
+	std::string type_file = image_content.substr(content_type_value, contentTypeEnd);
+	size_t ext_end = type_file.find_last_not_of(" ");
+	type_file = type_file.substr(0, ext_end - content_type_value + 1);
+	std::cout << YELLOW << type_file << END << std::endl;
+	size_t extension_pos = type_file.find("/");
+	std::string extension;
+	if (extension_pos != std::string::npos)
+		extension = type_file.substr(extension_pos + 1);
+	std::cout << BLUE << extension << END << std::endl;
+	std::cout << std::endl;
+	size_t fileNamePos = request_content.find(fileNameField);
+	fileNamePos += fileNameField.size();
+	std::string uploadedFileName;
+	size_t fileNameEnd = request_content.find_first_of("\"", fileNamePos + 1);
+	if (fileNameEnd != std::string::npos)
+		uploadedFileName = request_content.substr(fileNamePos, fileNameEnd);
+	std::cout << BLUE << "Nome do arquivo UPLOAD: " << uploadedFileName << END << std::endl;
 	if (contentTypeEnd != std::string::npos)
 	{
 		std::cout << BLUE << "ENCONTROU o fim CONTENT-TYPE NA RESPONSE" << END << std::endl;
 		std::size_t fileDataStart = contentTypeEnd + 4;
 		std::string image_content_cleaned = image_content.substr(fileDataStart);
-    	std::ofstream imageFile("Imagem-salva.jpg", std::ios::binary);
+    	std::ofstream imageFile(uploadedFileName.c_str(), std::ios::binary);
 		std::cout << "Size of image: " << image_content_cleaned.size() << std::endl;
 		if (imageFile.is_open())
 		{
@@ -198,6 +199,27 @@ int CGI::uploadImage(std::string request_content, size_t data_init_pos)
 	return 204;
 }
 
+/*
+int CGI::uploadImageCGI(std::string request_content, size_t data_init_pos)
+{
+	_inputFormData = request_content;
+	int pipefd[2];
+	if (pipe(pipefd) == -1)
+	{
+		std::cerr << "ERROR creating PIPE" << std::endl;
+		return 500;
+	}
+	int resultCGI = 0;
+	resultCGI = executeScript(pipefd, "Imagem-salva.jpg");
+	if (resultCGI == 504)
+		return 504;
+	if (_scriptOutput.empty())
+		return 500;
+	_response += _scriptOutput;
+	// std::cout << _response << std::endl;
+	return 204;
+}*/
+
 int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_content)
 {
 	_inputFormData = request_content.substr(data_init_pos + 4);
@@ -209,7 +231,7 @@ int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_co
 		return 500;
 	}
 	int resultCGI = 0;
-	resultCGI = executeScript(pipefd);
+	resultCGI = executeScript(pipefd, "./info_usuario.txt");
 	if (resultCGI == 504)
 		return 504;
 	if (_scriptOutput.empty())
@@ -219,8 +241,88 @@ int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_co
 	return 204;
 }
 
+
+int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
+{
+	pid_t childPid = fork();
+	
+	if (childPid == -1)
+	{
+		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
+		return 500;
+	}
+	else if (childPid == 0) //é processo filho
+	{
+		// por estarmos no processo filho nesse bloco, vamos então modificar o valor
+		// do STDOUT pra poder redirecionar a saída do script pra cá
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
+		
+		// Executamos agora o script de exemplo
+		std::cout << YELLOW << "Caminho do SCRIPT CHAMADO" << END << std::endl;
+		std::cout << YELLOW << getPathToScript() << END << std::endl;
+		execl(getPathToScript().c_str(), getPathToScript().c_str(), requestedFilePath.c_str(), static_cast<char*>(0));
+		// Se chegou aqui, houve um erro no execl
+		std::cerr << "ERROR executing SCRIPT" << std::endl;
+		return 500;
+	} else {
+		// processo pai
+		close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
+		
+		// Ler a saída do script CGI do pipe e armazená-la numa string
+		// std::string scriptOutPut;
+		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
+		while (true)
+		{
+			ssize_t bytesRead = read(pipefd[0], buffer, sizeof(buffer)); //lê 1024 bytes do pipefd[0] pro buffer
+			if (bytesRead <= 0)
+				break;
+			_scriptOutput.append(buffer, bytesRead);
+		}
+		close(pipefd[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
+		
+		// É importante colocarmos esse processo (pai) pra aguardar o término do processo filho
+		int status;
+		waitpid(childPid, &status, 0);
+		// Agora a saída do script CGI está armazenada em 'scriptOutPut'
+		std::cout << "------ SAÍDA DO SCRIPT --------\n" << _scriptOutput << std::endl;
+	}
+	return 200;
+}
+
+int CGI::CGIForGetRequest(std::string requestedFilePath)
+{
+	int pipefd[2];
+	if (pipe(pipefd) == -1)
+	{
+		std::cerr << "ERROR creating PIPE" << std::endl;
+		return 500;
+	}
+	int resultCGI = 0;
+	resultCGI = executeScriptForGET(pipefd, requestedFilePath);
+	if (resultCGI == 504)
+		return 504;
+	if (_scriptOutput.empty())
+		return 500;
+	_response += _scriptOutput;
+	return 200;
+}
+
+
 int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber o ponteiro pro obj Response pra poder acessar headers
 {
+
+	// tem que considerar que essa chamada pode vir de uma requisição GET (para o arquivo, por exemplo)
+	/* lembrando que, pela request GET, nós já receberemos o caminho completo do recurso
+	// ou pelo menos nós vamos ter que passar por parametro o caminho completo do recurso
+	*/
+	if (request.getMethod() == "GET")
+	{
+		// tornar esse argumento flexivel (resgatar o valor -> a imagem pedida da request)
+		int result = CGIForGetRequest("./imagem-salva.jpg");
+		return result;
+	}
+
 	// primeiro criamos a header da response:
 	_response = "HTTP/1.1 204 No Content\r\nDate: Sat, 03 Sep 2023 12:34:56 GMT\r\nConnection: keep-alive\r\n\r\n";
 
@@ -255,7 +357,7 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		// e extrair o Content-Type a partir disso
 		// no caso do formulario, só vem o conteudo submetido direto (ver request_imagem.txt)
 		int resultCode = 0;
-		resultCode = uploadImage(request_content, data_init_pos);
+		resultCode = uploadImage(request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
 		return resultCode;
 	}
 	return 204;

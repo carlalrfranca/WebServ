@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/26 20:26:21 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/30 18:46:51 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -262,7 +262,6 @@ bool ConfigParser::duplicatedPort(std::string& portNumber)
 void ConfigParser::processListen(std::string &line)
 {
 	size_t	posInit;
-	size_t	_semicolonIndex;
 	
 	// esse if impede a duplicação (tirar depois?)
     // if(_hasDirListen == true)
@@ -358,23 +357,21 @@ void ConfigParser::processServerName(std::string &line)
 
 bool ConfigParser::processRoot(std::string &line){
 	std::istringstream iss(line);
-    std::vector<std::string> partes;
-
-    std::string palavra;
+	std::vector<std::string> partes;
+	std::string palavra;
 	if (_root.empty() == false)
 		throw ErrorException("Error: The Directive Root has been duplicated.");
-    while (iss >> palavra)
-        partes.push_back(palavra);
+	while (iss >> palavra)
+		partes.push_back(palavra);
 	if (partes[0] != "root" || partes.size() != 2)
 		throw ErrorException("Syntax Error: Directive Root");
 	_root = partes[1];
 	struct stat info;
-    if (stat(_root.c_str(), &info) != 0)
-        throw ErrorException("Error: The path apointed by 'root' doesn't exist.");
+	if (stat(_root.c_str(), &info) != 0)
+		throw ErrorException("Error: The path apointed by 'root' doesn't exist.");
 	if ((info.st_mode & S_IFDIR) == 0)
 		throw ErrorException("Error: The path apointed by 'root' ISN'T A DIRECTORY.");
-	// std::cout << "Root: " << _root << std::endl;
-    return _hasRoot;
+	return _hasRoot;
 }
 
 void ConfigParser::hasprohibitedDirectiveInLocation(std::string &directive)
@@ -449,26 +446,6 @@ void ConfigParser::validateFile(std::ifstream& fileToParse)
     if(fileSize <= 0)
         throw ErrorException("File is empty");
 }
-
-/*
-void ConfigParser::hasMandatoryParameters(){
-
-    if(!getHasDirListen()){
-        throw ErrorException("");
-    }
-    if(!getHasDirServerName()){
-
-    }
-
-
-    
-    listen 
-    server_name 
-    se nao tiver nada no error pages fazemos atribuição e 
-    validar que as paginas estao presentes
-    root [ja tem um default]
-
-}*/
 
 void ConfigParser::processLocation(std::string &line)
 {
@@ -593,10 +570,10 @@ void ConfigParser::processAutoIndex(std::string &line)
 	if (_hasAutoIndex)
 		throw ErrorException("Configuration Error: AutoIndex directive duplicated.");
 	std::vector<std::string> autoIndexLine;
-    std::istringstream iss(line);
-    std::string value;
-    while (iss >> value)
-        autoIndexLine.push_back(value);
+	std::istringstream iss(line);
+	std::string value;
+	while (iss >> value)
+		autoIndexLine.push_back(value);
 	if (autoIndexLine.size() != 2)
 		throw ErrorException("Syntax Error: AutoIndex directive must have ONE VALUE.");
 	if (autoIndexLine[0] != "auto_index")

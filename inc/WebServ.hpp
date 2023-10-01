@@ -37,14 +37,14 @@ class WebServ
         void responseError();
     	void checkForDuplicates();
         void printRequest(const std::string &request);
-        void configSocket(size_t index);
+        void configSocket();
 		void initServers();
 		//void addEndPoint(const std::string& ipAddress, const std::string& port);
 
         Epoll &getEpollS();
         bool isFirstLineValid(const std::string &request, std::string &_firstLine);
         bool isEventFromServerSocket(struct epoll_event *events, int index);
-        void handleRequest(int clientSocket, char *buffer, ssize_t bytesRead, std::string &requestString);
+        void handleRequest(int clientSocket, std::string &requestString);
         void removeClientFromEpoll(Epoll& epollS);
 		// Colocar isso na classe Request, talvez? (tem a ver com ela, afinal)
 		void readRequest(int clientSocket);
@@ -52,8 +52,8 @@ class WebServ
 		int	convertContentLength(std::string& header, size_t contentLengthPos);
 
 		std::string				_response;
-		int						_totalBytesRead;
-		int 					_contentLength;
+		size_t					_totalBytesRead;
+		size_t 					_contentLength;
 		std::string				_requestString;
 
     private:

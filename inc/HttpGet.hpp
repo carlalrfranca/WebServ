@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:43:28 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 15:39:28 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/09/30 19:10:49 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ class ValidGet
         std::string _uri;
         std::string _fullPath;
         
-        bool fileNotFound(const std::string& fullPath); //auxiliar para o caso do arquivo não ter sido encontrado
+        //bool fileNotFound(const std::string& fullPath); //auxiliar para o caso do arquivo não ter sido encontrado
 
 };
 #endif
