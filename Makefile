@@ -6,7 +6,7 @@
 #    By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/03 13:28:38 by cleticia          #+#    #+#              #
-#    Updated: 2023/09/30 22:20:00 by lfranca-         ###   ########.fr        #
+#    Updated: 2023/10/02 12:28:30 by lfranca-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,24 +22,24 @@ DIR_OBJ = obj
 #DIR_CFGS = cfgs/tests  # Diretório de configuração de testes
 
 # origin files
-SRCS = $(wildcard $(DIR_SRCS)/*.cpp)
 OBJS = $(patsubst $(DIR_SRCS)/%.cpp,$(DIR_OBJ)/%.o,$(SRCS))
+SRCS = $(wildcard $(DIR_SRCS)/*.cpp)
 
 # compilation options
 #BANNER = web/.banner
 CFLAGS = -Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-missing-braces -g -std=c++98
 
-ifeq ($(SANITIZE_A),true)
-    CFLAGS += -fsanitize=address -fno-omit-frame-pointer
-endif
-
-ifeq ($(SANITIZE_L),true)
-    CFLAGS += -fsanitize=leak -fno-omit-frame-pointer
-endif
-
-ifeq ($(DEBUG),true)
-    CFLAGS += -g -fno-limit-debug-info -DDEBUG
-endif
+#ifeq ($(SANITIZE_A),true)
+#    CFLAGS += -fsanitize=address -fno-omit-frame-pointer
+#endif
+#
+#ifeq ($(SANITIZE_L),true)
+#    CFLAGS += -fsanitize=leak -fno-omit-frame-pointer
+#endif
+#
+#ifeq ($(DEBUG),true)
+#    CFLAGS += -g -fno-limit-debug-info -DDEBUG
+#endif
 
 # headers
 INC	= -I ./inc/ 
@@ -66,7 +66,7 @@ $(NAME): $(OBJS)
 $(DIR_OBJ)/%.o: $(DIR_SRCS)/%.cpp
 	@mkdir -p $(DIR_OBJ)
 	@$(CC) $(CFLAGS) $(INC) -c $< -o $@
-	@echo "Compiling \033[1;36m$<\033[0m"	
+	@echo "Compiling \033[1;36m$<\033[0m"
 
 run: $(NAME)
 	@make banner

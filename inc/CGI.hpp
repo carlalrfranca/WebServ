@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/30 20:45:42 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 12:32:52 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 
 #include "./HeadersLibs.hpp"
 #include "./Request.hpp"
+
+#define PATH_FORM_DATA "./form_data.txt"
 
 class CGI
 {
@@ -62,17 +64,14 @@ class CGI
 
 	private:
 
-		std::string _response;
-		std::string _method;
-		std::string _inputFormData;
-		std::string _scriptOutput;
-
-		// variaveis pra pegar na Response (metodo post)
-		std::string _rootToScripts;
-		std::string _scriptName;
 		std::vector<std::string> _scriptCommands;
 		std::vector<std::string> _scriptExtensions;
-	
+		std::string				_response;
+		std::string				_method;
+		std::string				_inputFormData;
+		std::string				_scriptOutput;
+		std::string				_rootToScripts;
+		std::string				_scriptName;
 		
 };
 #endif

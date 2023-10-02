@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/01 13:44:57 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 10:54:31 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,9 @@ class SocketS
         const std::string& getAddress()const;
         const std::string& getRoot()const;
 		const std::string& getIndexFile() const;
-        const std::string& getErrorPage()const;
+        // const std::string& getErrorPage()const;
+		size_t getMaxBodySize() const;
+		void setMaxBodySize(size_t maxBodySize);
         
         std::vector<std::string> getServerName()const;
         std::vector<std::string> getMethods() const;
@@ -60,7 +62,7 @@ class SocketS
         std::string                         _portNumber;
         std::string                         _ipAddress;
         std::string                         _response;
-        // std::string     _cssContent;
+        size_t								_maxBodySize;
         std::vector<std::string>            _serverName;
         std::vector<std::string>            _methods;
 		std::map<std::string, std::string>  _errorPage;

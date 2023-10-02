@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/23 21:51:36 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/01 23:01:41 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@
 
 #include "HeadersLibs.hpp"
 #include "Utils.hpp"
+#include "UtilsResponse.hpp"
+#include "StatusMessages.hpp"
+#define SUCCESS 0
 
 class Request
 {
@@ -25,28 +28,36 @@ class Request
         ~Request();
         
         void printRequest();
-        bool isFirstLineValid();
-        bool validateRequest();
+        int isFirstLineValid();
+        int validateRequest();
+        std::string errorCodeHtml(int statusCode);
         void setHasError(bool hasError);
         void setRequest(const std::string& request);
 		void setMethod(const std::string& method);
         void setHeader(const std::string& header); 
-        void setBody(const std::string& body); 
-        
+        void setBody(const std::string& body);
+        void setContentLength(const std::string& contentLength);
+        void setContentType(const std::string& contentType);
+
+        std::string getContentLength()const;        
+        std::string getContentType()const;
+        bool getHasError()const;
+        std::string getDateAndTime()const;
         std::string getHeader()const;
         std::string getBody()const;
         std::string getDomainRequest()const;
 		std::string getRequest() const;
         std::string getPortRequest()const;
         const std::string& getMethod() const;
-        bool getHasError()const;
         const std::string& getURI() const;
         const std::string& getVersion() const;
+		const std::string getErrorPage(int statusCode)const;
         //void trimSpaces(std::string &s);
     
     private:
     
         std::istringstream  _requestStream;
+
         std::string         _request;
         std::string         _firstLine; 
         std::string         _hostLine;
@@ -58,8 +69,12 @@ class Request
         std::string         _version;
         std::string         _body;
         std::string         _header;
+		std::string			_contentLength;
+		std::string			_contentType;
         bool                _hasError;
         Utils               _utils;
+		std::map<std::string, std::string> _errorPage;
+		StatusMessages		_statusMessages;
         
     
     class ErrorException: public std::exception

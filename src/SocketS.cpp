@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/01 14:23:25 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 12:31:02 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,9 @@ SocketS::SocketS()
     _response = "";
     _webServSocket = 0;
     _root = "";
-    _statusCode = 80;
+    _statusCode = "0";
+	_indexFile = "";
+	_maxBodySize = 1024;
 }
 
 
@@ -67,6 +69,16 @@ void SocketS::setAddress(std::string ipAddress)
 void SocketS::setWebServSocket(int webServSocket)
 {
     this->_webServSocket = webServSocket;
+}
+
+void SocketS::setMaxBodySize(size_t maxBodySize)
+{
+    this->_maxBodySize = maxBodySize;
+}
+
+size_t SocketS::getMaxBodySize()const
+{   
+    return _maxBodySize;
 }
 
 const std::string& SocketS::getPort()const
@@ -142,10 +154,17 @@ void SocketS::setErrorPage(std::map<std::string, std::string> errorPages)
 
 void SocketS::addAliasToHostsFile(const std::string& alias)
 {
-    std::string command = "echo '127.0.0.1 " + alias + "' >> /etc/hosts";
+    std::string command = "sudo echo '127.0.0.1 " + alias + "' >> /etc/hosts";
     int result = system(command.c_str());
     if(result != 0)
         throw SocketSException("Error while adding the alias to the file /etc/hosts.");
+	result = system("sudo systemctl restart systemd-resolved"); // ?
+
+    if (result == -1) {
+        std::cerr << "Failed to flush DNS cache." << std::endl;
+    } else {
+        std::cout << "DNS cache flushed successfully." << std::endl;
+    }
 }
 
 void SocketS::initServer()
@@ -158,6 +177,7 @@ void SocketS::initServer()
 	//configura endereço do servidor e inicializa os campos da estrutura com 0
     struct sockaddr_in server_address = {0};
     server_address.sin_family = AF_INET; //socket usará os ends. IPv4
+	std::cout << RED << "Port: " << getPort() << END << std::endl;
     server_address.sin_port = htons(std::atoi(getPort().c_str())); //usa a função htons para converter8080 para a ordem de bytes da rede e atribui a sin_port
     server_address.sin_addr.s_addr = INADDR_ANY; //especifica o end.IP que o socket do server será vinculado
     //chamada para o bind - vincula o socket ao endereço e porta, 0 -1 tem haver com a falha na chamada do bind
@@ -176,8 +196,11 @@ void SocketS::initServer()
 	if(!_serverName.empty())
 	{
 		for(std::vector<std::string>::const_iterator it = _serverName.begin(); it != _serverName.end(); ++it)
+		{
 			serverName = *it;
-		addAliasToHostsFile(serverName);
+			std::cout << YELLOW << "Server name: " << serverName << END << std::endl;
+			addAliasToHostsFile(serverName);
+		}
 	}
 }
 

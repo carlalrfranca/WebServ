@@ -19,6 +19,7 @@
 #include "SocketS.hpp"
 #include "Request.hpp"
 #include "Epoll.hpp"
+#include "UtilsResponse.hpp"
 #include "Utils.hpp"
 #include "CGI.hpp"
 
@@ -35,7 +36,7 @@ class WebServ
         ~WebServ();
         void mainLoop();
         void responseError();
-    	void checkForDuplicates();
+    	// void checkForDuplicates();
         void printRequest(const std::string &request);
         void configSocket();
 		void initServers();
@@ -44,7 +45,7 @@ class WebServ
         Epoll &getEpollS();
         bool isFirstLineValid(const std::string &request, std::string &_firstLine);
         bool isEventFromServerSocket(struct epoll_event *events, int index);
-        void handleRequest(int clientSocket, std::string &requestString);
+        void handleRequest(std::string &requestString);
         void removeClientFromEpoll(Epoll& epollS);
 		// Colocar isso na classe Request, talvez? (tem a ver com ela, afinal)
 		void readRequest(int clientSocket);

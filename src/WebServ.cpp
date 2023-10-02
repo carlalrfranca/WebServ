@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/30 19:27:47 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 11:50:31 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ WebServ::WebServ(std::string filename)
 	size_t index = 0;
     fileToParse.open(filename.c_str());
     char contentFile;
+	std::cout << BLUE << "Qtdade servers inicio: " << _serverSocket.size() << END << std::endl;
 	_totalBytesRead = 0;
 	_contentLength = 0;
 
@@ -109,11 +110,11 @@ WebServ::WebServ(std::string filename)
     if (index != 0)
         configSocket();
     fileToParse.close();
-	checkForDuplicates();
+	// checkForDuplicates();
 	initServers();
 	mainLoop();
 }
-
+/*
 void WebServ::checkForDuplicates()
 {
     for(size_t i = 0; i < _serverSocket.size() - 1; ++i){
@@ -131,7 +132,7 @@ void WebServ::checkForDuplicates()
 			}
         }
     }
-}
+}*/
 
 void WebServ::configSocket()
 {
@@ -151,9 +152,9 @@ void WebServ::configSocket()
 
 	std::vector<std::string> tmpPorts = _configParser.getAllPorts();
 	std::vector<std::string> tmpAddress = _configParser.getAllIps();
-	int totalPorts = tmpPorts.size();
+	size_t totalPorts = tmpPorts.size();
 	std::cout << BLUE << "Qtdade Portas: " << totalPorts << " | Quantidade de Ips: " << tmpAddress.size() << END << std::endl;
-	for (int i = 0; i < totalPorts; i++)
+	for (size_t i = 0; i < totalPorts; i++)
 	{
     	SocketS temp_socket;
 		temp_socket.setPort(tmpPorts[i]);
@@ -165,11 +166,12 @@ void WebServ::configSocket()
 	    temp_socket.setRoot(_configParser.getRoot());
 		temp_socket.setIndexFile(_configParser.getIndexFile());
 		temp_socket.setErrorPage(_configParser.getErrorPage());
+		temp_socket.setServerName(_configParser.getDomains());
+		temp_socket.setMaxBodySize(_configParser.getMaxBodySize());
 
 	    _serverSocket.push_back(temp_socket);
 	}
 	_configParser.resetConfig(); // O PROBLEMA DESSA MERDA É AQUI
-
 	// iterar o map do Locations pra verificar os valores
 	// std::map<std::string, LocationDirective>::iterator it = _serverSocket.back().getLocations().begin();
 	// int size_locations =  _serverSocket.back().getLocations().size();
@@ -185,6 +187,7 @@ void WebServ::initServers()
 {
 	std::vector<SocketS>::size_type i = 0;
 	
+	std::cout << RED << "Qtdade servers: " << _serverSocket.size() << END << std::endl;
 	while (i < _serverSocket.size()) //loop que itera os sockets do servidor
 	{
 		_serverSocket[i].initServer();
@@ -274,24 +277,33 @@ bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index)
     return false; // Retorna false se não encontrar nenhum socket do servidor
 }
 
-void WebServ::handleRequest(int clientSocket, std::string& requestString)
+void WebServ::handleRequest(std::string& requestString)
 {
     Request request(requestString);
+    Response currentResponse;
+	// --------------------
+	// isso tem que acontecer NA REQUEST
 	std::cout << BLUE << request.getMethod() << END << std::endl;
 	// ----------------
-    if (!request.isFirstLineValid())
-    {
-        request.setHasError(true);
-        close(clientSocket);
-    }
+    // if (request.isFirstLineValid() != 0)
+    // {
+    //     request.setHasError(true);
+    //     close(clientSocket);
+    // }
+	int resultCode = request.validateRequest();
+    if (resultCode != 0)
+	{
+		request.setHasError(true);
+		_response = request.errorCodeHtml(resultCode);
+		return ;
+	}
     if (request.getHasError())
-        responseError();
-    request.validateRequest();
-    Response currentResponse;
+        responseError(); //criar um método pra errorCodeHtml aqui
+	// ------------------
     std::cout << "--------------------********---------" << std::endl;
     std::cout << "Dominio da request: " << request.getDomainRequest() << "| Size: " << request.getDomainRequest().size() << std::endl;
     std::cout << "--------------------********---------" << std::endl;
-    int selectedServer = currentResponse.selectServer(request, _serverSocket);
+    int selectedServer = UtilsResponse::selectServer(request, _serverSocket);
     if (selectedServer != -1) {
         currentResponse.buildResponse(request, _serverSocket[selectedServer]);
         _response = currentResponse.getResponse();
@@ -395,7 +407,7 @@ void WebServ::readRequest(int clientSocket)
 				std::cout << YELLOW << _contentLength << END << std::endl;
 				std::cout << YELLOW << totalBytesRead << END << std::endl;
         		// printRequest(_requestString);
-				handleRequest(clientSocket, _requestString);
+				handleRequest(_requestString);
 				_epollS._event.events = EPOLLOUT;
 				epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &_epollS._event);
 				_requestString = "";
@@ -405,7 +417,7 @@ void WebServ::readRequest(int clientSocket)
 			else if (_contentLength == (size_t)-1)
 			{
 				// printRequest(_requestString);
-				handleRequest(clientSocket, _requestString);
+				handleRequest(_requestString);
 				_epollS._event.events = EPOLLOUT;
 				epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &_epollS._event);
 				_requestString = "";

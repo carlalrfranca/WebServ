@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/01 13:45:27 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/01 20:43:20 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "StatusMessages.hpp"
 #include "LocationDirective.hpp"
+#include "UtilsResponse.hpp"
 #include "HeadersLibs.hpp"
 #include "SocketS.hpp"
 #include "Request.hpp"
@@ -61,7 +62,7 @@ class Response
         void httpError(std::string errorCode, const std::string &errorMessage);
         void errorPage(Request &response, std::string &root);
 		void errorCodeHtml(int statusCode, SocketS &server);
-        void listFilesAndGenerateHtml(std::map<std::string, LocationDirective>::iterator& it);
+        bool listFilesAndGenerateHtml(std::map<std::string, LocationDirective>::iterator& it);
         void generateHtmlFromFiles(const std::vector<std::string>& fileList, std::map<std::string, LocationDirective>::iterator& it);
 		bool buildPathToResource(std::string root, Request &request, SocketS &server, std::map<std::string, std::vector< std::string > >& locationDirectives, std::map<std::string, LocationDirective>::iterator& it);
 		std::string extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it);
@@ -89,6 +90,7 @@ class Response
         std::string                         _code;
         std::string                         _path;
         Utils                               _utils;
+        UtilsResponse                       _utilsResponse;                
         SocketS                             *_chosenSocket;
         StatusMessages                      _statusMessages;
 		std::map<std::string, Funcao>		_methodsFunctions;

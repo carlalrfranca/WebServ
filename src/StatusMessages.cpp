@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:33:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/24 17:26:44 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/01 23:28:25 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,15 @@ StatusMessages::StatusMessages()
     statusMessages[403] = "Forbidden";
     statusMessages[404] = "Not Found";
 	statusMessages[405] = "Method Not Allowed";
+    statusMessages[413] = "Payload Too Large";
     statusMessages[500] = "Internal Server Error";
+	statusMessages[501] = "Not Implemented";
     statusMessages[503] = "Service Unavailable";
 	statusMessages[504] = "Gateway Timeout";
+	statusMessages[301] = "Moved Permanently";
+	statusMessages[302] = "Temporary Redirect";
+	statusMessages[307] = "Internal Redirect";
+	statusMessages[308] = "Internal Redirect";
     statusMessages[505] = "HTTP Version Not Supported";
     // Adicione mais códigos e mensagens conforme necessário
 }

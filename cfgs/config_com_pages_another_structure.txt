@@ -1,16 +1,12 @@
 server{
-    listen localhost:2002;
-    server_name example.com;
+    listen localhost:2001;
 	allow_methods GET POST DELETE
     root web/pages/;
+	client_max_body_size 5
 
 	location / {
 		index index.html
 		auto_index off
-	}
-
-	location /pages {
-		root web/pages/
 	}
 
 	location /images {
@@ -27,6 +23,7 @@ server{
 
 	location /about {
 		index index.html
+		return 307 tourII.html
 	}
 
 	location /cgi-bin {

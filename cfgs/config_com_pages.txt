@@ -1,5 +1,5 @@
 server{
-    listen localhost:2005;
+    listen localhost:2002;
     server_name example.com;
 	allow_methods GET
     root web/pages/;

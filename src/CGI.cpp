@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/01 13:21:10 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 12:32:59 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,7 +230,7 @@ int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_co
 		return 500;
 	}
 	int resultCGI = 0;
-	resultCGI = executeScript(pipefd, "./info_usuario.txt");
+	resultCGI = executeScript(pipefd, PATH_FORM_DATA);
 	if (resultCGI == 504)
 		return 504;
 	if (_scriptOutput.empty())
