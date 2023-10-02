@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   StatusMessages.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:33:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/01 23:28:25 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 16:32:42 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,10 @@
 StatusMessages::StatusMessages()
 {
     statusMessages[200] = "OK";
+	statusMessages[301] = "Moved Permanently";
+	statusMessages[302] = "Temporary Redirect";
+	statusMessages[307] = "Internal Redirect";
+	statusMessages[308] = "Internal Redirect";
     statusMessages[400] = "Bad Request";
     statusMessages[401] = "Unauthorized";
     statusMessages[403] = "Forbidden";
@@ -25,10 +29,6 @@ StatusMessages::StatusMessages()
 	statusMessages[501] = "Not Implemented";
     statusMessages[503] = "Service Unavailable";
 	statusMessages[504] = "Gateway Timeout";
-	statusMessages[301] = "Moved Permanently";
-	statusMessages[302] = "Temporary Redirect";
-	statusMessages[307] = "Internal Redirect";
-	statusMessages[308] = "Internal Redirect";
     statusMessages[505] = "HTTP Version Not Supported";
     // Adicione mais códigos e mensagens conforme necessário
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/01 23:01:41 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 17:41:09 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,11 @@ class Request
         void setBody(const std::string& body);
         void setContentLength(const std::string& contentLength);
         void setContentType(const std::string& contentType);
-
+        void setBoundary(const std::string& boundary);
+        void setFilename(const std::string& filename);
+        
+        std::string getBoundary()const;
+        std::string getFilename()const;
         std::string getContentLength()const;        
         std::string getContentType()const;
         bool getHasError()const;
@@ -56,21 +60,22 @@ class Request
     
     private:
     
-        std::istringstream  _requestStream;
-
-        std::string         _request;
-        std::string         _firstLine; 
-        std::string         _hostLine;
-        std::string         _hostContent;
-        std::string         _domainContent;
-        std::string         _portRequest;
-        std::string         _method;
-        std::string         _uri;
-        std::string         _version;
         std::string         _body;
-        std::string         _header;
+        std::string         _boundary;
 		std::string			_contentLength;
 		std::string			_contentType;
+        std::string         _domainContent;
+        std::string         _filename;
+        std::string         _firstLine; 
+        std::string         _header;
+        std::string         _hostLine;
+        std::string         _hostContent;
+        std::string         _method;
+        std::string         _portRequest;
+        std::istringstream  _requestStream;
+        std::string         _request;
+        std::string         _uri;
+        std::string         _version;
         bool                _hasError;
         Utils               _utils;
 		std::map<std::string, std::string> _errorPage;
