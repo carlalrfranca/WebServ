@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/02 12:31:02 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 20:55:57 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,10 +156,9 @@ void SocketS::addAliasToHostsFile(const std::string& alias)
 {
     std::string command = "sudo echo '127.0.0.1 " + alias + "' >> /etc/hosts";
     int result = system(command.c_str());
-    if(result != 0)
+    if (result != 0)
         throw SocketSException("Error while adding the alias to the file /etc/hosts.");
-	result = system("sudo systemctl restart systemd-resolved"); // ?
-
+    result = system("sudo systemctl restart systemd-resolved");
     if (result == -1) {
         std::cerr << "Failed to flush DNS cache." << std::endl;
     } else {

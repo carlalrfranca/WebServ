@@ -21,7 +21,6 @@ h2 {
 	color: #f6f4e6;
 }
 
-
 body {
   background: #272727;
   font-family: "Montserrat", sans-serif;
@@ -61,22 +60,22 @@ body {
 }
 
 .navMenu a:nth-child(1):hover ~ .dot {
-  transform: translateX(54px);
+  transform: translateX(20px);
   opacity: 1;
 }
 
 .navMenu a:nth-child(2):hover ~ .dot {
-  transform: translateX(174px);
+  transform: translateX(60px);
   opacity: 1;
 }
 
 .navMenu a:nth-child(3):hover ~ .dot {
-  transform: translateX(280px);
+  transform: translateX(100px);
   opacity: 1;
 }
 
 .navMenu a:nth-child(4):hover ~ .dot {
-  transform: translateX(400px);
+  transform: translateX(140px);
   opacity: 1;
 }
 
@@ -87,7 +86,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Ajuste a altura conforme necessário */
+    min-height: 90vh; /* Ajuste a altura conforme necessário */
     background-color: #272727; /* Cor de fundo da caixa retangular */
     border: 0px solid #272727; /* Borda da caixa retangular */
     padding: 60px;

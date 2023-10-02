@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Epoll.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 20:22:28 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/01 13:23:30 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 16:45:41 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,13 +91,11 @@ int Epoll::addNewClientToEpoll(struct epoll_event *event_ptr, int i)
 	struct sockaddr_in clientAddress = {0, AF_INET, 0, INADDR_ANY};
 	socklen_t clientAddressLength = sizeof(clientAddress);
 	int clientSocket = accept(event_ptr[i].data.fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
-	
 	if (clientSocket == -1)
 	{
 	    perror("Error accepting client connection");
 	    return -3; // Move to the next event
 	}
-	
 	// Set the client socket to non-blocking mode
 	fcntl(clientSocket, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	_event.data.u64 = 0;

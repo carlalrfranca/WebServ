@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/01 23:26:21 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 16:46:03 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,14 +41,14 @@ ConfigParser::ConfigParser()
 			std::cout << "Essa pagina de erro nao existe." << std::endl;
 		else
 			std::cout << "Essa pagina de erro existe." << std::endl;
-	_errorPage["503"] = "./web/error/Error503.html";
 	_errorPage["400"] = "./web/error/Error400.html";
 	_errorPage["403"] = "./web/error/Error403.html";
 	_errorPage["405"] = "./web/error/Error405.html";
 	_errorPage["413"] = "./web/error/Error413.html";
-	_errorPage["505"] = "./web/error/Error505.html";
-	_errorPage["504"] = "./web/error/Error504.html";
 	_errorPage["500"] = "./web/error/Error500.html";
+	_errorPage["503"] = "./web/error/Error503.html";
+	_errorPage["504"] = "./web/error/Error504.html";
+	_errorPage["505"] = "./web/error/Error505.html";
 }
 
 ConfigParser::~ConfigParser()
@@ -65,7 +65,6 @@ void ConfigParser::resetConfig()
 	_hasDirServerName = false;
 	_maxBodySize = 1024;
 
-	//
 	// tinha algo aqui dando problema antes.... ver onde essas var comentadas estao sendo usadas e avaliar
     // _rules = "";    // location
     _directive = 0;
@@ -86,12 +85,12 @@ void ConfigParser::resetConfig()
 	_domains.clear();
 
 	// resetar as paginas de erro padrão
-	_errorPage["503"] = "./web/error/Error503.html";
 	_errorPage["400"] = "./web/error/Error400.html";
 	_errorPage["403"] = "./web/error/Error403.html";
 	_errorPage["405"] = "./web/error/Error405.html";
-	_errorPage["505"] = "./web/error/Error505.html";
 	_errorPage["500"] = "./web/error/Error500.html";
+	_errorPage["503"] = "./web/error/Error503.html";
+	_errorPage["505"] = "./web/error/Error505.html";
 }
 
 std::map<std::string, LocationDirective> ConfigParser::getLocations() const
@@ -433,7 +432,8 @@ void ConfigParser::processErrorPage(std::string &line)
         std::istringstream iss(line);
         std::vector<std::string> errorCode;
         std::string token;
-        while(iss >> token){
+        while(iss >> token)
+        {
             std::cout << "error_page: " << token << std::endl;
             errorCode.push_back(token);   
         }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/01 23:26:07 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 20:54:39 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,6 +144,26 @@ std::string Request::getPortRequest(void)const
     return _portRequest;
 }
 
+void Request::setBoundary(const std::string& boundary)
+{
+    _boundary = boundary;
+}
+
+void Request::setFilename(const std::string& filename)
+{
+    _filename = filename;
+}
+
+std::string Request::getBoundary()const
+{
+    return _boundary;
+}
+
+std::string Request::getFilename()const
+{
+    return _filename;
+}
+
 int Request::isFirstLineValid()
 {
 	std::istringstream firstLineStream(_firstLine);
@@ -164,8 +184,6 @@ int Request::isFirstLineValid()
 		return 501; // 501 Not Implemented
 	if (_tokens[2] != "HTTP/1.1")
 		return 505; //505 (HTTP Version Not Supported)
-	
-	// armazena esses valores
 	if (_method.size() == 0)
     	_method = _tokens[0];
 	_uri = _tokens[1];
@@ -191,6 +209,14 @@ int Request::isFirstLineValid()
     //demais validacoes aqui, se houver
     return SUCCESS;
 }
+
+/*
+    FLEXIBILIZAÇÃO] separar "boundary=" e "filename=" no 
+    método validateRequest() do objeto Request (dentro da 
+    condição que verifica se o _method é POST). LEMBRE:
+    "boundary=" e "filename=" estarão no _body, então é ele
+    que tem que parsear
+*/
 
 int Request::validateRequest()
 {
@@ -227,16 +253,34 @@ int Request::validateRequest()
 		}
     }
 	if (_hostContent.size() == 0)
-		return 400; // retorna 400 (Bad Request)
+		errorCodeHtml(400);//return 400; // retorna 400 (Bad Request)
 	if (_method == "POST")
 	{
 		if (_contentLength.size() == 0 || _contentType.size() == 0)
-			return 400; //retorna 400 (Bad Request)	
+		{
+		    errorCodeHtml(400);//return 400; //retorna 400 (Bad Request)
+		}
+	    //-------------- atualizacao 02.10.2023 ----------------
+	    // parsear : procurar a posicao do boundary
+	    size_t boundPos = _body.find("boundary=");
+	    if(boundPos != std::string::npos)
+        {
+            boundPos += 9; //tamanho do boundary=
+            size_t boundEnd = _body.find('&', boundPos); //encontra a próxima referência após a substring "filename="
+            std::string boundary = _body.substr(boundPos, boundEnd - boundPos); //aqui ele estrai e armazena em boundary
+            setBoundary(boundary);
+            size_t filenamePos = _body.find("filename");
+            if(filenamePos != std::string::npos)
+            {
+                filenamePos += 9; //tamanho de filename=
+                size_t filenameEnd = _body.find('&', filenamePos);
+                std::string filename = _body.substr(filenamePos, filenameEnd - filenamePos);
+                setFilename(filename);
+                std::cout << RED << "Boundary: " << boundary << END << std::endl;
+                std::cout << RED << "Filename: " << filename << END << std::endl;
+            }
+        }
 	}
-	// if (_method.size() == 0)
-    // 	_method = _tokens[0];
-    // _uri = _tokens[1];
-    // _version = _tokens[2];
     size_t posDiv = _hostContent.find(":");
     if(posDiv != std::string::npos) //127.0.0.1:5005  ou localhost:2005
     {
