@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/02 23:33:11 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/03 17:06:58 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,7 +188,7 @@ int Request::isFirstLineValid()
     	_method = _tokens[0];
 	_uri = _tokens[1];
     _version = _tokens[2];
-	std::cout << BLUE << "Primeira linha DIVIDIDA > " << _method << " | " << _uri << " | " << _version << END << std::endl;
+	std::cout << BLUE << "first line SPLITED > " << _method << " | " << _uri << " | " << _version << END << std::endl;
 	//valida http
     // if(_firstLine.find("GET") == std::string::npos && 
         // _firstLine.find("POST") == std::string::npos && 
@@ -218,40 +218,31 @@ int Request::isFirstLineValid()
     que tem que parsear
 */
 
-int Request::validateRequest()
+
+
+void Request::processHeaderRequest()
 {
-    // std::istringstream firstLineStream(_firstLine);
-    // std::vector<std::string> _tokens;
-    // std::string _token;
-    // while (std::getline(firstLineStream, _token, ' '))
-    //     _tokens.push_back(_token);
-    // for (size_t i = 0; i < _tokens.size(); ++i)
-    //     std::cout << "Token " << i << " (da primeira Linha da Request): " << _tokens[i] << std::endl;
-    int result = isFirstLineValid();
-	if (result != SUCCESS)
-		return result;
 	std::string line;
 	std::istringstream headerStream(_header);
-	while (std::getline(headerStream, line))
+	while(std::getline(headerStream, line))
     {
-        if (line.substr(0, 6) == "Host: ")
+        if(line.substr(0, 6) == "Host: ")
         {
 			_hostLine = line;
             _hostContent = _hostLine.substr(6);
             std::cout << "Host content: " << _hostContent << std::endl;
-            // break;
         }
-		if (line.substr(0, 16) == "Content-Length: ")
+		if(line.substr(0, 16) == "Content-Length: ")
 		{
 			_contentLength = line.substr(16);
 			std::cout << "Content-Length na REQUEST: " << _contentLength << std::endl;
 		}
-		if (line.substr(0, 14) == "Content-Type: ")
+		if(line.substr(0, 14) == "Content-Type: ")
 		{
 			_contentType = line.substr(14);
 			std::cout << "Content-Type na REQUEST: " << _contentType << std::endl;
 			size_t boundaryPos = line.find("boundary=");
-			if (boundaryPos != std::string::npos)
+			if(boundaryPos != std::string::npos)
 			{
 				_contentType = line.substr(0, boundaryPos);
 				std::cout << BLUE << "BOUNDARY: " << line.substr(boundaryPos + 9) << END << std::endl;
@@ -260,26 +251,13 @@ int Request::validateRequest()
 				setBoundary(boundaryValue);
 			}
 		}
-		if (_hostContent.size() == 0)
-			errorCodeHtml(400);//return 400; // retorna 400 (Bad Request)
-		if (_method == "POST")
-		{
-			if (_contentLength.size() == 0 || _contentType.size() == 0)
-			{
-				errorCodeHtml(400);//return 400; //retorna 400 (Bad Request)
-			}
-		    //-------------- atualizacao 02.10.2023 ----------------
-		    // parsear : procurar a posicao do boundary
-		    // size_t boundPos = _body.find("boundary=");
-		    // if(boundPos != std::string::npos)
-    	    // {
-    	    //     boundPos += 9; //tamanho do boundary=
-    	    //     size_t boundEnd = _body.find('&', boundPos); //encontra a próxima referência após a substring "filename="
-    	    //     std::string boundary = _body.substr(boundPos, boundEnd - boundPos); //aqui ele estrai e armazena em boundary
-    	    //     setBoundary(boundary);
-		}
+		if(_hostContent.size() == 0)
+			errorCodeHtml(400);
+		if(_method == "POST")
+			if(_contentLength.size() == 0 || _contentType.size() == 0)
+				errorCodeHtml(400);
 		size_t posDiv = _hostContent.find(":");
-		if(posDiv != std::string::npos) //127.0.0.1:5005  ou localhost:2005
+		if(posDiv != std::string::npos)
 		{
 			_domainContent = _hostContent.substr(0, posDiv);
 			_portRequest = _hostContent.substr(posDiv+1, (_hostContent.size() - 1));
@@ -288,56 +266,64 @@ int Request::validateRequest()
 			_domainContent = _hostContent;
 			_portRequest = "";
 		}
-	}
-	//
+	}	
+}
+
+void Request::processBodyRequest()
+{
 	size_t filenamePos = _body.find("filename=");
 		std::string field = "filename=";
 	if(filenamePos != std::string::npos)
 	{
-		filenamePos += (field.size() + 1); //tamanho de filename=
+		filenamePos += (field.size() + 1);
 		size_t filenameEnd = _body.find("\"", filenamePos);
 		if (filenameEnd != std::string::npos)
 		{
 			std::string filename = _body.substr(filenamePos, filenameEnd - filenamePos);
-			std::cout << YELLOW << "Filename ENCONTRADO: " << filename << END << std::endl;
+			std::cout << YELLOW << "Filename FOUND: " << filename << END << std::endl;
 			setFilename(filename);
-			std::cout << RED << " Tamanho Filename: " << filename.size() << END << std::endl;
-		}
-		else
-			std::cout << RED << "Filename NÃO ENCONTRADO" << END << std::endl;
-			// std::cout << RED << "Boundary: " << getBody() << END << std::endl;
+			std::cout << RED << "Filename size: " << filename.size() << END << std::endl;
+		} else
+			std::cout << RED << "Filename not FOUND" << END << std::endl;
 	}
 	std::string fieldContent = "Content-Type:";
 	size_t contentFormat = _body.find(fieldContent);
 	if(contentFormat != std::string::npos)
 	{
-		contentFormat += (fieldContent.size() + 1); //tamanho de filename=
+		contentFormat += (fieldContent.size() + 1);
  		size_t contentFormatEnd = _body.find("\r\n", contentFormat);
 		if (contentFormatEnd != std::string::npos)
 		{
  			std::string fileFormat = _body.substr(contentFormat, contentFormatEnd - contentFormat);
-			std::cout << YELLOW << "File format ENCONTRADO: " << fileFormat << END << std::endl;
+			std::cout << YELLOW << "File format FOUND: " << fileFormat << END << std::endl;
 			// setFilename(filename);
-			std::cout << RED << " Tamanho Fileformat: " << fileFormat.size() << END << std::endl;
-		}
-		else
-			std::cout << RED << "File format NÃO ENCONTRADO" << END << std::endl;
-		// std::cout << RED << "Boundary: " << getBody() << END << std::endl;
+			std::cout << RED << "Fileformat size: " << fileFormat.size() << END << std::endl;
+		} else
+			std::cout << RED << "File format not FOUND" << END << std::endl;
 	}
+}
+
+int Request::validateRequest()
+{
+    int result = isFirstLineValid();
+	if(result != SUCCESS)
+		return result;
+	processHeaderRequest();
+	processBodyRequest();	
 	return SUCCESS;
 }
 
-const std::string& Request::getMethod(void) const
+const std::string& Request::getMethod() const
 {
     return _method;
 }
 
-const std::string& Request::getURI(void) const
+const std::string& Request::getURI() const
 {
     return _uri;
 }
 
-const std::string& Request::getVersion(void) const
+const std::string& Request::getVersion() const
 {
     return _version;
 }

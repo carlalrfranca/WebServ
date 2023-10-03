@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+         #
+#    By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/03 13:28:38 by cleticia          #+#    #+#              #
-#    Updated: 2023/10/02 12:28:30 by lfranca-         ###   ########.fr        #
+#    Updated: 2023/10/03 15:59:27 by cleticia         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -61,7 +61,7 @@ banner:
 $(NAME): $(OBJS)
 	@$(CC) $(CFLAGS) $(INC) -o $@ $^
 	@echo "\033[1;36m[SUCCESS] Compilation completed!\033[0m"
-	@echo "To run the program, type: \033[1;36m./$(NAME)\033[0m"
+	@echo "To run the program, type: \033[1;36m./$(NAME) file.extension\033[0m"
 
 $(DIR_OBJ)/%.o: $(DIR_SRCS)/%.cpp
 	@mkdir -p $(DIR_OBJ)
