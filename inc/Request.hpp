@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/02 17:41:09 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/03 16:13:30 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,14 @@ class Request
         Request(const std::string& request); //criar instancia
         ~Request();
         
-        void printRequest();
-        int isFirstLineValid();
         int validateRequest();
+        int isFirstLineValid();
+        void printRequest();
+        void processBodyRequest();
+        void processHeaderRequest();
         std::string errorCodeHtml(int statusCode);
+        
+        //sets and gets
         void setHasError(bool hasError);
         void setRequest(const std::string& request);
 		void setMethod(const std::string& method);
@@ -40,21 +44,20 @@ class Request
         void setContentType(const std::string& contentType);
         void setBoundary(const std::string& boundary);
         void setFilename(const std::string& filename);
-        
         std::string getBoundary()const;
         std::string getFilename()const;
         std::string getContentLength()const;        
         std::string getContentType()const;
-        bool getHasError()const;
         std::string getDateAndTime()const;
         std::string getHeader()const;
         std::string getBody()const;
         std::string getDomainRequest()const;
 		std::string getRequest() const;
         std::string getPortRequest()const;
-        const std::string& getMethod() const;
-        const std::string& getURI() const;
-        const std::string& getVersion() const;
+        bool getHasError()const;
+        const std::string& getMethod()const;
+        const std::string& getURI()const;
+        const std::string& getVersion()const;
 		const std::string getErrorPage(int statusCode)const;
         //void trimSpaces(std::string &s);
     
