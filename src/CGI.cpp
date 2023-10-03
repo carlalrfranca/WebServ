@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/02 12:32:59 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 23:50:02 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,35 +151,21 @@ int CGI::executeScript(int *pipefd, std::string fileName)
 	}
 }
 
-int CGI::uploadImage(std::string request_content, size_t data_init_pos)
+int CGI::uploadImage(Request &request, std::string request_content, size_t data_init_pos)
 {
 	std::string image_content = request_content.substr(data_init_pos + 4);
 	std::string contentTypeField = "Content-Type:";
-	std::string fileNameField = "filename=";
 	size_t content_type_pos = image_content.find(contentTypeField);
-	size_t content_type_value = content_type_pos + contentTypeField.size();
 
 	std::size_t contentTypeEnd = image_content.find("\r\n", content_type_pos);
-	std::string type_file = image_content.substr(content_type_value, contentTypeEnd);
-	size_t ext_end = type_file.find_last_not_of(" ");
-	type_file = type_file.substr(0, ext_end - content_type_value + 1);
-	std::cout << YELLOW << type_file << END << std::endl;
-	size_t extension_pos = type_file.find("/");
-	std::string extension;
-	if (extension_pos != std::string::npos)
-		extension = type_file.substr(extension_pos + 1);
-	std::cout << BLUE << extension << END << std::endl;
-	std::cout << std::endl;
-	size_t fileNamePos = request_content.find(fileNameField);
-	fileNamePos += fileNameField.size();
 	std::string uploadedFileName;
-	size_t fileNameEnd = request_content.find_first_of("\"", fileNamePos + 1);
-	if (fileNameEnd != std::string::npos)
-		uploadedFileName = request_content.substr(fileNamePos, fileNameEnd);
-	std::cout << BLUE << "Nome do arquivo UPLOAD: " << uploadedFileName << END << std::endl;
+	uploadedFileName = request.getFilename(); // SÓ TEM QUE UNIR O NOME DO ARQUIVO AO DIRETORIO AO QUAL ELE DEVE SER GRAVADO!!!
 	if (contentTypeEnd != std::string::npos)
 	{
 		std::cout << BLUE << "ENCONTROU o fim CONTENT-TYPE NA RESPONSE" << END << std::endl;
+		std::cout << BLUE << "NOME DO ARQUIVO A SER GRAVADO: " << uploadedFileName << END << std::endl;
+		// nota: talvez por meio do script não esteja funcionando porque nao é só o binario que ele grava,
+		// mas essas linhas de content-type e filename também... (será?)
 		std::size_t fileDataStart = contentTypeEnd + 4;
 		std::string image_content_cleaned = image_content.substr(fileDataStart);
     	std::ofstream imageFile(uploadedFileName.c_str(), std::ios::binary);
@@ -191,9 +177,6 @@ int CGI::uploadImage(std::string request_content, size_t data_init_pos)
 		}
 	} else {
 		return 404; //seria outro erro?
-		// std::cout << RED << "[[NÃO]] ENCONTROU o fim CONTENT-TYPE NA RESPONSE" << END << std::endl;
-		// _response = "HTTP/1.1 404 Not Found\r\nDate: Sat, 03 Sep 2023 12:34:56 GMT\r\nConnection: keep-alive\r\n\r\n";
-		// _response += "<html><body><h1>Error 404</h1></body></html>";
 	}
 	return 204;
 }
@@ -356,7 +339,7 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		// e extrair o Content-Type a partir disso
 		// no caso do formulario, só vem o conteudo submetido direto (ver request_imagem.txt)
 		int resultCode = 0;
-		resultCode = uploadImage(request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
+		resultCode = uploadImage(request, request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
 		return resultCode;
 	}
 	return 204;

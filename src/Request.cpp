@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/02 20:54:39 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/02 23:33:11 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -250,48 +250,81 @@ int Request::validateRequest()
 		{
 			_contentType = line.substr(14);
 			std::cout << "Content-Type na REQUEST: " << _contentType << std::endl;
+			size_t boundaryPos = line.find("boundary=");
+			if (boundaryPos != std::string::npos)
+			{
+				_contentType = line.substr(0, boundaryPos);
+				std::cout << BLUE << "BOUNDARY: " << line.substr(boundaryPos + 9) << END << std::endl;
+				std::cout << BLUE << "Content-Type na REQUEST: " << _contentType << END << std::endl;
+				std::string boundaryValue = line.substr(boundaryPos + 9);
+				setBoundary(boundaryValue);
+			}
 		}
-    }
-	if (_hostContent.size() == 0)
-		errorCodeHtml(400);//return 400; // retorna 400 (Bad Request)
-	if (_method == "POST")
-	{
-		if (_contentLength.size() == 0 || _contentType.size() == 0)
+		if (_hostContent.size() == 0)
+			errorCodeHtml(400);//return 400; // retorna 400 (Bad Request)
+		if (_method == "POST")
 		{
-		    errorCodeHtml(400);//return 400; //retorna 400 (Bad Request)
+			if (_contentLength.size() == 0 || _contentType.size() == 0)
+			{
+				errorCodeHtml(400);//return 400; //retorna 400 (Bad Request)
+			}
+		    //-------------- atualizacao 02.10.2023 ----------------
+		    // parsear : procurar a posicao do boundary
+		    // size_t boundPos = _body.find("boundary=");
+		    // if(boundPos != std::string::npos)
+    	    // {
+    	    //     boundPos += 9; //tamanho do boundary=
+    	    //     size_t boundEnd = _body.find('&', boundPos); //encontra a próxima referência após a substring "filename="
+    	    //     std::string boundary = _body.substr(boundPos, boundEnd - boundPos); //aqui ele estrai e armazena em boundary
+    	    //     setBoundary(boundary);
 		}
-	    //-------------- atualizacao 02.10.2023 ----------------
-	    // parsear : procurar a posicao do boundary
-	    size_t boundPos = _body.find("boundary=");
-	    if(boundPos != std::string::npos)
-        {
-            boundPos += 9; //tamanho do boundary=
-            size_t boundEnd = _body.find('&', boundPos); //encontra a próxima referência após a substring "filename="
-            std::string boundary = _body.substr(boundPos, boundEnd - boundPos); //aqui ele estrai e armazena em boundary
-            setBoundary(boundary);
-            size_t filenamePos = _body.find("filename");
-            if(filenamePos != std::string::npos)
-            {
-                filenamePos += 9; //tamanho de filename=
-                size_t filenameEnd = _body.find('&', filenamePos);
-                std::string filename = _body.substr(filenamePos, filenameEnd - filenamePos);
-                setFilename(filename);
-                std::cout << RED << "Boundary: " << boundary << END << std::endl;
-                std::cout << RED << "Filename: " << filename << END << std::endl;
-            }
-        }
+		size_t posDiv = _hostContent.find(":");
+		if(posDiv != std::string::npos) //127.0.0.1:5005  ou localhost:2005
+		{
+			_domainContent = _hostContent.substr(0, posDiv);
+			_portRequest = _hostContent.substr(posDiv+1, (_hostContent.size() - 1));
+			_utils.trimSpaces((_portRequest));
+		} else {
+			_domainContent = _hostContent;
+			_portRequest = "";
+		}
 	}
-    size_t posDiv = _hostContent.find(":");
-    if(posDiv != std::string::npos) //127.0.0.1:5005  ou localhost:2005
-    {
-        _domainContent = _hostContent.substr(0, posDiv);
-        _portRequest = _hostContent.substr(posDiv+1, (_hostContent.size() - 1));
-        _utils.trimSpaces((_portRequest));
-    } else {
-        _domainContent = _hostContent;
-        _portRequest = "";
-    }  
-    return SUCCESS;
+	//
+	size_t filenamePos = _body.find("filename=");
+		std::string field = "filename=";
+	if(filenamePos != std::string::npos)
+	{
+		filenamePos += (field.size() + 1); //tamanho de filename=
+		size_t filenameEnd = _body.find("\"", filenamePos);
+		if (filenameEnd != std::string::npos)
+		{
+			std::string filename = _body.substr(filenamePos, filenameEnd - filenamePos);
+			std::cout << YELLOW << "Filename ENCONTRADO: " << filename << END << std::endl;
+			setFilename(filename);
+			std::cout << RED << " Tamanho Filename: " << filename.size() << END << std::endl;
+		}
+		else
+			std::cout << RED << "Filename NÃO ENCONTRADO" << END << std::endl;
+			// std::cout << RED << "Boundary: " << getBody() << END << std::endl;
+	}
+	std::string fieldContent = "Content-Type:";
+	size_t contentFormat = _body.find(fieldContent);
+	if(contentFormat != std::string::npos)
+	{
+		contentFormat += (fieldContent.size() + 1); //tamanho de filename=
+ 		size_t contentFormatEnd = _body.find("\r\n", contentFormat);
+		if (contentFormatEnd != std::string::npos)
+		{
+ 			std::string fileFormat = _body.substr(contentFormat, contentFormatEnd - contentFormat);
+			std::cout << YELLOW << "File format ENCONTRADO: " << fileFormat << END << std::endl;
+			// setFilename(filename);
+			std::cout << RED << " Tamanho Fileformat: " << fileFormat.size() << END << std::endl;
+		}
+		else
+			std::cout << RED << "File format NÃO ENCONTRADO" << END << std::endl;
+		// std::cout << RED << "Boundary: " << getBody() << END << std::endl;
+	}
+	return SUCCESS;
 }
 
 const std::string& Request::getMethod(void) const

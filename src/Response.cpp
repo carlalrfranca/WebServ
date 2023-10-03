@@ -63,6 +63,8 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		size_t requestContentLength = UtilsResponse::strToSizeT(request.getContentLength());
 		if (requestContentLength > maxBodySize)
 		{
+			std::cout << RED << "Content-Length da Request: " << requestContentLength << END << std::endl;
+			std::cout << RED << "Max_Body_Size permitido: " << maxBodySize << END << std::endl;
 			this_response->errorCodeHtml(413, server);
 			return this_response->getResponse();
 		}

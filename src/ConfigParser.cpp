@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/02 16:46:03 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/02 22:04:06 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -475,25 +475,70 @@ void ConfigParser::processAllowMethods(std::string &line)
     _hasDirAllowMethods = true;
 }
 
+size_t ConfigParser::convertToKB(std::string &sizeStr)
+{
+	int inBytes = 1;
+
+	char suffix = sizeStr[sizeStr.size() - 1];
+	if(suffix == 'K' || suffix == 'k')
+		inBytes = 1024;
+	else if(suffix == 'M' || suffix == 'm')
+		inBytes = 1024 * 1024;
+	else if(suffix == 'G' || suffix == 'g')
+		inBytes = 1024 * 1024 * 1024;
+
+	// remove o sufixo e converte p int	
+	std::string withoutSuffix = sizeStr.substr(0, sizeStr.size() -1);
+	size_t inKB = std::atoi(withoutSuffix.c_str()) * inBytes;
+	
+	return inKB;
+}
+
+
+bool ConfigParser::containsInvalidCaractersForMaxBodySize(const std::string& str) {
+	char a = str[str.length() - 1];
+	if (a != 'K' && a != 'M' && a != 'G' && a != 'm' && a != 'k' && a != 'g')
+		return true;
+    for (size_t i = 0; i < str.length(); ++i) {
+        char c = str[i];
+        // Verifica se o caractere não é um número (0-9) ou não é um dos caracteres permitidos (K, M, G).
+        if (!isdigit(c) && c != 'K' && c != 'M' && c != 'G' && c != 'k' && c != 'm' && c != 'k') {
+            return true; // Encontrou um caractere inválido.
+        }
+		if (i != (str.length() - 1) && !isdigit(c))
+			return true;
+    }
+    return false; // Não foram encontrados caracteres inválidos.
+}
+
 void ConfigParser::processClientMaxBodySize(std::string &line)
 {
 	if (line == "client_max_body_size")
-		throw ErrorException("Syntax Error: The Directive Client Max Body Size need a value.");
+		throw ErrorException("Syntax Error: The Directive Client_Max_Body_Size needs a value.");
     if(_hasDirMaxBodySize == true)
-        throw ErrorException("Configuration Error: The Directive Client Max Body Size has been duplicated.");
+        throw ErrorException("Configuration Error: The Directive Client_Max_Body_Size has been duplicated.");
     std::string directive = "client_max_body_size";
     std::size_t pos = line.find(directive);
     if (pos != std::string::npos)
     {
-        pos = line.find_first_of("0123456789", pos + directive.size());
-        if (pos != std::string::npos) {
-            std::size_t end_pos = line.find_first_not_of("0123456789KMG", pos);
-            if (end_pos != std::string::npos) {
-                std::string size_str = line.substr(pos, end_pos - pos);
-                std::cout << "client_max_body_size: " << size_str << std::endl;
-				_maxBodySize = atoi(size_str.c_str());
-            }
-        }
+		std::cout << YELLOW << "Client_Max_Body_Size no Config File: " << line << END << std::endl;
+		std::vector<std::string> maxBodyLine;
+		std::istringstream iss(line);
+		std::string value;
+		while (iss >> value)
+			maxBodyLine.push_back(value);
+		if (maxBodyLine.size() != 2)
+			throw ErrorException("Syntax Error: Client_Max_Body_Size directive must have ONE VALUE.");
+		if (maxBodyLine[0] != "client_max_body_size")
+			throw ErrorException("Syntax Error: Client_Max_Body_Size directive must COME FIRST IN LINE.");
+		if (containsInvalidCaractersForMaxBodySize(maxBodyLine[1]))
+			throw ErrorException("Syntax Error: Client_Max_Body_Size value must contain only numbers finalized by K/M/G/k/m/g caracters.");
+		std::cout << YELLOW << "client_max_body_size: " << maxBodyLine[1] << END << std::endl;
+		if (maxBodyLine[1][maxBodyLine[1].size() - 1] != 'K' && maxBodyLine[1][maxBodyLine[1].size() - 1] != 'k')
+			_maxBodySize = convertToKB(maxBodyLine[1]);
+		else
+			_maxBodySize = atoi(maxBodyLine[1].c_str());
+		std::cout << BLUE << "Client_Max_Body_Size em KB: " << _maxBodySize << END << std::endl;
     }
     _hasDirMaxBodySize = true;
 }

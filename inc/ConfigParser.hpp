@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/01 22:45:24 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/02 22:03:24 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,12 +62,14 @@ class ConfigParser
 
 		void storeCurrentLocationDirectives(std::string &directiveLine);
 		void hasprohibitedDirectiveInLocation(std::string &directive);
+		bool containsInvalidCaractersForMaxBodySize(const std::string& str);
 		// validar o tipo do ipaddress
 
 		void resetConfig();
 	    void validateFile(std::ifstream& fileToParse);
 		void removeComments(std::string &line);
 		bool duplicatedPort(std::string& portNumber);
+        size_t convertToKB(std::string &sizeStr);
         
     private:
         
