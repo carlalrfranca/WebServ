@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/02 22:04:06 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/03 19:13:19 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,6 +193,31 @@ bool ConfigParser::duplicatedPort(std::string& portNumber)
 	return false;
 }
 
+bool ConfigParser::isValidIPAddress(const std::string &ipAddress)
+{
+	for(size_t i = 0; i < ipAddress.length(); ++i)
+	{
+		if(!(ipAddress[i] == '.' || (ipAddress[i] >= '0' && ipAddress[i] <= '9')))
+			return false;
+	}
+	std::istringstream splitOctets(ipAddress);
+	std::string octet;
+	int count = 0;
+	
+	while(std::getline(splitOctets, octet, '.'))
+	{
+		count++;
+		if(count > 4)
+			return false;
+	}
+	int value;
+    std::istringstream octetStream(octet);
+    octetStream >> value;
+    if (octetStream.fail() || value < 0 || value > 255)
+        return false;
+    return count == 4;
+}
+
 void ConfigParser::processListen(std::string &line)
 {
 	size_t	posInit;
@@ -202,6 +227,9 @@ void ConfigParser::processListen(std::string &line)
     //     throw ErrorException("Error: The Directive Listen has been duplicated.");
 
 	// tem que extrair o ;
+	//-----------03.10 inclusao da verificacao de IpAddress
+	
+	//-----------------------
 	if (line[line.length() - 1] == ';')
 		line = line.substr(0,  line.length() - 1);
 	// vamos splitar essa linha
@@ -232,6 +260,12 @@ void ConfigParser::processListen(std::string &line)
 		// quer dizer que é combo ip + porta
 		_ipAddress = palavras[1].substr(0, posInit);
 		_portNumber = palavras[1].substr(posInit + 1);
+		// se _ipAddress tiver armazenado "localhost" vindo do config file,
+		// trocar pra 127.0.0.1
+		if (_ipAddress == "localhost")
+			_ipAddress = "127.0.0.1";
+		if(!isValidIPAddress(_ipAddress))
+			throw ErrorException("Error configuration: Invalid IP Address!");
 		if (duplicatedPort(_portNumber))
 			throw ErrorException("Configuration Error: Cannot have repeated port in server.");
 		_allPorts.push_back(_portNumber);
@@ -247,7 +281,7 @@ void ConfigParser::processListen(std::string &line)
 		if (_utils.containsOnlyNumbers(palavras[1])) //ontemApenasNumeros
 		{
 			_portNumber = palavras[1];
-			_ipAddress = "localhost";
+			_ipAddress = "127.0.0.1";
 			if (duplicatedPort(_portNumber))
 				throw ErrorException("Configuration Error: Cannot have repeated port in server.");
 			_allPorts.push_back(_portNumber);

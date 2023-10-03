@@ -46,9 +46,19 @@ server{
   	}
 
 	location /upload {
+		listen 12313.56:2002;
 		root web/cgi-bin/;
       	cgi_path /bin/bash;
       	cgi_ext .sh;
 		upload_store web/images/
-	}
+	}	
+}
+server{
+	listen 123.588.658:2002;
+	allow_methods GET POST DELETE
+	root web/pages/;
+
+location / {
+	index index.html
+	auto_index off
 }
