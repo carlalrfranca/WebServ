@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 20:41:26 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 17:05:42 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ class Request
         void setContentType(const std::string& contentType);
         void setBoundary(const std::string& boundary);
         void setFilename(const std::string& filename);
+        
+        bool getHasError()const;
         std::string getBoundary()const;
         std::string getFilename()const;
         std::string getContentLength()const;        
@@ -55,7 +57,6 @@ class Request
 		std::string getRequest() const;
         std::string getPortRequest()const;
 		std::string getFileFormat()const;
-        bool getHasError()const;
         const std::string& getMethod()const;
         const std::string& getURI()const;
         const std::string& getVersion()const;

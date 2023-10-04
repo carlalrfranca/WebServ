@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 22:52:21 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 17:35:08 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,6 +206,16 @@ const std::map<std::string, std::string>& Response::getHeader() const
     return _headers;
 }
 
+std::string Response::getUri()const
+{
+	return _uri;
+}
+
+void Response::setUri(const std::string& uri)
+{
+	_uri = uri;
+}
+
 std::string Response::getResponse()const
 {
     return _response;
@@ -263,8 +273,12 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, s
     html += "<body>\n";
     html += "<h1>File List</h1>\n";
     html += "<ul>\n";
-	if(!_uri.empty() && _uri[_uri.size() - 1] != '/')
-       	_uri += '/';
+	if(!getUri().empty() && getUri()[getUri().size() - 1] != '/')
+	{
+		std::string newUri = getUri();
+       	newUri += '/';
+		setUri(newUri);
+	}
     for(size_t i = 0; i < fileList.size(); ++i)
 	{
 		// ver se é um arquivo ou um diretorio, se for um diretorio, tem que ser EM FORMA DE LINK
@@ -275,10 +289,10 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, s
 		{
 			if(!itemName.empty() && itemName[itemName.size() - 1] != '/')
         		itemName += '/';
-			std::cout << RED << "É diretorio: " << _uri + itemName << END << std::endl;
-			html += "<li><a href='" + _uri + itemName + "'>" + itemName + "</a></li>\n";
+			std::cout << RED << "É diretorio: " << getUri() + itemName << END << std::endl;
+			html += "<li><a href='" + getUri() + itemName + "'>" + itemName + "</a></li>\n";
 		} else {
-			std::cout << YELLOW << "É arquivo: " << _uri + itemName << END << std::endl;
+			std::cout << YELLOW << "É arquivo: " << getUri() + itemName << END << std::endl;
 			html += "<li>" + itemName + "</li>\n";		
 		}
     }
@@ -460,8 +474,8 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 	} else {
 		std::cout << "Tem só o arquivo de caminho ou só diretorio" << std::endl;
 		std::string path;
-		_uri = uri;
-		if(uri == it->first || uri + '/' == it->first || it->first + '/' == uri) //essa terceira condição vai ferrar outros casos do site?
+		setUri(uri);
+		if(getUri() == it->first || getUri() + '/' == it->first || it->first + '/' == getUri()) //essa terceira condição vai ferrar outros casos do site?
 			path = root;
 		else
 			path = root + parts_uri[0];

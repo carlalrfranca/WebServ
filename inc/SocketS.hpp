@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/02 10:54:31 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 17:38:59 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ class SocketS
         
         SocketS();
         ~SocketS();
-        void loadConfiguration();
         
         void setPort(std::string portNumber);
         void setAddress(std::string ipAddress);
@@ -32,25 +31,25 @@ class SocketS
         void setServerName(std::vector<std::string> serverName);
 		void setIndexFile(std::string index);
         void setRoot(std::string root);
+		void setMaxBodySize(size_t maxBodySize);
         void setMethods(std::vector<std::string>methods);
 		void setLocations(std::map<std::string, LocationDirective> locations);
+		void setErrorPage(std::map<std::string, std::string> errorPages);
         
+		size_t getMaxBodySize() const;
         const int& getFD()const;
         const int& getWebServSocket()const;
         const std::string& getPort()const;
         const std::string& getAddress()const;
         const std::string& getRoot()const;
 		const std::string& getIndexFile() const;
-        // const std::string& getErrorPage()const;
-		size_t getMaxBodySize() const;
-		void setMaxBodySize(size_t maxBodySize);
-        
+		const std::string getErrorPage(int statusCode)const;
         std::vector<std::string> getServerName()const;
         std::vector<std::string> getMethods() const;
 		std::map<std::string, LocationDirective> getLocations()const;
-		const std::string getErrorPage(int statusCode)const;
-		void setErrorPage(std::map<std::string, std::string> errorPages);
+        
 		void initServer();
+        void loadConfiguration();
 		void addAliasToHostsFile(const std::string& alias);
         
     private:
@@ -79,8 +78,8 @@ class SocketS
             }
         
         private:
-            const char* message;
         
+            const char* message;
         };
 };
 //esse aqui está mais para depuração e apresentação das informações

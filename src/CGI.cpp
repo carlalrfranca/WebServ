@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/03 22:51:37 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 19:13:44 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,80 +86,85 @@ std::vector<std::string> CGI::getExtensions(void) const
 	return _scriptExtensions;
 }
 
+int CGI::executeProcessParent(int *pipefd, unsigned int timeoutSeconds, pid_t childPid, int *stdoutPipe)
+{
+	close(stdoutPipe[1]);
+	std::string requestBody = _inputFormData;
+	write(pipefd[1], requestBody.c_str(), requestBody.length());
+	close(pipefd[1]);
+	struct timeval startTime;
+	gettimeofday(&startTime, NULL);
+	while(true)
+	{
+	    pid_t result = waitpid(childPid, NULL, WNOHANG);
+	    if(result == -1)
+	    {
+	        perror("waitpid");
+	        throw std::exception();
+	    }
+	    if(result != 0)
+	        break;
+	    struct timeval currentTime;
+	    gettimeofday(&currentTime, NULL);
+	    unsigned int elapsedTime = (currentTime.tv_sec - startTime.tv_sec) * 1000
+	        + (currentTime.tv_usec - startTime.tv_usec) / 1000;
+	    if(elapsedTime >= timeoutSeconds)
+	    {
+			std::cout << "ESTOUROU O TEMPO" << std::endl;
+	        kill(childPid, SIGKILL);
+	        return 504;
+	    }
+	    usleep(1000);
+	}
+	char buffer[1024];
+	while (true)
+	{
+		ssize_t bytesRead = read(stdoutPipe[0], buffer, sizeof(buffer));
+		if (bytesRead <= 0)
+			break;
+		_scriptOutput.append(buffer, bytesRead);
+	}
+	close(stdoutPipe[0]);
+	return 0;
+}
+
+
+void CGI::executeProcessChild(int *pipefd, std::string fileName, int *stdoutPipe)
+{
+	close(pipefd[1]);
+	close(stdoutPipe[0]);
+	dup2(pipefd[0], STDIN_FILENO);
+	dup2(stdoutPipe[1], STDOUT_FILENO);
+	close(pipefd[0]);
+	close(stdoutPipe[1]);
+    if (execl(getPathToScript().c_str(), getPathToScript().c_str(), fileName.c_str(), static_cast<char *>(0)) == -1)
+        std::cerr << "ERROR executing SCRIPT" << std::endl;
+        //chaar a do error code 500 //return 500; // Saia com um código de erro (por exemplo, 500)
+}
+
 int CGI::executeScript(int *pipefd, std::string fileName)
 {
 	int stdoutPipe[2];
-	if (pipe(stdoutPipe) == -1)
+	if(pipe(stdoutPipe) == -1)
 	{
 	    std::cerr << "ERROR creating STDOUT pipe" << std::endl;
 	    return 500;
 	}
 	pid_t childPid = fork();
     unsigned int timeoutSeconds = 10000;
-
-	// std::cout << RED << "Conteúdo input: " << _inputFormData << END << std::endl;
-	// std::cout << YELLOW << "Nome do arquivo em que será gravado: " << fileName << END << std::endl;
-	if (childPid == -1)
+	if(childPid == -1)
 	{
 		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
 		return 500;
-	}
-	else if (childPid == 0) //é processo filho
+	} 
+	else if(childPid == 0) //é processo filho
 	{
-    	close(pipefd[1]);
-		close(stdoutPipe[0]);
-    	dup2(pipefd[0], STDIN_FILENO);
-		dup2(stdoutPipe[1], STDOUT_FILENO);
-    	close(pipefd[0]);
-		close(stdoutPipe[1]);
-		execl(getPathToScript().c_str(), getPathToScript().c_str(), fileName.c_str(), static_cast<char*>(0));
-		std::cerr << "ERROR executing SCRIPT" << std::endl;
+		executeProcessChild(pipefd, fileName, stdoutPipe);
 		return 500;
 	}
-	else 
-	{
-		// processo pai
-    	close(stdoutPipe[1]);
-		std::string requestBody = _inputFormData;
-    	write(pipefd[1], requestBody.c_str(), requestBody.length());
-		close(pipefd[1]);
-		struct timeval startTime;
-		gettimeofday(&startTime, NULL);
-		
-		while (true)
-		{
-		    pid_t result = waitpid(childPid, NULL, WNOHANG);
-		    if (result == -1)
-		    {
-		        perror("waitpid");
-		        throw std::exception();
-		    }
-		    if (result != 0)
-		        break;
-		    struct timeval currentTime;
-		    gettimeofday(&currentTime, NULL);
-		    unsigned int elapsedTime = (currentTime.tv_sec - startTime.tv_sec) * 1000
-		        + (currentTime.tv_usec - startTime.tv_usec) / 1000;
-		    if (elapsedTime >= timeoutSeconds)
-		    {
-				std::cout << "ESTOUROU O TEMPO" << std::endl;
-		        kill(childPid, SIGKILL);
-		        return 504;
-		    }
-		    usleep(1000);
-		}
-
-		char buffer[1024];
-		while (true)
-		{
-			ssize_t bytesRead = read(stdoutPipe[0], buffer, sizeof(buffer));
-			if (bytesRead <= 0)
-				break;
-			_scriptOutput.append(buffer, bytesRead);
-		}
-		close(stdoutPipe[0]);
-		return 204;
-	}
+	else
+		executeProcessParent(pipefd, timeoutSeconds, childPid, stdoutPipe);
+	return 204;
 }
 
 int CGI::uploadImage(Request &request, std::string request_content, size_t data_init_pos)

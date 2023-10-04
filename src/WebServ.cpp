@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 22:39:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 17:04:46 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -335,17 +335,28 @@ bool WebServ::hasBodyContent(const std::string& header)
 	return false;
 }
 
-void WebServ::removeClientFromEpoll(Epoll& epollS)
-{
+/*
 	epollS._event.data.fd = epollS._clientFd;
 	epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, epollS._clientFd, &epollS._event);
 	close(epollS._clientFd);
+*/
+
+void WebServ::removeClientFromEpoll(Epoll& epollS)
+{
+	struct epoll_event event;
+	
+	event = epollS.getEvent();
+	event.data.fd = epollS.getClientFd();
+	epollS.setEvent(event);
+	
+	epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, epollS.getClientFd(), &event);
+	close(epollS.getClientFd());
 }
 
 void WebServ::readRequest(int clientSocket)
 {
 	char buffer[1000];
-	_epollS._clientFd = clientSocket;
+	_epollS.setClientFd(clientSocket);
 	std::string header;
 	std::string body;
 	// ah, por enquanto tá funcionando porque ele toda vez processa a requestString no cgi... individualmente..
@@ -395,14 +406,16 @@ void WebServ::readRequest(int clientSocket)
 			}
 			else if(hasBodyContent(header) == false)
 				_contentLength = -1;
+			struct epoll_event event;
+			event = _epollS.getEvent();
 			if((_totalBytesRead - header.size()) == _contentLength)
 			{
 				std::cout << YELLOW << _contentLength << END << std::endl;
 				std::cout << YELLOW << totalBytesRead << END << std::endl;
         		// printRequest(_requestString);
 				handleRequest(_requestString);
-				_epollS._event.events = EPOLLOUT;
-				epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &_epollS._event);
+				event.events = EPOLLOUT;
+				epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &event);
 				_requestString = "";
 				_contentLength = 0;
 				_totalBytesRead = 0;
@@ -411,8 +424,8 @@ void WebServ::readRequest(int clientSocket)
 			{
 				// printRequest(_requestString);
 				handleRequest(_requestString);
-				_epollS._event.events = EPOLLOUT;
-				epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &_epollS._event);
+				event.events = EPOLLOUT;
+				epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_MOD, clientSocket, &event);
 				_requestString = "";
 				_contentLength = 0;
 				_totalBytesRead = 0;
@@ -460,7 +473,7 @@ void WebServ::mainLoop()
 			}
 			else if(events[index].events & EPOLLOUT)
 			{
-				ssize_t bytesSent = send(_epollS._clientFd, _response.c_str(), _response.length(), 0);
+				ssize_t bytesSent = send(_epollS.getClientFd(), _response.c_str(), _response.length(), 0);
         		if(bytesSent == -1)
             		throw ErrorException ("Erro ao enviar a resposta ao cliente");
 				removeClientFromEpoll(_epollS);

@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:31:43 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/15 18:04:55 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/04 17:39:25 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@
 
 struct StatusMessages
 {
-    std::map<int, std::string> statusMessages;
     StatusMessages(); //codigo
-    std::string getMessage(int statusCode); //mensagem
+    std::string getMessage(int statusCode);
+    std::map<int, std::string> statusMessages;
 };
 
 #endif
