@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 16:13:30 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/03 20:41:26 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ class Request
         std::string getDomainRequest()const;
 		std::string getRequest() const;
         std::string getPortRequest()const;
+		std::string getFileFormat()const;
         bool getHasError()const;
         const std::string& getMethod()const;
         const std::string& getURI()const;
@@ -69,6 +70,7 @@ class Request
 		std::string			_contentType;
         std::string         _domainContent;
         std::string         _filename;
+		std::string			_fileFormat;
         std::string         _firstLine; 
         std::string         _header;
         std::string         _hostLine;
