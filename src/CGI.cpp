@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/03 22:10:42 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:51:37 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -325,6 +325,30 @@ int CGI::CGIForGetRequest(std::string requestedFilePath)
 	return 200;
 }
 
+std::string CGI::setDateAndTime()
+{
+	char buffer[80];
+	time_t rawTime;
+	struct tm *timeInfo;
+	time(&rawTime);
+	timeInfo = localtime(&rawTime);
+	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S %Z", timeInfo);
+	std::string bufferString(buffer);
+	return bufferString;
+}
+
+std::string CGI::generateHeadersSucessCGI(int statusCode)
+{
+	std::stringstream toConvertToString;
+    toConvertToString << statusCode;
+    std::string statusCodeStr = toConvertToString.str();
+	std::string headers;
+    headers += "HTTP/1.1 " + statusCodeStr + " No Content\r\n";
+	headers += "Content-Length: 0\r\n";
+	headers += "Date: " + setDateAndTime() + "\r\n";
+    headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
+	return headers;
+}
 
 int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber o ponteiro pro obj Response pra poder acessar headers
 {
@@ -367,6 +391,8 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		std::cout << BLUE << "Vamos ARMAZENAR FORM DATA" << END << std::endl;
 		int resultCode = 0;
 		resultCode = storeFormInput(data_init_pos, request_content);
+		if (resultCode == 204)
+			_response = generateHeadersSucessCGI(resultCode);
 		return resultCode;
 	}
 	if (data_init_pos != std::string::npos)
@@ -378,8 +404,11 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		int resultCode = 0;
 		// resultCode = uploadImage(request, request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
 		resultCode = uploadImageCGI(request);
+		if (resultCode == 204)
+			_response = generateHeadersSucessCGI(resultCode);
 		return resultCode;
 	}
+	_response = generateHeadersSucessCGI(204);
 	return 204;
 }
 

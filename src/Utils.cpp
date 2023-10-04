@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/29 21:55:25 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:41:52 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ Utils::~Utils()
 void Utils::trimSpaces(std::string &str)
 {
     std::string::size_type start = str.find_first_not_of(" \t\n\r");
-    if (start == std::string::npos)
+    if(start == std::string::npos)
     {
         str.clear();
         return;
@@ -44,10 +44,10 @@ void Utils::trimWhiteSpace(std::string &line)
 void Utils::removeComments(std::string &line)
 {
     size_t start = line.find('#');
-    while (start != std::string::npos)
+    while(start != std::string::npos)
     {
         size_t end = line.find('\n', start);
-        if (end != std::string::npos)
+        if(end != std::string::npos)
             line.erase(start, end - start + 1); // +1 para '\n'
         else{
             line.erase(start);
@@ -59,9 +59,9 @@ void Utils::removeComments(std::string &line)
 
 bool Utils::containsOnlyLetters(const std::string& str)
 {
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) 
+    for(std::string::const_iterator it = str.begin(); it != str.end(); ++it) 
 	{
-        if (!std::isalpha(*it))
+        if(!std::isalpha(*it))
             return false;
     }
     return true;
@@ -69,9 +69,9 @@ bool Utils::containsOnlyLetters(const std::string& str)
 
 bool Utils::containsOnlyNumbers(const std::string& str)
 {
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it)
+    for(std::string::const_iterator it = str.begin(); it != str.end(); ++it)
 	{
-        if (!std::isdigit(*it))
+        if(!std::isdigit(*it))
             return false;
     }
     return true;
@@ -83,11 +83,11 @@ std::vector<std::string> Utils::splitString(const std::string& input, char delim
     size_t end = input.find(delimiter);
     std::vector<std::string> tokens;
 
-    while (end != std::string::npos)
+    while(end != std::string::npos)
     {
         end = input.find(delimiter, start);
 		std::string part = input.substr(start, end - start);
-		if (!part.empty())
+		if(!part.empty())
         	tokens.push_back(part);
         start = end + 1;
     }

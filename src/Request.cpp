@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 20:41:57 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:14:15 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@ Request::Request(const std::string& request)
     _hostLine = "";
     _hostContent = "";
     _portRequest = "";
-	_contentLength = "";
 	_contentType = "";
+	_contentLength = "";
     _domainContent = "";
     _requestStream.str(request);
 	_statusMessages = StatusMessages();
@@ -36,13 +36,13 @@ Request::Request(const std::string& request)
 	// talvez aqui tenha que abrir pra um metodo
 	// que PARSEIA E VALIDA A REQUEST TODA
     std::getline(_requestStream, _firstLine);
-	// -------------
 	size_t headerEndPos = _request.find("\r\n\r\n");
 	std::string body;
 	std::string headers;
 	headers = _request.substr(0, headerEndPos + 4);
 	_header = headers;
-	if (headerEndPos != std::string::npos)
+
+	if(headerEndPos != std::string::npos)
 	{
 		body = _request.substr(headerEndPos + 4);
 		setBody(body);
@@ -50,9 +50,8 @@ Request::Request(const std::string& request)
 		// std::cout << RED << body << " | Body Size: " << body.size() << END << std::endl;
 		// std::cout << RED << "******************" << END << std::endl;
 		size_t methodDelete = body.find("_method=DELETE");
-		if (methodDelete != std::string::npos)
+		if(methodDelete != std::string::npos)
 			setMethod("DELETE");
-		// tambem resgatar o valor do "imagemSelecionada"
 	}
 }
 
@@ -66,15 +65,11 @@ void Request::setRequest(const std::string& request)
     std::getline(_requestStream, _firstLine);
 }
 
-std::string Request::getRequest(void) const
-{
-	return _request;
-}
-
 void Request::printRequest()
 {
     std::istringstream iss(_request);
     std::string line;
+	
     while (std::getline(iss, line) && line != "\r")
         std::cout << line << std::endl;
 }
@@ -109,9 +104,24 @@ void Request::setContentType(const std::string& contentType)
     _contentType = contentType;
 }
 
+void Request::setBoundary(const std::string& boundary)
+{
+    _boundary = boundary;
+}
+
+void Request::setFilename(const std::string& filename)
+{
+    _filename = filename;
+}
+
 std::string Request::getContentLength()const        
 {
     return _contentLength;
+}
+
+std::string Request::getRequest(void) const
+{
+	return _request;
 }
 
 std::string Request::getContentType()const
@@ -144,15 +154,6 @@ std::string Request::getPortRequest(void)const
     return _portRequest;
 }
 
-void Request::setBoundary(const std::string& boundary)
-{
-    _boundary = boundary;
-}
-
-void Request::setFilename(const std::string& filename)
-{
-    _filename = filename;
-}
 
 std::string Request::getBoundary()const
 {
@@ -169,22 +170,22 @@ int Request::isFirstLineValid()
 	std::istringstream firstLineStream(_firstLine);
     std::vector<std::string> _tokens;
     std::string _token;
-    // separa os tokens da primeira linha
-	while (std::getline(firstLineStream, _token, ' '))
+
+	while(std::getline(firstLineStream, _token, ' '))
 	{
 		_utils.trimSpaces(_token);
         _tokens.push_back(_token);
 	}
-    for (size_t i = 0; i < _tokens.size(); ++i)
+    for(size_t i = 0; i < _tokens.size(); ++i)
         std::cout << "Token " << i << " (da primeira Linha da Request): " << _tokens[i] << " | Tamanho: " << _tokens[i].size() << std::endl;
     // valida os tokens da primeira linha
-	if (_tokens.size() != 3)
+	if(_tokens.size() != 3)
 		return 400; // retorna 400 (Bad Request)
-	if (_tokens[0] != "GET" && _tokens[0] != "POST" && _tokens[0] != "DELETE")
+	if(_tokens[0] != "GET" && _tokens[0] != "POST" && _tokens[0] != "DELETE")
 		return 501; // 501 Not Implemented
-	if (_tokens[2] != "HTTP/1.1")
+	if(_tokens[2] != "HTTP/1.1")
 		return 505; //505 (HTTP Version Not Supported)
-	if (_method.size() == 0)
+	if(_method.size() == 0)
     	_method = _tokens[0];
 	_uri = _tokens[1];
     _version = _tokens[2];
@@ -210,20 +211,11 @@ int Request::isFirstLineValid()
     return SUCCESS;
 }
 
-/*
-    FLEXIBILIZAÇÃO] separar "boundary=" e "filename=" no 
-    método validateRequest() do objeto Request (dentro da 
-    condição que verifica se o _method é POST). LEMBRE:
-    "boundary=" e "filename=" estarão no _body, então é ele
-    que tem que parsear
-*/
-
-
-
 void Request::processHeaderRequest()
 {
 	std::string line;
 	std::istringstream headerStream(_header);
+	
 	while(std::getline(headerStream, line))
     {
         if(line.substr(0, 6) == "Host: ")
@@ -277,12 +269,13 @@ std::string Request::getFileFormat() const
 void Request::processBodyRequest()
 {
 	size_t filenamePos = _body.find("filename=");
-		std::string field = "filename=";
+	std::string field = "filename=";
+	
 	if(filenamePos != std::string::npos)
 	{
 		filenamePos += (field.size() + 1);
 		size_t filenameEnd = _body.find("\"", filenamePos);
-		if (filenameEnd != std::string::npos)
+		if(filenameEnd != std::string::npos)
 		{
 			std::string filename = _body.substr(filenamePos, filenameEnd - filenamePos);
 			std::cout << YELLOW << "Filename FOUND: " << filename << END << std::endl;
@@ -297,11 +290,10 @@ void Request::processBodyRequest()
 	{
 		contentFormat += (fieldContent.size() + 1);
  		size_t contentFormatEnd = _body.find("\r\n", contentFormat);
-		if (contentFormatEnd != std::string::npos)
+		if(contentFormatEnd != std::string::npos)
 		{
  			std::string fileFormat = _body.substr(contentFormat, contentFormatEnd - contentFormat);
 			std::cout << YELLOW << "File format FOUND: " << fileFormat << END << std::endl;
-			// setFilename(filename);
 			std::cout << RED << "Fileformat size: " << fileFormat.size() << END << std::endl;
 			_fileFormat = fileFormat;
 		} else
@@ -312,6 +304,7 @@ void Request::processBodyRequest()
 int Request::validateRequest()
 {
     int result = isFirstLineValid();
+
 	if(result != SUCCESS)
 		return result;
 	processHeaderRequest();
@@ -337,6 +330,7 @@ const std::string& Request::getVersion() const
 const std::string Request::getErrorPage(int statusCode)const
 {
 	std::stringstream toConvertToStr;
+
     toConvertToStr << statusCode;
     std::string statusCodeStr = toConvertToStr.str();
 	std::map<std::string, std::string>::const_iterator it = _errorPage.find(statusCodeStr);
@@ -353,8 +347,6 @@ std::string Request::getDateAndTime()const
     
     time(&rawTime);
     timeInfo = localtime(&rawTime);
-    
-    //string info 
     strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S %Z", timeInfo);
     std::string date(buffer);
 	return date;
@@ -382,7 +374,6 @@ std::string Request::errorCodeHtml(int statusCode)
     response += "Content-Type: text/html\r\n";
 	response += "Content-Length: " + contentLengthStr + "\r\n";
 	response += "Date: " + date + "\r\n";
-	// response += "Connection: close\r\n\r\n" + errorHtml;
 	response += "\r\n" + errorHtml;
 	return response;
 }

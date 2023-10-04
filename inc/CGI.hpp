@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/03 21:58:06 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:42:34 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ class CGI
 		int handleCGIRequest(Request &request);
 		int uploadImage(Request &request, std::string request_content, size_t data_init_pos);
 		int uploadImageCGI(Request &request);
+		std::string generateHeadersSucessCGI(int statusCode);
+		std::string setDateAndTime();
 		// void handleCGIRequest(std::string& request);
 		int storeFormInput( std::size_t data_init_pos, const std::string& request_content);
 		int CGIForGetRequest(std::string requestedFilePath);
