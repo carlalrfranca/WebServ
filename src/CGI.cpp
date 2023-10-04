@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/03 20:55:07 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:10:42 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,17 +33,22 @@ CGI::CGI(const std::string& root, std::vector<std::string> commands, std::vector
 CGI::~CGI()
 {}
 
+const std::string& CGI::getPathToScript(void) const
+{
+	return _scriptName;
+}
+
+const std::string& CGI::getUploadStore() const
+{
+	return _uploadStore;
+}
+
 void CGI::setPathToScript(std::string scriptName)
 {
 	// construir o Caminho para o Script
 	std::vector<std::string>ext = getExtensions();
 	std::string tmp_path = getRoot() + scriptName + ext[0];
 	_scriptName = tmp_path;
-}
-
-const std::string& CGI::getPathToScript(void) const
-{
-	return _scriptName;
 }
 
 void CGI::setRoot(const std::string& root)
@@ -54,6 +59,11 @@ void CGI::setRoot(const std::string& root)
 const std::string& CGI::getRoot(void) const
 {
 	return _rootToScripts;
+}
+
+void CGI::setUploadStoreFolder(std::string uploadStore)
+{
+	_uploadStore = uploadStore;
 }
 
 void CGI::setCommands(std::vector<std::string> commands)
@@ -87,7 +97,8 @@ int CGI::executeScript(int *pipefd, std::string fileName)
 	pid_t childPid = fork();
     unsigned int timeoutSeconds = 10000;
 
-	std::cout << RED << "Conteúdo input: " << _inputFormData << END << std::endl;
+	// std::cout << RED << "Conteúdo input: " << _inputFormData << END << std::endl;
+	// std::cout << YELLOW << "Nome do arquivo em que será gravado: " << fileName << END << std::endl;
 	if (childPid == -1)
 	{
 		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
@@ -212,7 +223,9 @@ int CGI::uploadImageCGI(Request &request)
 		return 500;
 	}
 	int resultCGI = 0;
-	resultCGI = executeScript(pipefd, request.getFilename());
+	std::string pathToStore = getUploadStore() + request.getFilename();
+	std::cout << BLUE << "Caminho todo de ONDE POSTAR: " << pathToStore << std::endl;
+	resultCGI = executeScript(pipefd, pathToStore);
 	if (resultCGI == 504)
 		return 504;
 	if (_scriptOutput.empty())
@@ -233,7 +246,9 @@ int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_co
 		return 500;
 	}
 	int resultCGI = 0;
-	resultCGI = executeScript(pipefd, PATH_FORM_DATA);
+	std::string pathToStore = getUploadStore() + "form_data.txt";
+	std::cout << BLUE << "Caminho todo de ONDE POSTAR: " << pathToStore << std::endl;
+	resultCGI = executeScript(pipefd, pathToStore);
 	if (resultCGI == 504)
 		return 504;
 	if (_scriptOutput.empty())
@@ -349,6 +364,7 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 	std::size_t boundary_pos = request_content.find("boundary=");
 	if (boundary_pos == std::string::npos)
 	{
+		std::cout << BLUE << "Vamos ARMAZENAR FORM DATA" << END << std::endl;
 		int resultCode = 0;
 		resultCode = storeFormInput(data_init_pos, request_content);
 		return resultCode;

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/03 20:43:51 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/03 21:58:06 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,10 @@ class CGI
 		void setCommands(std::vector<std::string> commands);
 		void setExtensions(std::vector<std::string> extensions);
 		void setPathToScript(std::string scriptName); //tem que setar o path pro script e completar com as extensões
-		
+		void setUploadStoreFolder(std::string uploadStore);
+
 		const std::string& getRoot() const;
+		const std::string& getUploadStore() const;
 		std::string getResponse() const;
 		std::vector<std::string> getCommands() const;
 		std::vector<std::string> getExtensions() const;
@@ -72,6 +74,7 @@ class CGI
 		std::string				_scriptOutput;
 		std::string				_rootToScripts;
 		std::string				_scriptName;
+		std::string				_uploadStore;
 		
 };
 #endif
