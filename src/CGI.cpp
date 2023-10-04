@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/02 23:50:02 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/03 20:55:07 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,10 +181,30 @@ int CGI::uploadImage(Request &request, std::string request_content, size_t data_
 	return 204;
 }
 
-/*
-int CGI::uploadImageCGI(std::string request_content, size_t data_init_pos)
+
+int CGI::uploadImageCGI(Request &request)
 {
-	_inputFormData = request_content;
+	// _inputFormData = request_content;
+	_inputFormData = request.getBody();
+	size_t startBinaryContent = _inputFormData.find(request.getFileFormat());
+	if (startBinaryContent != std::string::npos)
+	{
+		startBinaryContent += (request.getFileFormat().size() + 4);
+		_inputFormData = _inputFormData.substr(startBinaryContent);
+	}
+
+	std::ofstream outputFile("binaryContent_Image.txt");
+
+    // Verifica se o arquivo foi aberto com sucesso
+    if (!outputFile.is_open())
+	{
+        std::cerr << "Erro ao abrir o arquivo." << std::endl;
+        return 500;
+    }
+
+    // Escreve o conteúdo da solicitação no arquivo
+    outputFile << _inputFormData;
+
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
 	{
@@ -192,7 +212,7 @@ int CGI::uploadImageCGI(std::string request_content, size_t data_init_pos)
 		return 500;
 	}
 	int resultCGI = 0;
-	resultCGI = executeScript(pipefd, "Imagem-salva.jpg");
+	resultCGI = executeScript(pipefd, request.getFilename());
 	if (resultCGI == 504)
 		return 504;
 	if (_scriptOutput.empty())
@@ -200,7 +220,7 @@ int CGI::uploadImageCGI(std::string request_content, size_t data_init_pos)
 	_response += _scriptOutput;
 	// std::cout << _response << std::endl;
 	return 204;
-}*/
+}
 
 int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_content)
 {
@@ -320,7 +340,8 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
     }
 
     // Escreve o conteúdo da solicitação no arquivo
-    outputFile << request_content;
+    // outputFile << request_content;
+	outputFile << request.getBody();
 
     // Fecha o arquivo
     outputFile.close();
@@ -339,7 +360,8 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		// e extrair o Content-Type a partir disso
 		// no caso do formulario, só vem o conteudo submetido direto (ver request_imagem.txt)
 		int resultCode = 0;
-		resultCode = uploadImage(request, request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
+		// resultCode = uploadImage(request, request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
+		resultCode = uploadImageCGI(request);
 		return resultCode;
 	}
 	return 204;

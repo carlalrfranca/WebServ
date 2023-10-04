@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 17:06:58 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/03 20:41:57 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -269,6 +269,11 @@ void Request::processHeaderRequest()
 	}	
 }
 
+std::string Request::getFileFormat() const
+{
+	return _fileFormat;
+}
+
 void Request::processBodyRequest()
 {
 	size_t filenamePos = _body.find("filename=");
@@ -298,6 +303,7 @@ void Request::processBodyRequest()
 			std::cout << YELLOW << "File format FOUND: " << fileFormat << END << std::endl;
 			// setFilename(filename);
 			std::cout << RED << "Fileformat size: " << fileFormat.size() << END << std::endl;
+			_fileFormat = fileFormat;
 		} else
 			std::cout << RED << "File format not FOUND" << END << std::endl;
 	}
