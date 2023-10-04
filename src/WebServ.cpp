@@ -3,18 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/02 16:37:20 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:39:15 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/WebServ.hpp"
 
-WebServ::WebServ(){}
+WebServ::WebServ()
+{}
 
-WebServ::~WebServ(){}
+WebServ::~WebServ()
+{}
 
 WebServ::WebServ(std::string filename)
 {
@@ -59,55 +61,52 @@ WebServ::WebServ(std::string filename)
 				index++;
 			    isInsideServerBlock = true; // Entramos em um bloco "server"
             }
-            else if (!isInsideServerBlock && !isLocationBlock && !line.empty())
+            else if(!isInsideServerBlock && !isLocationBlock && !line.empty())
                 throw ErrorException("Wrong character out of server scope: " + line);
-            else if (line.find("}") != std::string::npos && isLocationBlock == false) {
+            else if(line.find("}") != std::string::npos && isLocationBlock == false) {
                 isInsideServerBlock = false; // Saímos do bloco "server"
                 continue;
             }
             else if(isInsideServerBlock){
-    			if (line.find("location") != std::string::npos || isLocationBlock == true){
-                    if (line.find("location") != std::string::npos && isLocationBlock == true)
+    			if(line.find("location") != std::string::npos || isLocationBlock == true){
+                    if(line.find("location") != std::string::npos && isLocationBlock == true)
 						throw ErrorException("Configuration Error: Can't have location block inside of another location block");
-					if (line.find("}") != std::string::npos){
+					if(line.find("}") != std::string::npos){
                         isLocationBlock = false;
     					continue;
     				}         
                     _configParser.processLocation(line);
                     isLocationBlock = true;
                 } // configSocket(index);
-                else if (line.find("listen") != std::string::npos){
+                else if(line.find("listen") != std::string::npos){
                     _configParser.processListen(line);
-                }else if (line.find("server_name") != std::string::npos){
+                }else if(line.find("server_name") != std::string::npos){
                     _configParser.processServerName(line);
-                }else if (line.find("root") != std::string::npos){
+                }else if(line.find("root") != std::string::npos){
                     _configParser.processRoot(line);
-                }else if (line.find("index") != std::string::npos){
+                }else if(line.find("index") != std::string::npos){
                     _configParser.processIndex(line);
-    			}else if (line.find("allow_methods") != std::string::npos){
+    			}else if(line.find("allow_methods") != std::string::npos){
     				_configParser.processAllowMethods(line);
-    			}else if (line.find("client_max_body_size") != std::string::npos){
+    			}else if(line.find("client_max_body_size") != std::string::npos){
     				_configParser.processClientMaxBodySize(line);
-    			}else if (line.find("return") != std::string::npos){
+    			}else if(line.find("return") != std::string::npos){
     				_configParser.processReturn(line);
-    			}else if (line.find("error_page") != std::string::npos){
+    			}else if(line.find("error_page") != std::string::npos){
                     _configParser.processErrorPage(line);
-                }
-				else
-				{
+                } else {
 					std::cout << line << std::endl;
 					throw ErrorException("Configuration Error: Directive not allowed!");
 				}
             }
         }
-        if(index == 0){
+        if(index == 0)
             throw ErrorException("Configuration Error: Server Block not found!");
-        }
-		if (isLocationBlock == true || isInsideServerBlock == true)
+		if(isLocationBlock == true || isInsideServerBlock == true)
 			throw ErrorException("Configuration Error: Server Block or Location Block not closed!");
     }else
         throw ErrorException("File Error : file cannot be opened");
-    if (index != 0)
+    if(index != 0)
         configSocket();
     fileToParse.close();
 	// checkForDuplicates();
@@ -139,23 +138,22 @@ void WebServ::configSocket()
 {
 	// antes de passar os itens do _configParser para o socket,
 	// verificar que todas as diretivas mandatórias estão preenchidas..
-	if (_configParser.getRoot().empty())
+	if(_configParser.getRoot().empty())
 		_configParser.setRoot("./");
-	if (_configParser.getAddress().empty())
+	if(_configParser.getAddress().empty())
 		_configParser.setAddress("localhost");
 	// if (_configParser.getIndexFile().empty())
 		// _configParser.setIndexFile("index.html");
-	if (_configParser.getPort().empty())
+	if(_configParser.getPort().empty())
 		throw ErrorException("Configuration Error: Port not found!");
 	// _configParser.checkDuplicatePorts();
 	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server,
 	// a gente vai definir um padrão? (ou deixar sem?)
-
 	std::vector<std::string> tmpPorts = _configParser.getAllPorts();
 	std::vector<std::string> tmpAddress = _configParser.getAllIps();
 	size_t totalPorts = tmpPorts.size();
 	std::cout << BLUE << "Qtdade Portas: " << totalPorts << " | Quantidade de Ips: " << tmpAddress.size() << END << std::endl;
-	for (size_t i = 0; i < totalPorts; i++)
+	for(size_t i = 0; i < totalPorts; i++)
 	{
     	SocketS temp_socket;
 		temp_socket.setPort(tmpPorts[i]);
@@ -169,7 +167,6 @@ void WebServ::configSocket()
 		temp_socket.setErrorPage(_configParser.getErrorPage());
 		temp_socket.setServerName(_configParser.getDomains());
 		temp_socket.setMaxBodySize(_configParser.getMaxBodySize());
-
 	    _serverSocket.push_back(temp_socket);
 	}
 	_configParser.resetConfig(); // O PROBLEMA DESSA MERDA É AQUI
@@ -189,7 +186,7 @@ void WebServ::initServers()
 	std::vector<SocketS>::size_type i = 0;
 	
 	std::cout << RED << "Qtdade servers: " << _serverSocket.size() << END << std::endl;
-	while (i < _serverSocket.size()) //loop que itera os sockets do servidor
+	while(i < _serverSocket.size()) //loop que itera os sockets do servidor
 	{
 		_serverSocket[i].initServer();
         i++;
@@ -217,24 +214,17 @@ bool WebServ::isFirstLineValid(const std::string& request, std::string& _firstLi
 {
     std::istringstream requestStream(request);
     std::getline(requestStream, _firstLine);
-    
-    //valida htt
+
     if(_firstLine.find("GET") == std::string::npos && 
         _firstLine.find("POST") == std::string::npos && 
-         _firstLine.find("DELETE") == std::string::npos)
+        _firstLine.find("DELETE") == std::string::npos)
         return false;
-    
-    //verifica se tem espaço após o metodo
     size_t spacePos = _firstLine.find(' ');
     if(spacePos == std::string::npos || spacePos == _firstLine.size() - 1 )
         return false;
-    
-    //valida HTTP após o metodo e espaço
     std::string version = _firstLine.substr(spacePos + 1);
     if(version.find("HTTP/1.1") == std::string::npos)
         return false;
-    
-    //valida espaço apos a versão
     spacePos = version.find(' ');
     if(spacePos == std::string::npos || spacePos == version.size() - 1)
         return false;
@@ -251,12 +241,11 @@ void WebServ::responseError()
         response = "HTTP/1.1 404 Not Found\r\n\r\n";
     else if(errorCode == 500)
         response = "HTTP/1.1 500 Internal Server\r\n\r\n";
-    else //erro não reconhecido
+    else
         response = "HTTP/1.1 Error\r\n\r\n";
     ssize_t bytesSent = send(_clientSocket, response.c_str(), response.size(), 0);
-    if(bytesSent < 0) {
+    if(bytesSent < 0)
         std::cerr << "[Error] sending error response." << std::endl;
-    }
 }
 
 Epoll& WebServ::getEpollS()
@@ -292,20 +281,20 @@ void WebServ::handleRequest(std::string& requestString)
     //     close(clientSocket);
     // }
 	int resultCode = request.validateRequest();
-    if (resultCode != 0)
+    if(resultCode != 0)
 	{
 		request.setHasError(true);
 		_response = request.errorCodeHtml(resultCode);
 		return ;
 	}
-    if (request.getHasError())
+    if(request.getHasError())
         responseError(); //criar um método pra errorCodeHtml aqui
-	// ------------------
     std::cout << "--------------------********---------" << std::endl;
     std::cout << "Dominio da request: " << request.getDomainRequest() << "| Size: " << request.getDomainRequest().size() << std::endl;
     std::cout << "--------------------********---------" << std::endl;
     int selectedServer = UtilsResponse::selectServer(request, _serverSocket);
-    if (selectedServer != -1) {
+    if(selectedServer != -1)
+	{
         currentResponse.buildResponse(request, _serverSocket[selectedServer]);
         _response = currentResponse.getResponse();
     } 
@@ -318,15 +307,18 @@ int	WebServ::convertContentLength(std::string& header, size_t contentLengthPos)
 	contentLengthPos += strlen("Content-Length: "); // Avance para o início do valor.
     size_t lineEndPos = header.find("\r\n", contentLengthPos); // Encontre o final da linha.
 
-    if (lineEndPos != std::string::npos) {
+    if(lineEndPos != std::string::npos)
+	{
         std::string contentLengthStr = header.substr(contentLengthPos, lineEndPos - contentLengthPos);
         // Agora, 'contentLengthStr' contém o valor do Content-Length como uma string.
 		// std::cout << RED << "Content-Length > " << contentLengthStr << END << std::endl;
         // Você pode converter 'contentLengthStr' para um valor numérico, se necessário.
         // Exemplo:
-        try {
+        try
+		{
             _contentLength = std::atoi(contentLengthStr.c_str());
-        } catch (const std::invalid_argument& e) {
+        } catch (const std::invalid_argument& e)
+		{
             // Lida com erros de conversão, se necessário. O que fazer aqui? Erro de cabeçalho? Tem isso?
 			std::cout << RED << "Erro de conversão -->>> " << e.what() << std::endl;
         }
@@ -338,7 +330,7 @@ bool WebServ::hasBodyContent(const std::string& header)
 {
 	// retorna se há "content-length", ou seja, se a request tem um body sendo enviado além dos cabeçalhos
 	size_t contentLengthPos = header.find("Content-Length: ");
-	if (contentLengthPos != std::string::npos)
+	if(contentLengthPos != std::string::npos)
 		return true;
 	return false;
 }
@@ -358,22 +350,22 @@ void WebServ::readRequest(int clientSocket)
 	std::string body;
 	// ah, por enquanto tá funcionando porque ele toda vez processa a requestString no cgi... individualmente..
 	// mas tem que tratar os chunks direito...
-	if (_requestString.size() > 0)
+	if(_requestString.size() > 0)
 		std::cout << RED << "Request JÁ TEM COISA!!!" << END << std::endl;
 	ssize_t totalBytesRead = 0;
 	// loop para receber e acumular os chunks da solicitação
 	//ssize_t bytesRead = 0;
 	std::cout << BLUE << "ENTERING READ REQUEST" << END << std::endl;
-	while (true)
+	while(true)
 	{
 		ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-        if (bytesRead == 0)
+        if(bytesRead == 0)
 		{
 			std::cerr << "Client closed connection." << std::endl; //tem que tirar o client quando dá esse tipo de erro
 			removeClientFromEpoll(_epollS);
 			return;
 		}
-		else if (bytesRead == -1)
+		else if(bytesRead == -1)
 		{
 			std::cerr << "Error during reading of client request: " << strerror(errno) << std::endl; //tem que tirar o client quando dá esse tipo de erro
 			// _epollS._event.data.fd = _epollS._clientFd;
@@ -389,21 +381,21 @@ void WebServ::readRequest(int clientSocket)
 		}
 		// Agora temos a solicitação completa em requestString e podemos processá-la
 		size_t headerEndPos = _requestString.find("\r\n\r\n");
-		if (headerEndPos != std::string::npos) {
-			if (header.size() == 0)
+		if(headerEndPos != std::string::npos) {
+			if(header.size() == 0)
 			{
 			    header = _requestString.substr(0, headerEndPos + 4); // +4 para incluir "\r\n\r\n"
 				std::cout << YELLOW << header << END << std::endl;
 			}
-			if (_contentLength == 0 && hasBodyContent(header) == true)
+			if(_contentLength == 0 && hasBodyContent(header) == true)
 			{
 				size_t contentLengthPos = header.find("Content-Length: ");
 				// Agora, extraia o valor do Content-Length.
 				convertContentLength(header, contentLengthPos);
 			}
-			else if (hasBodyContent(header) == false)
+			else if(hasBodyContent(header) == false)
 				_contentLength = -1;
-			if ((_totalBytesRead - header.size()) == _contentLength)
+			if((_totalBytesRead - header.size()) == _contentLength)
 			{
 				std::cout << YELLOW << _contentLength << END << std::endl;
 				std::cout << YELLOW << totalBytesRead << END << std::endl;
@@ -415,7 +407,7 @@ void WebServ::readRequest(int clientSocket)
 				_contentLength = 0;
 				_totalBytesRead = 0;
 			}
-			else if (_contentLength == (size_t)-1)
+			else if(_contentLength == (size_t)-1)
 			{
 				// printRequest(_requestString);
 				handleRequest(_requestString);
@@ -437,26 +429,24 @@ void WebServ::mainLoop()
     std::cout << BLUE << "-----------------------------------------\n" << END << std::endl;
     _epollS.addServersToEpoll(_serverSocket);
     int epollFd = _epollS.getEpollFd();
-    if (epollFd == -1 || epollFd == -2)
-        return;
+    if(epollFd == -1 || epollFd == -2)
+		return;
     const int maxEvents = _epollS.getMaxEvents();
     struct epoll_event events[maxEvents];
-
     while(true)
     {
         _epollS.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
-        if (_epollS.getNumberEvents() == -1)
+        if(_epollS.getNumberEvents() == -1)
         {
             perror("Error in epoll_wait");
             return;
         }
-        for (int index = 0; index < _epollS.getNumberEvents(); ++index)
+        for(int index = 0; index < _epollS.getNumberEvents(); ++index)
         {
-			//int current_fd = events[index].data.fd;
 			isEventFromServerSocket(events,index);
-			if (events[index].events & EPOLLIN)
+			if(events[index].events & EPOLLIN)
 			{
-            	if (_epollS.getIsServerFdTriggered() == true)
+            	if(_epollS.getIsServerFdTriggered() == true)
             	{
             	    int result = _epollS.addNewClientToEpoll(events, index);
             	    if (result == -3)
@@ -468,10 +458,10 @@ void WebServ::mainLoop()
 					readRequest(clientSocket);
             	}
 			}
-			else if (events[index].events & EPOLLOUT)
+			else if(events[index].events & EPOLLOUT)
 			{
 				ssize_t bytesSent = send(_epollS._clientFd, _response.c_str(), _response.length(), 0);
-        		if (bytesSent == -1)
+        		if(bytesSent == -1)
             		throw ErrorException ("Erro ao enviar a resposta ao cliente");
 				removeClientFromEpoll(_epollS);
 				std::cout << BLUE << "\n---------------------------------------" << END << std::endl;
@@ -480,11 +470,6 @@ void WebServ::mainLoop()
 			}
         }
     }
-    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+    for(size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
         close(_serverSocket[serverIndex].getWebServSocket());
 }
-
-/*
-    g++ -std=c++98 -I inc/ src/main.cpp src/CGI.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response
-    ./executavel src/config.txt
-*/

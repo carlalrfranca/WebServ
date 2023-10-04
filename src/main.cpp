@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/29 21:47:47 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:02:52 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,19 +16,20 @@
 int main(int argc, char **argv)
 {
 	std::string filename;
-	if (argc == 1)
+	if(argc == 1)
 		filename = "./src/config.txt";
-    else if (argc == 2)
+    else if(argc == 2)
 	{
 		struct stat info;
-		 if (stat(argv[1], &info) != 0)
+		 if(stat(argv[1], &info) != 0)
 		 {
 			std::cerr << "Error: Config file doesn't exist!" << std::endl;
 			exit(EXIT_FAILURE);
 		 }
 		filename = argv[1];
 	}
-    if(argc != 2){
+    if(argc != 2)
+    {
         std::cerr << "Error: Too many arguments" << std::endl;
         exit(EXIT_FAILURE);
     }

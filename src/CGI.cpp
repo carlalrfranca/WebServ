@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/02 23:50:02 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:51:37 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,17 +33,22 @@ CGI::CGI(const std::string& root, std::vector<std::string> commands, std::vector
 CGI::~CGI()
 {}
 
+const std::string& CGI::getPathToScript(void) const
+{
+	return _scriptName;
+}
+
+const std::string& CGI::getUploadStore() const
+{
+	return _uploadStore;
+}
+
 void CGI::setPathToScript(std::string scriptName)
 {
 	// construir o Caminho para o Script
 	std::vector<std::string>ext = getExtensions();
 	std::string tmp_path = getRoot() + scriptName + ext[0];
 	_scriptName = tmp_path;
-}
-
-const std::string& CGI::getPathToScript(void) const
-{
-	return _scriptName;
 }
 
 void CGI::setRoot(const std::string& root)
@@ -54,6 +59,11 @@ void CGI::setRoot(const std::string& root)
 const std::string& CGI::getRoot(void) const
 {
 	return _rootToScripts;
+}
+
+void CGI::setUploadStoreFolder(std::string uploadStore)
+{
+	_uploadStore = uploadStore;
 }
 
 void CGI::setCommands(std::vector<std::string> commands)
@@ -87,7 +97,8 @@ int CGI::executeScript(int *pipefd, std::string fileName)
 	pid_t childPid = fork();
     unsigned int timeoutSeconds = 10000;
 
-	std::cout << RED << "Conteúdo input: " << _inputFormData << END << std::endl;
+	// std::cout << RED << "Conteúdo input: " << _inputFormData << END << std::endl;
+	// std::cout << YELLOW << "Nome do arquivo em que será gravado: " << fileName << END << std::endl;
 	if (childPid == -1)
 	{
 		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
@@ -181,10 +192,30 @@ int CGI::uploadImage(Request &request, std::string request_content, size_t data_
 	return 204;
 }
 
-/*
-int CGI::uploadImageCGI(std::string request_content, size_t data_init_pos)
+
+int CGI::uploadImageCGI(Request &request)
 {
-	_inputFormData = request_content;
+	// _inputFormData = request_content;
+	_inputFormData = request.getBody();
+	size_t startBinaryContent = _inputFormData.find(request.getFileFormat());
+	if (startBinaryContent != std::string::npos)
+	{
+		startBinaryContent += (request.getFileFormat().size() + 4);
+		_inputFormData = _inputFormData.substr(startBinaryContent);
+	}
+
+	std::ofstream outputFile("binaryContent_Image.txt");
+
+    // Verifica se o arquivo foi aberto com sucesso
+    if (!outputFile.is_open())
+	{
+        std::cerr << "Erro ao abrir o arquivo." << std::endl;
+        return 500;
+    }
+
+    // Escreve o conteúdo da solicitação no arquivo
+    outputFile << _inputFormData;
+
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
 	{
@@ -192,7 +223,9 @@ int CGI::uploadImageCGI(std::string request_content, size_t data_init_pos)
 		return 500;
 	}
 	int resultCGI = 0;
-	resultCGI = executeScript(pipefd, "Imagem-salva.jpg");
+	std::string pathToStore = getUploadStore() + request.getFilename();
+	std::cout << BLUE << "Caminho todo de ONDE POSTAR: " << pathToStore << std::endl;
+	resultCGI = executeScript(pipefd, pathToStore);
 	if (resultCGI == 504)
 		return 504;
 	if (_scriptOutput.empty())
@@ -200,7 +233,7 @@ int CGI::uploadImageCGI(std::string request_content, size_t data_init_pos)
 	_response += _scriptOutput;
 	// std::cout << _response << std::endl;
 	return 204;
-}*/
+}
 
 int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_content)
 {
@@ -213,7 +246,9 @@ int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_co
 		return 500;
 	}
 	int resultCGI = 0;
-	resultCGI = executeScript(pipefd, PATH_FORM_DATA);
+	std::string pathToStore = getUploadStore() + "form_data.txt";
+	std::cout << BLUE << "Caminho todo de ONDE POSTAR: " << pathToStore << std::endl;
+	resultCGI = executeScript(pipefd, pathToStore);
 	if (resultCGI == 504)
 		return 504;
 	if (_scriptOutput.empty())
@@ -290,6 +325,30 @@ int CGI::CGIForGetRequest(std::string requestedFilePath)
 	return 200;
 }
 
+std::string CGI::setDateAndTime()
+{
+	char buffer[80];
+	time_t rawTime;
+	struct tm *timeInfo;
+	time(&rawTime);
+	timeInfo = localtime(&rawTime);
+	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S %Z", timeInfo);
+	std::string bufferString(buffer);
+	return bufferString;
+}
+
+std::string CGI::generateHeadersSucessCGI(int statusCode)
+{
+	std::stringstream toConvertToString;
+    toConvertToString << statusCode;
+    std::string statusCodeStr = toConvertToString.str();
+	std::string headers;
+    headers += "HTTP/1.1 " + statusCodeStr + " No Content\r\n";
+	headers += "Content-Length: 0\r\n";
+	headers += "Date: " + setDateAndTime() + "\r\n";
+    headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
+	return headers;
+}
 
 int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber o ponteiro pro obj Response pra poder acessar headers
 {
@@ -320,7 +379,8 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
     }
 
     // Escreve o conteúdo da solicitação no arquivo
-    outputFile << request_content;
+    // outputFile << request_content;
+	outputFile << request.getBody();
 
     // Fecha o arquivo
     outputFile.close();
@@ -328,8 +388,11 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 	std::size_t boundary_pos = request_content.find("boundary=");
 	if (boundary_pos == std::string::npos)
 	{
+		std::cout << BLUE << "Vamos ARMAZENAR FORM DATA" << END << std::endl;
 		int resultCode = 0;
 		resultCode = storeFormInput(data_init_pos, request_content);
+		if (resultCode == 204)
+			_response = generateHeadersSucessCGI(resultCode);
 		return resultCode;
 	}
 	if (data_init_pos != std::string::npos)
@@ -339,9 +402,13 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		// e extrair o Content-Type a partir disso
 		// no caso do formulario, só vem o conteudo submetido direto (ver request_imagem.txt)
 		int resultCode = 0;
-		resultCode = uploadImage(request, request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
+		// resultCode = uploadImage(request, request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
+		resultCode = uploadImageCGI(request);
+		if (resultCode == 204)
+			_response = generateHeadersSucessCGI(resultCode);
 		return resultCode;
 	}
+	_response = generateHeadersSucessCGI(204);
 	return 204;
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   StatusMessages.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:33:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/02 16:32:42 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:42:04 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ StatusMessages::StatusMessages()
 std::string StatusMessages::getMessage(int statusCode)
 {
     std::map<int, std::string>::iterator it = statusMessages.find(statusCode);
-    if (it != statusMessages.end())
+    if(it != statusMessages.end())
         return it->second;
     return "Unknown Status";
 }

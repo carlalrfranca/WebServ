@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   SocketS.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/02 20:55:57 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:42:40 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,8 @@ SocketS::SocketS()
 }
 
 
-SocketS::~SocketS(){}
+SocketS::~SocketS()
+{}
 
 // getter e setter do locations
 
@@ -45,7 +46,8 @@ const int& SocketS::getFD()const
     return _webServSocket;
 }
 
-void SocketS::loadConfiguration(){}
+void SocketS::loadConfiguration()
+{}
 
 void SocketS::setPort(std::string portNumber)
 {

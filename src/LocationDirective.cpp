@@ -34,20 +34,10 @@ std::map<std::string, std::vector<std::string > > LocationDirective::getDirectiv
 std::vector<std::string> LocationDirective::getSpecificDirective(std::string directiveName)const
 {
 	std::map<std::string, std::vector<std::string> >::const_iterator it = _directives.find(directiveName);
-    if (it != _directives.end())
-    {
-        // std::cout << "Key found! Value: " << it->second[0] << std::endl;
+    if(it != _directives.end())
         return it->second;
-    } else
+    else
         std::cout << "Key not found!" << std::endl;
     return std::vector<std::string>();
 
 }
-
-/*
-em 31.08.2023
-
-    g++ -std=c++98 -I inc/ src/main.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response
-    ./executavel_com_response src/config.txt
-
-*/

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/02 23:40:17 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/03 22:42:34 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,9 @@ class CGI
 		int executeScript(int *pipefd, std::string fileName);
 		int handleCGIRequest(Request &request);
 		int uploadImage(Request &request, std::string request_content, size_t data_init_pos);
-		//int uploadImageCGI(std::string request_content, size_t data_init_pos);
+		int uploadImageCGI(Request &request);
+		std::string generateHeadersSucessCGI(int statusCode);
+		std::string setDateAndTime();
 		// void handleCGIRequest(std::string& request);
 		int storeFormInput( std::size_t data_init_pos, const std::string& request_content);
 		int CGIForGetRequest(std::string requestedFilePath);
@@ -39,8 +41,10 @@ class CGI
 		void setCommands(std::vector<std::string> commands);
 		void setExtensions(std::vector<std::string> extensions);
 		void setPathToScript(std::string scriptName); //tem que setar o path pro script e completar com as extensões
-		
+		void setUploadStoreFolder(std::string uploadStore);
+
 		const std::string& getRoot() const;
+		const std::string& getUploadStore() const;
 		std::string getResponse() const;
 		std::vector<std::string> getCommands() const;
 		std::vector<std::string> getExtensions() const;
@@ -72,6 +76,7 @@ class CGI
 		std::string				_scriptOutput;
 		std::string				_rootToScripts;
 		std::string				_scriptName;
+		std::string				_uploadStore;
 		
 };
 #endif
