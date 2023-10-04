@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 19:13:19 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/03 21:03:46 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,7 +203,6 @@ bool ConfigParser::isValidIPAddress(const std::string &ipAddress)
 	std::istringstream splitOctets(ipAddress);
 	std::string octet;
 	int count = 0;
-	
 	while(std::getline(splitOctets, octet, '.'))
 	{
 		count++;
@@ -216,6 +215,16 @@ bool ConfigParser::isValidIPAddress(const std::string &ipAddress)
     if (octetStream.fail() || value < 0 || value > 255)
         return false;
     return count == 4;
+}
+
+bool ConfigParser::isValidPort(const std::string &port)
+{
+	int portNumber;
+	std::istringstream portStream(port);
+	portStream >> portNumber;
+	if(!portStream.fail() && portNumber >= 1 && portNumber <= 65535)
+		return true;
+	return false;
 }
 
 void ConfigParser::processListen(std::string &line)
@@ -236,7 +245,6 @@ void ConfigParser::processListen(std::string &line)
 	std::istringstream listen_values(line);
 	std::string palavra;
     std::vector<std::string> palavras;
-	
 	while (listen_values >> palavra)
 		palavras.push_back(palavra);
 	if (palavras.size() != 2)
@@ -266,8 +274,10 @@ void ConfigParser::processListen(std::string &line)
 			_ipAddress = "127.0.0.1";
 		if(!isValidIPAddress(_ipAddress))
 			throw ErrorException("Error configuration: Invalid IP Address!");
+		if(!isValidPort(_portNumber))
+			throw ErrorException("Error configuration: Invalid port number!");
 		if (duplicatedPort(_portNumber))
-			throw ErrorException("Configuration Error: Cannot have repeated port in server.");
+			throw ErrorException("Error configuration: Cannot have repeated port in server!");
 		_allPorts.push_back(_portNumber);
 		_allIps.push_back(_ipAddress);
 		// **** tem que verificar que a porta SÃO APENAS NUMEROS
