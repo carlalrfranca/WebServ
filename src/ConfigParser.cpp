@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/04 19:52:20 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/05 12:00:45 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,6 +212,8 @@ bool ConfigParser::isValidIPAddress(const std::string &ipAddress)
 		if(count > 4)
 			return false;
 	}
+	if (ipAddress != "127.0.0.1" && ipAddress != "0.0.0.0") //tem mais algum tipo de IP que pode?
+		return false;
 	int value;
     std::istringstream octetStream(octet);
     octetStream >> value;
