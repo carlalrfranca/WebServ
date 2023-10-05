@@ -1,5 +1,6 @@
 server{
-    listen localhost:2007;
+    listen 127.0.0.1:2002;
+	server_name	leticia;
 	allow_methods GET POST DELETE
     root web/pages/;
 	client_max_body_size 20M
@@ -30,6 +31,6 @@ server{
       root web/cgi-bin/;
       cgi_path /bin/bash;
       cgi_ext .sh;
+	  upload_store web/images/
   	}
-
 }

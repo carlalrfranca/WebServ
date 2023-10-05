@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 22:14:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 21:08:27 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,16 +23,20 @@ Request::Request(const std::string& request)
 	_contentType = "";
 	_contentLength = "";
     _domainContent = "";
+	_isDeleteMaskedAsPost = false;
     _requestStream.str(request);
 	_statusMessages = StatusMessages();
-	_errorPage["503"] = "./web/error/Error503.html";
 	_errorPage["400"] = "./web/error/Error400.html";
+	_errorPage["401"] = "./web/error/Error401.html";
 	_errorPage["403"] = "./web/error/Error403.html";
-	_errorPage["413"] = "./web/error/Error413.html";
 	_errorPage["405"] = "./web/error/Error405.html";
-	_errorPage["505"] = "./web/error/Error505.html";
-	_errorPage["504"] = "./web/error/Error504.html";
+	_errorPage["413"] = "./web/error/Error413.html";
 	_errorPage["500"] = "./web/error/Error500.html";
+	_errorPage["501"] = "./web/error/Error501.html";
+	_errorPage["503"] = "./web/error/Error503.html";
+	_errorPage["504"] = "./web/error/Error504.html";
+	_errorPage["505"] = "./web/error/Error505.html";
+	_errorPage["404"] = "./web/error/Error404.html";
 	// talvez aqui tenha que abrir pra um metodo
 	// que PARSEIA E VALIDA A REQUEST TODA
     std::getline(_requestStream, _firstLine);
@@ -51,7 +55,21 @@ Request::Request(const std::string& request)
 		// std::cout << RED << "******************" << END << std::endl;
 		size_t methodDelete = body.find("_method=DELETE");
 		if(methodDelete != std::string::npos)
+		{
+			_isDeleteMaskedAsPost = true;
 			setMethod("DELETE");
+			size_t fileNameToDelete = body.find("&");
+			if (fileNameToDelete != std::string::npos)
+			{
+				fileNameToDelete = body.find("=", fileNameToDelete);
+				if (fileNameToDelete != std::string::npos)
+				{
+					size_t endFileNameToDelete = body.find("\r\n", fileNameToDelete);
+					fileNameToDelete++;
+					setFilename(body.substr(fileNameToDelete, endFileNameToDelete));
+				}
+			}
+		}
 	}
 }
 
@@ -134,6 +152,11 @@ std::string Request::getHeader()const
     return _header;
 }
 
+bool Request::getIsDeleteMaskedAsPost()
+{
+	return _isDeleteMaskedAsPost;
+}
+
 std::string Request::getBody()const
 {
     return _body;
@@ -181,7 +204,8 @@ int Request::isFirstLineValid()
     // valida os tokens da primeira linha
 	if(_tokens.size() != 3)
 		return 400; // retorna 400 (Bad Request)
-	if(_tokens[0] != "GET" && _tokens[0] != "POST" && _tokens[0] != "DELETE")
+	if(_tokens[0] != "GET" && _tokens[0] != "POST" && _tokens[0] != "DELETE"
+		&& _tokens[0] != "get" && _tokens[0] != "post" && _tokens[0] != "delete")
 		return 501; // 501 Not Implemented
 	if(_tokens[2] != "HTTP/1.1")
 		return 505; //505 (HTTP Version Not Supported)
@@ -245,7 +269,7 @@ void Request::processHeaderRequest()
 		}
 		if(_hostContent.size() == 0)
 			errorCodeHtml(400);
-		if(_method == "POST")
+		if(_method == "POST" || _method == "post")
 			if(_contentLength.size() == 0 || _contentType.size() == 0)
 				errorCodeHtml(400);
 		size_t posDiv = _hostContent.find(":");
@@ -306,7 +330,10 @@ int Request::validateRequest()
     int result = isFirstLineValid();
 
 	if(result != SUCCESS)
+	{
+		std::cout << RED << "Resultado da Validação da linha 1 da Request: " << result << END << std::endl;
 		return result;
+	}
 	processHeaderRequest();
 	processBodyRequest();	
 	return SUCCESS;
@@ -334,6 +361,7 @@ const std::string Request::getErrorPage(int statusCode)const
     toConvertToStr << statusCode;
     std::string statusCodeStr = toConvertToStr.str();
 	std::map<std::string, std::string>::const_iterator it = _errorPage.find(statusCodeStr);
+	// loop pra printar os _errorPage que tem aqui (na request?s???)
 	if (it != _errorPage.end())
 		return it->second;
 	return "";

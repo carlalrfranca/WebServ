@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 19:51:14 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/05 20:50:10 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,11 +141,19 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 	std::map<std::string, std::vector< std::string > >::iterator itRoot = locationDirectives.find("root"); //procura a dirtiva root
 	if(itRoot != locationDirectives.end())
 		root = itRoot->second[0];
-	this_response->buildPathToResource(root, request, server, locationDirectives, it);
+	if (root[root.size() - 1] != '/')
+		root = root + '/';
+	if (request.getIsDeleteMaskedAsPost())
+		this_response->setPath(root + request.getFilename());
+	else
+		this_response->buildPathToResource(root, request, server, locationDirectives, it);
+	// vai ter que extrair o arquivo selecionado pra excluir
+	std::cout << BLUE << "Corpo da REQUEST: " << request.getBody() << END << std::endl;
+	std::cout << RED << "Nome do arquivo a ser excluido: " << request.getFilename() << END << std::endl;
 	std::cout << YELLOW << "PATH::: " << this_response->getPath() << END << std::endl;
 	// std::string resourcePath = root + uri;
 	std::string resourcePath = this_response->getPath();
-	//4. verificando antes de excluir
+	//4. verificando a existencia do arquivo antes de excluir
 	if(this_response->_utils.fileExists(resourcePath) == false)
 	{
 		std::cout << RED << "O arquivo NÃO EXISTE nesse caminho" << END << std::endl;
@@ -371,9 +379,10 @@ std::string Response::getContentTypeFromExtension(const std::string& extension)
     return "text/html"; // o padrão é "text/html" se não houver correspondência
 }
 
-std::string Response::generateHeaders(int statusCode, const Request& request)
+
+std::string Response::generateHeaders(int statusCode, const Request& request, std::string content)
 {
-	std::string response;
+	std::string response = content;
 	std::stringstream toConvertToString;
 	
     toConvertToString << statusCode;
@@ -419,7 +428,7 @@ void Response::generateResponse(int statusCode, const Request& request)
     std::string content = UtilsResponse::readFileToString(getPath());
     std::string response;
 	std::cout << " --------------------- URI ------------------- " << request.getURI() << std::endl;
-	std::string headers = generateHeaders(statusCode, request);
+	std::string headers = generateHeaders(statusCode, request, content);
 	response += headers;
     response += content;
 	setResponse(response);
@@ -618,6 +627,10 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 				std::cout << RED << "Isso não é pra script" << END << std::endl;
 			std::cout << "**** CAMINHO DO SCRIPT PRA GET METHOD: " << scriptPath << std::endl;
 			// vai precisar declarar um objeto CGI e se basear nesse trecho do método pro POST
+			// esse trecho abaixo é muito parecido com o do POST...
+			// tem como generalizar isso num método próprio que será chamado tanto aqui
+			// quanto no POST? (menos a parte de atribuir "./" ao upload store, porque isso pode ser um problema)
+			// tem que ser o web/images <- e verificar se existe, se não existe, criar.
 			std::map<std::string, std::vector< std::string > >::iterator commandOfCGI = locationDirectives.find("cgi_path");
 			std::map<std::string, std::vector< std::string > >::iterator CGIExtension = locationDirectives.find("cgi_ext");
 			if(commandOfCGI == locationDirectives.end() || CGIExtension == locationDirectives.end())
@@ -625,9 +638,20 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 				this_response->errorCodeHtml(404, server);
 				return this_response->getResponse();
 			}
+			std::map<std::string, std::vector< std::string > >::iterator CGIUploadStore = locationDirectives.find("upload_store");
+			std::string uploadStoreFolder;
+			if(CGIUploadStore != locationDirectives.end())
+			{
+				uploadStoreFolder = CGIUploadStore->second[0];
+				if(uploadStoreFolder[uploadStoreFolder.size() - 1] != '/')
+					uploadStoreFolder = uploadStoreFolder + '/';
+			}
+			else
+				uploadStoreFolder = "web/images/";
 			std::vector<std::string> scriptsCommands = commandOfCGI->second;
 			std::vector<std::string> scriptsExtensions = CGIExtension->second;
 			CGI script;
+			script.setUploadStoreFolder(uploadStoreFolder);
 			script.setCommands(scriptsCommands);
 			script.setExtensions(scriptsExtensions);
 			script.setRoot("");
@@ -640,8 +664,8 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 				this_response->errorCodeHtml(404, server);
 				return this_response->getResponse();
 			}
-			std::string headers = this_response->generateHeaders(200, request);
 			std::string bodyResponse = script.getResponse();
+			std::string headers = this_response->generateHeaders(200, request, bodyResponse);
 			std::string response = headers + bodyResponse;
 			this_response->setResponse(response);
 			return this_response->getResponse();

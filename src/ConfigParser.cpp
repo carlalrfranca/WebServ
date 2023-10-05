@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 22:47:48 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/05 12:00:45 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,10 +42,12 @@ ConfigParser::ConfigParser()
 		else
 			std::cout << "This error page exist" << std::endl;
 	_errorPage["400"] = "./web/error/Error400.html";
+	_errorPage["401"] = "./web/error/Error401.html";
 	_errorPage["403"] = "./web/error/Error403.html";
 	_errorPage["405"] = "./web/error/Error405.html";
 	_errorPage["413"] = "./web/error/Error413.html";
 	_errorPage["500"] = "./web/error/Error500.html";
+	_errorPage["501"] = "./web/error/Error501.html";
 	_errorPage["503"] = "./web/error/Error503.html";
 	_errorPage["504"] = "./web/error/Error504.html";
 	_errorPage["505"] = "./web/error/Error505.html";
@@ -83,10 +85,14 @@ void ConfigParser::resetConfig()
 
 	// resetar as paginas de erro padrão
 	_errorPage["400"] = "./web/error/Error400.html";
+	_errorPage["401"] = "./web/error/Error401.html";
 	_errorPage["403"] = "./web/error/Error403.html";
 	_errorPage["405"] = "./web/error/Error405.html";
+	_errorPage["413"] = "./web/error/Error413.html";
 	_errorPage["500"] = "./web/error/Error500.html";
+	_errorPage["501"] = "./web/error/Error501.html";
 	_errorPage["503"] = "./web/error/Error503.html";
+	_errorPage["504"] = "./web/error/Error504.html";
 	_errorPage["505"] = "./web/error/Error505.html";
 }
 
@@ -206,6 +212,8 @@ bool ConfigParser::isValidIPAddress(const std::string &ipAddress)
 		if(count > 4)
 			return false;
 	}
+	if (ipAddress != "127.0.0.1" && ipAddress != "0.0.0.0") //tem mais algum tipo de IP que pode?
+		return false;
 	int value;
     std::istringstream octetStream(octet);
     octetStream >> value;

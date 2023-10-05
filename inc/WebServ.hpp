@@ -36,7 +36,7 @@ class WebServ
         ~WebServ();
         void mainLoop();
         void responseError();
-    	// void checkForDuplicates();
+    	void checkForDuplicates();
         void printRequest(const std::string &request);
         void configSocket();
 		void initServers();
