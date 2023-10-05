@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/04 21:32:24 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/05 20:50:10 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ Response::Response() : _headers(), _body(""), _response(""), _code(""), _path(""
 	_methodsFunctions["POST"] = &Response::postMethod;
 	_methodsFunctions["DELETE"] = &Response::deleteMethod;
     _statusMessages = StatusMessages();
+    _extensionToContentType = initContentTypes();
 }
 
 Response::~Response()
@@ -214,6 +215,16 @@ const std::map<std::string, std::string>& Response::getHeader() const
     return _headers;
 }
 
+std::string Response::getUri()const
+{
+	return _uri;
+}
+
+void Response::setUri(const std::string& uri)
+{
+	_uri = uri;
+}
+
 std::string Response::getResponse()const
 {
     return _response;
@@ -271,8 +282,12 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, s
     html += "<body>\n";
     html += "<h1>File List</h1>\n";
     html += "<ul>\n";
-	if(!_uri.empty() && _uri[_uri.size() - 1] != '/')
-       	_uri += '/';
+	if(!getUri().empty() && getUri()[getUri().size() - 1] != '/')
+	{
+		std::string newUri = getUri();
+       	newUri += '/';
+		setUri(newUri);
+	}
     for(size_t i = 0; i < fileList.size(); ++i)
 	{
 		// ver se é um arquivo ou um diretorio, se for um diretorio, tem que ser EM FORMA DE LINK
@@ -283,10 +298,10 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, s
 		{
 			if(!itemName.empty() && itemName[itemName.size() - 1] != '/')
         		itemName += '/';
-			std::cout << RED << "É diretorio: " << _uri + itemName << END << std::endl;
-			html += "<li><a href='" + _uri + itemName + "'>" + itemName + "</a></li>\n";
+			std::cout << RED << "É diretorio: " << getUri() + itemName << END << std::endl;
+			html += "<li><a href='" + getUri() + itemName + "'>" + itemName + "</a></li>\n";
 		} else {
-			std::cout << YELLOW << "É arquivo: " << _uri + itemName << END << std::endl;
+			std::cout << YELLOW << "É arquivo: " << getUri() + itemName << END << std::endl;
 			html += "<li>" + itemName + "</li>\n";		
 		}
     }
@@ -335,21 +350,41 @@ void Response::errorCodeHtml(int statusCode, SocketS &server)
 	setResponse(response);
 }
 
+std::map<std::string, std::string> Response::initContentTypes()
+{
+	std::map<std::string, std::string> contentType;
+    contentType["txt"]  = "text/css";
+    contentType["html"] = "text/html";
+    contentType["css"]  = "text/css";
+    contentType["png"]  = "images/png";
+    contentType["jpg"]  = "images/jpeg";
+    contentType["jpeg"] = "images/jpeg";
+    contentType["gif"]  = "images/gif";
+    //contentType["json"] = "application/json";
+    //contentType["xml"]  = "application/xml";
+    //contentType["pdf"]  = "application/pdf";
+    //contentType["zip"]  = "application/zip";
+    //contentType["gzip"] = "application/gzip";
+    //contentType["tar"]  = "application/x-tar";
+
+    return (contentType);
+}
+
+std::string Response::getContentTypeFromExtension(const std::string& extension)
+{
+    std::map<std::string, std::string>::iterator it = _extensionToContentType.find(extension);
+    if (it != _extensionToContentType.end()) {
+        return it->second;
+    }
+    return "text/html"; // o padrão é "text/html" se não houver correspondência
+}
+
+
 std::string Response::generateHeaders(int statusCode, const Request& request, std::string content)
 {
 	std::string response = content;
-	std::string contentType;	
-	if(request.getURI().find("css") != std::string::npos)
-		contentType = "text/css";
-	else if(request.getURI().find("jpg" ) != std::string::npos || request.getURI().find("jpeg") != std::string::npos)
-		contentType = "images/jpeg";
-	else if(request.getURI().find("png") != std::string::npos)
-		contentType = "images/png";
-	else if(request.getURI().find("gif") != std::string::npos)
-		contentType = "images/gif";
-	else
-		contentType = "text/html";
 	std::stringstream toConvertToString;
+	
     toConvertToString << statusCode;
     std::string statusCodeStr = toConvertToString.str();
 	std::size_t headerEndPos = response.find("\r\n\r\n");
@@ -358,12 +393,33 @@ std::string Response::generateHeaders(int statusCode, const Request& request, st
 	ss << contentLength;
 	std::string contentLenStr = ss.str();
 	setDateAndTime();
+	
+	std::string uri = request.getURI();
+    size_t dotPos = uri.rfind('.');
+	std::string contentType = "text/html";
+	
+	if (dotPos != std::string::npos) 
+	{
+        std::string extension = uri.substr(dotPos + 1);
+        contentType = getContentTypeFromExtension(extension);
+    }
+	
 	std::string headers;
     headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
     headers += "Content-Type: " + contentType + "\r\n";
     headers += "Content-Length: " + contentLenStr + "\r\n";
 	headers += "Date: " + getDate() + "\r\n";
-    headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
+	headers += "Server: Webserv-42SP\r\n";	
+	
+	if(request.getURI().find("chromium") != std::string::npos)
+	{
+		headers += "Access-Control-Allow-Origin: *\r\n";
+        //headers += "Access-Control-Allow-Methods: GET, POST, DELETE\r\n";
+        headers += "Access-Control-Allow-Headers: Content-Type\r\n";
+        headers += "Cache-Control: no-cache, no-store\r\n";
+	}
+    headers += "\r\n";	
+    
 	return headers;
 }
 
@@ -468,8 +524,8 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 	} else {
 		std::cout << "Tem só o arquivo de caminho ou só diretorio" << std::endl;
 		std::string path;
-		_uri = uri;
-		if(uri == it->first || uri + '/' == it->first || it->first + '/' == uri) //essa terceira condição vai ferrar outros casos do site?
+		setUri(uri);
+		if(getUri() == it->first || getUri() + '/' == it->first || it->first + '/' == getUri()) //essa terceira condição vai ferrar outros casos do site?
 			path = root;
 		else
 			path = root + parts_uri[0];

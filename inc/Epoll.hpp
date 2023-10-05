@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Epoll.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 19:59:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/20 21:56:33 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 16:22:30 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 
 class Epoll
 {
-
 	public:
 
 		Epoll();
@@ -31,13 +30,18 @@ class Epoll
 		void setEpollFd(int epollFd);
 		void setNumberEvents(int numEvents);
 		void setIsServerFdTriggered(bool isServerTriggered);
+		
+		void setClientFd(int clientFd);
+		void setEvent(struct epoll_event event);
+		
+		const struct epoll_event& getEvent()const;
+		const int& getClientFd()const;
 
 		const int& getEpollFd() const;
 		const int& getMaxEvents() const;
 		const int& getNumberEvents() const;
 		const bool& getIsServerFdTriggered() const;
-		struct epoll_event _event;
-		int					_clientFd;
+		
 	
 	private:
 
@@ -45,5 +49,12 @@ class Epoll
 		const int	_maxEvents;
 		bool		_isServerFdInPoolTriggered;
 		int			_numberEvents;
+		
+		
+		
+		
+		struct epoll_event  _event;
+		int					_clientFd;
 };
+
 #endif

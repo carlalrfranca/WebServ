@@ -6,37 +6,57 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 20:22:28 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/04 16:09:29 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/05 20:41:48 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/Epoll.hpp"
 
-Epoll::Epoll(void) : _epollFd(0), _maxEvents(10), _isServerFdInPoolTriggered(false), _numberEvents(0)
+Epoll::Epoll() : _epollFd(0), _maxEvents(10), _isServerFdInPoolTriggered(false), _numberEvents(0)
 {}
 
-Epoll::~Epoll(void)
+Epoll::~Epoll()
 {}
 
-const int& Epoll::getEpollFd(void) const
+const int& Epoll::getEpollFd() const
 {
 	return _epollFd;
 }
 
-const int& Epoll::getNumberEvents(void) const
+const int& Epoll::getNumberEvents() const
 {
 	return _numberEvents;	
 }
 
-const bool& Epoll::getIsServerFdTriggered(void) const
+const bool& Epoll::getIsServerFdTriggered() const
 {
 	return _isServerFdInPoolTriggered;
 }
 
-const int& Epoll::getMaxEvents(void) const
+const int& Epoll::getMaxEvents() const
 {
 	return _maxEvents;
+}
+
+const struct epoll_event& Epoll::getEvent()const
+{
+	return _event;
+}
+
+const int& Epoll::getClientFd()const
+{
+	return _clientFd;
+}
+
+void Epoll::setClientFd(int clientFd)
+{
+	_clientFd = clientFd;
+}
+
+void Epoll::setEvent(struct epoll_event event)
+{
+	_event = event;
 }
 
 void Epoll::setEpollFd(int epollFd)

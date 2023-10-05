@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 21:02:39 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 15:16:20 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,9 @@ class ConfigParser
         bool processRoot(std::string &line);
         bool isValidIPAddress(const std::string &ipAddress);
 		bool isValidPort(const std::string &port);
+		bool containsInvalidCaractersForMaxBodySize(const std::string& str);
+		bool duplicatedPort(std::string& portNumber);
         void processIndex(std::string &line);
-        //void processListen(std::string &line);
 		void processReturn(std::string &line);
 		void processRewrite(std::string &line);
 		void processLocation(std::string& line);
@@ -39,6 +40,12 @@ class ConfigParser
 		void processAllowMethods(std::string &line);
 		void processClientMaxBodySize(std::string &line);
 		void processListen(std::string &line);
+		void storeCurrentLocationDirectives(std::string &directiveLine);
+		void hasprohibitedDirectiveInLocation(std::string &directive);
+		void resetConfig();
+	    void validateFile(std::ifstream& fileToParse);
+		void removeComments(std::string &line);
+        size_t convertToKB(std::string &sizeStr);
 
         void setPort(int portNumber);
         void setRoot(std::string root);
@@ -56,22 +63,10 @@ class ConfigParser
         const std::vector<std::string>& getMethods()const;
 		const std::vector<std::string>& getDomains()const;
         const std::vector<std::string>& getIndexFiles()const;
+        const std::vector<std::string>& getAllIps()const;
+        const std::vector<std::string>& getAllPorts()const;
         std::map<std::string, std::string> getErrorPage()const;
         std::map<std::string, LocationDirective> getLocations() const;
-
-        const std::vector<std::string>& getAllPorts()const;
-        const std::vector<std::string>& getAllIps()const;
-
-		void storeCurrentLocationDirectives(std::string &directiveLine);
-		void hasprohibitedDirectiveInLocation(std::string &directive);
-		bool containsInvalidCaractersForMaxBodySize(const std::string& str);
-		// validar o tipo do ipaddress
-
-		void resetConfig();
-	    void validateFile(std::ifstream& fileToParse);
-		void removeComments(std::string &line);
-		bool duplicatedPort(std::string& portNumber);
-        size_t convertToKB(std::string &sizeStr);
         
     private:
         
@@ -95,7 +90,6 @@ class ConfigParser
 		bool			_hasAutoIndex;
         Utils           _utils;
 
-        
         std::vector<std::string>                            _domains; //server_name
         std::vector<std::string>                            _methods;
         std::vector<std::string>                            _allPorts;

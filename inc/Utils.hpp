@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/29 20:32:59 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/04 17:39:35 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,4 +32,5 @@ class Utils
         bool fileExists(std::string filePath);
         bool pathExists(const std::string &path);
 };
+
 #endif

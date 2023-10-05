@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/13 22:32:29 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/17 20:08:44 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 15:16:20 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,8 @@ class Client
 		void setServerToRespondeFd(size_t serverfd);
 		
 		size_t getFd()const;
-		Response getResponse()const;
 		size_t getServerToRespondFd()const;
+		Response getResponse()const;
 
 	private:
 
