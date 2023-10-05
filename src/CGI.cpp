@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/03 22:51:37 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 18:44:19 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -277,6 +277,7 @@ int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
 		
 		// Executamos agora o script de exemplo
 		std::cout << YELLOW << "Caminho do SCRIPT CHAMADO" << END << std::endl;
+		std::cout << BLUE << requestedFilePath << END << std::endl;
 		std::cout << YELLOW << getPathToScript() << END << std::endl;
 		execl(getPathToScript().c_str(), getPathToScript().c_str(), requestedFilePath.c_str(), static_cast<char*>(0));
 		// Se chegou aqui, houve um erro no execl
@@ -360,7 +361,8 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 	if (request.getMethod() == "GET")
 	{
 		// tornar esse argumento flexivel (resgatar o valor -> a imagem pedida da request)
-		int result = CGIForGetRequest("./imagem-salva.jpg");
+		int result = CGIForGetRequest(getUploadStore());
+		// int result = CGIForGetRequest("./imagem-salva.jpg");
 		return result;
 	}
 

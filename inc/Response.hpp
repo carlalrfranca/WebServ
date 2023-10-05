@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/01 20:43:20 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 21:20:34 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ class Response
 		
 		static std::string buildHeaderReturn(std::string statusCode, std::string resource, Response *this_response);
 		bool isDirectory(const std::string& path);
-        std::string generateHeaders(int statusCode, const Request& request);
+        std::string generateHeaders(int statusCode, const Request& request, std::string content);
 		bool isThisMethodAllowed(std::map<std::string, LocationDirective>& serverLocations, Request &request, SocketS &server, std::string& requestMethod);
 		std::string	_uri;
 

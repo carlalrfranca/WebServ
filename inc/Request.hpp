@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 20:41:26 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 18:40:46 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ class Request
 		std::string getRequest() const;
         std::string getPortRequest()const;
 		std::string getFileFormat()const;
+		bool		getIsDeleteMaskedAsPost();
         bool getHasError()const;
         const std::string& getMethod()const;
         const std::string& getURI()const;
@@ -82,6 +83,7 @@ class Request
         std::string         _uri;
         std::string         _version;
         bool                _hasError;
+		bool				_isDeleteMaskedAsPost;
         Utils               _utils;
 		std::map<std::string, std::string> _errorPage;
 		StatusMessages		_statusMessages;

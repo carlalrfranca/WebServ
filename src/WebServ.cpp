@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 22:39:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 19:32:40 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ WebServ::WebServ(std::string filename)
 	initServers();
 	mainLoop();
 }
-/*
+
 void WebServ::checkForDuplicates()
 {
     for(size_t i = 0; i < _serverSocket.size() - 1; ++i){
@@ -129,10 +129,13 @@ void WebServ::checkForDuplicates()
                     }
 				}
 			}
+			else if (_serverSocket[i].getPort() == _serverSocket[j].getPort() &&
+	               _serverSocket[i].getAddress() != _serverSocket[j].getAddress()) {
+					throw ErrorException("Configuration Error : Duplicated Port in multiple servers");
+			}
         }
     }
 }
-*/
 
 void WebServ::configSocket()
 {
@@ -146,7 +149,6 @@ void WebServ::configSocket()
 		// _configParser.setIndexFile("index.html");
 	if(_configParser.getPort().empty())
 		throw ErrorException("Configuration Error: Port not found!");
-	// _configParser.checkDuplicatePorts();
 	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server,
 	// a gente vai definir um padrão? (ou deixar sem?)
 	std::vector<std::string> tmpPorts = _configParser.getAllPorts();
@@ -183,13 +185,28 @@ void WebServ::configSocket()
 
 void WebServ::initServers()
 {
-	std::vector<SocketS>::size_type i = 0;
+	// std::vector<SocketS>::size_type i = 0;
 	
+	checkForDuplicates();
+	bool isDuplicated = false;
 	std::cout << RED << "Qtdade servers: " << _serverSocket.size() << END << std::endl;
-	while(i < _serverSocket.size()) //loop que itera os sockets do servidor
+	// while(i < _serverSocket.size()) //loop que itera os sockets do servidor
+	// {
+		// _serverSocket[i].initServer();
+        // i++;
+	// }
+	for (std::vector<SocketS>::iterator it = _serverSocket.begin(); it != _serverSocket.end(); ++it)
 	{
-		_serverSocket[i].initServer();
-        i++;
+		for (std::vector<SocketS>::iterator it2 = _serverSocket.begin(); it != it2; ++it2)
+		{
+			if (it2->getAddress() == it->getAddress() && it2->getPort() == it->getPort())
+			{
+				it->setWebServSocket(it2->getWebServSocket());
+				isDuplicated = true;
+			}
+		}
+		if (!isDuplicated)
+			it->initServer();
 	}
 		// verificar se esse server teve mais de um listen (ip e porta)...
 		// se sim, cria um socket pra cada, cada um escutando em sua respectiva

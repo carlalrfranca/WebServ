@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 20:22:28 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/03 22:01:40 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 16:09:29 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,35 @@ int Epoll::addServersToEpoll(std::vector<SocketS>& servers)
 	}
     //Imprimir detalhes de cada servidor
 	struct epoll_event event;
-    for(size_t serverIndex = 0; serverIndex < servers.size(); ++serverIndex)
+	bool isDuplicated = false;
+    for (std::vector<SocketS>::iterator it = servers.begin(); it != servers.end(); ++it)
+    {
+        for (std::vector<SocketS>::iterator it2 = servers.begin(); it2 != it; ++it2)
+        {
+            if (it2->getWebServSocket() == it->getWebServSocket())
+            {
+				isDuplicated = true;
+            }
+        }
+		if (!isDuplicated)
+		{
+			// add server to epoll
+        	std::cout << "Porta: " << it->getPort() << std::endl;
+        	std::cout << "Endereço: " << it->getAddress() << std::endl;
+			std::cout << "WebServ SOCKET FD: " <<  it->getWebServSocket() << std::endl;
+        	std::cout << "-----------------------------------------\n" << std::endl;
+			event.data.u64 = 0;
+        	event.data.fd = it->getWebServSocket();
+        	event.events = EPOLLIN | EPOLLOUT;
+        	if(epoll_ctl(_epollFd, EPOLL_CTL_ADD, event.data.fd, &event) == -1)
+        	{
+        	    perror("Error adding socket to epoll");
+        	    return -2;
+        	}
+		}
+	}
+	/*
+	for(size_t serverIndex = 0; serverIndex < servers.size(); ++serverIndex)
     {
         std::cout << "Detalhes do servidor " << serverIndex << ":" << std::endl;
         std::cout << "Porta: " << servers[serverIndex].getPort() << std::endl;
@@ -79,7 +107,7 @@ int Epoll::addServersToEpoll(std::vector<SocketS>& servers)
             perror("Error adding socket to epoll");
             return -2;
         }
-    }
+    }*/
 	return 0;
 }
 

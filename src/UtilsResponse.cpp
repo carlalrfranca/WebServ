@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 22:40:49 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/04 15:26:28 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,51 +36,38 @@ int UtilsResponse::selectServer(Request& request, std::vector<SocketS> serverSoc
     int indexChosenSocket = -1;
     std::string domainRequest = request.getDomainRequest();
     std::string portRequest = request.getPortRequest();
-    
-	std::cout << RED << "Foi aqui?" << END << std::endl;
-    if(portRequest.empty())
-    {
-        for(size_t serverIndex = 0; serverIndex < serverSocket.size(); ++serverIndex)
-        {
-			std::cout << YELLOW << "-------------- DENTRO DO SELECT SERVER ------------" << std::endl;
-	        std::cout << "Dominio da request: " << request.getDomainRequest() << "| Size: " << request.getDomainRequest().size() << std::endl;
-	        std::cout << "Address do servidor: " << serverSocket[serverIndex].getAddress() << "| Size: " << serverSocket[serverIndex].getAddress().size() << std::endl;
-	        std::cout << "Porta do servidor: " << serverSocket[serverIndex].getPort() << " | Size: " << serverSocket[serverIndex].getPort().size() << std::endl;
-	        std::cout << "Porta da request: " << request.getPortRequest() << " | Size: " << request.getPortRequest().size() << END << std::endl;
-            std::vector<std::string> tempServerName = serverSocket[serverIndex].getServerName();
-            for(size_t nameIndex = 0; nameIndex < tempServerName.size(); ++nameIndex)
-            {
+
+	for(size_t serverIndex = 0; serverIndex < serverSocket.size(); ++serverIndex)
+	{
+		std::cout << BLUE << "-------------- DENTRO DO SELECT SERVER ------------" << std::endl;
+		std::cout << "Dominio da request: " << request.getDomainRequest() << "| Size: " << request.getDomainRequest().size() << std::endl;
+		std::cout << "Address do servidor: " << serverSocket[serverIndex].getAddress() << "| Size: " << serverSocket[serverIndex].getAddress().size() << std::endl;
+		std::cout << "Porta do servidor: " << serverSocket[serverIndex].getPort() << " | Size: " << serverSocket[serverIndex].getPort().size() << std::endl;
+		std::cout << "Porta da request: " << request.getPortRequest() << " | Size: " << request.getPortRequest().size() << END << std::endl;
+		if(domainRequest == serverSocket[serverIndex].getAddress())
+		{
+			std::cout << "Dominio igual!" << std::endl;
+			if(portRequest == serverSocket[serverIndex].getPort())
+			{
+				std::cout << "Porta igual!!!!!" << std::endl;
+				indexChosenSocket = serverIndex; //depois passar isso pra essa condicao abaixo
+				return indexChosenSocket;
+			}
+		}
+		else
+		{
+			std::vector<std::string> tempServerName = serverSocket[serverIndex].getServerName();
+			for(size_t nameIndex = 0; nameIndex < tempServerName.size(); ++nameIndex)
+			{
 				if(domainRequest == tempServerName[nameIndex])
 				{
 					std::cout << YELLOW << "Servidor escolhido!" << END << std::endl;
-                	indexChosenSocket = serverIndex;
+					indexChosenSocket = serverIndex;
 					return indexChosenSocket;
 				}
-            }
+			}
 		}
-    } else {
-	    for(size_t serverIndex = 0; serverIndex < serverSocket.size(); ++serverIndex)
-	    {
-	        std::cout << BLUE << "-------------- DENTRO DO SELECT SERVER ------------" << std::endl;
-	        std::cout << "Dominio da request: " << request.getDomainRequest() << "| Size: " << request.getDomainRequest().size() << std::endl;
-	        std::cout << "Address do servidor: " << serverSocket[serverIndex].getAddress() << "| Size: " << serverSocket[serverIndex].getAddress().size() << std::endl;
-	        std::cout << "Porta do servidor: " << serverSocket[serverIndex].getPort() << " | Size: " << serverSocket[serverIndex].getPort().size() << std::endl;
-	        std::cout << "Porta da request: " << request.getPortRequest() << " | Size: " << request.getPortRequest().size() << END << std::endl;
-	        if(request.getDomainRequest() == serverSocket[serverIndex].getAddress())
-	        {
-	            std::cout << "Dominio igual!" << std::endl;
-	            if(request.getPortRequest() == serverSocket[serverIndex].getPort())
-	            {
-	                std::cout << "Porta igual!!!!!" << std::endl;
-	                // precisa verificar o sevrer_name nesse caso?
-	                //se for tudo certinho...
-	                indexChosenSocket = serverIndex; //depois passar isso pra essa condicao abaixo
-					return indexChosenSocket;
-	            }
-	        }  
-	    }
 	}
-	std::cout << RED << "Talvez" << END << std::endl;
     return indexChosenSocket;
     // construir resposta de erro... (se sair do loop é que deu merda)
 }
@@ -157,15 +144,15 @@ bool UtilsResponse::isThisMethodAllowed(std::map<std::string, LocationDirective>
 			std::vector<std::string> locationAllowedMethods = itLocationAllowMethods->second;
 			for(std::vector<std::string>::iterator it = locationAllowedMethods.begin(); it != locationAllowedMethods.end(); ++it)
 			{
-    		    if(strcmp(it->c_str(), requestMethod.c_str()) == 0)
-    		        return true;
-    		}
+				if(strcmp(it->c_str(), requestMethod.c_str()) == 0)
+				return true;
+			}
 		} else {
 			for(std::vector<std::string>::iterator it = allowed_methods.begin(); it != allowed_methods.end(); ++it)
 			{
-    		    if(strcmp(it->c_str(), requestMethod.c_str()) == 0)
+				if(strcmp(it->c_str(), requestMethod.c_str()) == 0)
 					return true;
-    		}
+			}
 		}
 	}
 	return false;
