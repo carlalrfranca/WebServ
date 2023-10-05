@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/04 17:35:08 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/05 19:51:14 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ Response::Response() : _headers(), _body(""), _response(""), _code(""), _path(""
 	_methodsFunctions["POST"] = &Response::postMethod;
 	_methodsFunctions["DELETE"] = &Response::deleteMethod;
     _statusMessages = StatusMessages();
+    _extensionToContentType = initContentTypes();
 }
 
 Response::~Response()
@@ -341,21 +342,40 @@ void Response::errorCodeHtml(int statusCode, SocketS &server)
 	setResponse(response);
 }
 
+std::map<std::string, std::string> Response::initContentTypes()
+{
+	std::map<std::string, std::string> contentType;
+    contentType["txt"]  = "text/css";
+    contentType["html"] = "text/html";
+    contentType["css"]  = "text/css";
+    contentType["png"]  = "images/png";
+    contentType["jpg"]  = "images/jpeg";
+    contentType["jpeg"] = "images/jpeg";
+    contentType["gif"]  = "images/gif";
+    //contentType["json"] = "application/json";
+    //contentType["xml"]  = "application/xml";
+    //contentType["pdf"]  = "application/pdf";
+    //contentType["zip"]  = "application/zip";
+    //contentType["gzip"] = "application/gzip";
+    //contentType["tar"]  = "application/x-tar";
+
+    return (contentType);
+}
+
+std::string Response::getContentTypeFromExtension(const std::string& extension)
+{
+    std::map<std::string, std::string>::iterator it = _extensionToContentType.find(extension);
+    if (it != _extensionToContentType.end()) {
+        return it->second;
+    }
+    return "text/html"; // o padrão é "text/html" se não houver correspondência
+}
+
 std::string Response::generateHeaders(int statusCode, const Request& request)
 {
 	std::string response;
-	std::string contentType;	
-	if(request.getURI().find("css") != std::string::npos)
-		contentType = "text/css";
-	else if(request.getURI().find("jpg" ) != std::string::npos || request.getURI().find("jpeg") != std::string::npos)
-		contentType = "images/jpeg";
-	else if(request.getURI().find("png") != std::string::npos)
-		contentType = "images/png";
-	else if(request.getURI().find("gif") != std::string::npos)
-		contentType = "images/gif";
-	else
-		contentType = "text/html";
 	std::stringstream toConvertToString;
+	
     toConvertToString << statusCode;
     std::string statusCodeStr = toConvertToString.str();
 	std::size_t headerEndPos = response.find("\r\n\r\n");
@@ -364,12 +384,33 @@ std::string Response::generateHeaders(int statusCode, const Request& request)
 	ss << contentLength;
 	std::string contentLenStr = ss.str();
 	setDateAndTime();
+	
+	std::string uri = request.getURI();
+    size_t dotPos = uri.rfind('.');
+	std::string contentType = "text/html";
+	
+	if (dotPos != std::string::npos) 
+	{
+        std::string extension = uri.substr(dotPos + 1);
+        contentType = getContentTypeFromExtension(extension);
+    }
+	
 	std::string headers;
     headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
     headers += "Content-Type: " + contentType + "\r\n";
     headers += "Content-Length: " + contentLenStr + "\r\n";
 	headers += "Date: " + getDate() + "\r\n";
-    headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
+	headers += "Server: Webserv-42SP\r\n";	
+	
+	if(request.getURI().find("chromium") != std::string::npos)
+	{
+		headers += "Access-Control-Allow-Origin: *\r\n";
+        //headers += "Access-Control-Allow-Methods: GET, POST, DELETE\r\n";
+        headers += "Access-Control-Allow-Headers: Content-Type\r\n";
+        headers += "Cache-Control: no-cache, no-store\r\n";
+	}
+    headers += "\r\n";	
+    
 	return headers;
 }
 

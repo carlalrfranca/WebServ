@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/04 17:15:39 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/05 18:39:06 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,16 +74,15 @@ class Response
 		std::string extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it);
         std::string readHtmlFile(const std::string& filePath);
 		std::map<std::string, LocationDirective>::iterator findRequestedLocation(Request &request, std::map<std::string, LocationDirective>& serverLocations);
-
 		// method for each method
         static std::string httpGet(Request &request, SocketS &server, Response *this_response);
 		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
 		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
 		static std::string buildHeaderReturn(std::string statusCode, std::string resource, Response *this_response);
+		static std::map<std::string, std::string> initContentTypes();
+        std::string getContentTypeFromExtension(const std::string& extension);
 		
-		
-		
-		
+
 		//std::string	_uri;
 
     private:
@@ -98,6 +97,7 @@ class Response
         UtilsResponse                       _utilsResponse;                
         StatusMessages                      _statusMessages;
 		std::map<std::string, Funcao>		_methodsFunctions;
+		std::map<std::string, std::string>  _extensionToContentType;
 		
 		
 		std::string                         _uri;
