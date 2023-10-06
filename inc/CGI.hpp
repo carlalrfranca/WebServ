@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/04 19:13:18 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/05 23:00:10 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ class CGI
 		void setCommands(std::vector<std::string> commands);
 		void setExtensions(std::vector<std::string> extensions);
 		void setPathToScript(std::string scriptName);
+		void setScriptNameDirectly(std::string scriptName);
 		void setUploadStoreFolder(std::string uploadStore);
 
 		std::vector<std::string> getCommands()const;

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 20:50:10 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/05 23:03:12 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,7 +163,40 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 	if(remove(resourcePath.c_str()) == 0)
 	{
 		std::cout << BLUE << "Excluiu [aparentemente]" << END << std::endl;
-		this_response->generateResponse(204, request); //exclusão bem-sucedida
+		if (request.getIsDeleteMaskedAsPost())
+		{
+			// verificar se o script pra gerar outra página existe
+			std::cout << "Aqui" << std::endl;
+			if(this_response->_utils.fileExists(PATH_INFO) == false)
+			{
+				std::cout << RED << "O script PATH_INFO não existe nesse caminho" << END << std::endl;
+				this_response->errorCodeHtml(404, server); //ou será que só devolve 204 e daí, se a pessoa escolher um mesmo arquivo pra excluir (que ja foi excluido, dá 404?)
+				return this_response->getResponse();
+			}
+			std::cout << "Aqui2" << std::endl;
+			//precisa criar um objeto CGI, setar o caminho do script (usar a MACRO PATH_INFO com o caminho todo?)
+			// precisa setar o uploadStore() -> web/images/?  // no caso, a root
+			// e é isso
+			// daí gerar a resposta com base no -> se for != 200
+			// passa o status code, senão, cria as headers e response que nem tá no httpGet
+			CGI script;
+			script.setUploadStoreFolder(root);
+			std::cout << "Aqui3" << std::endl;
+			script.setScriptNameDirectly(PATH_INFO); //tem a extensão em hardcode... como fazer?
+			std::cout << "Aqui4" << std::endl;
+			int result = script.CGIForGetRequest(script.getUploadStore());
+			if (result != 200)
+				this_response->errorCodeHtml(result, server);
+			else
+			{
+				std::string bodyResponse = script.getResponse();
+				std::string headers = this_response->generateHeaders(200, request, bodyResponse);
+				std::string response = headers + bodyResponse;
+				this_response->setResponse(response);
+			}
+		}
+		else
+			this_response->generateResponse(204, request); //exclusão bem-sucedida
 	}
 	else
 		this_response->errorCodeHtml(500, server);
@@ -693,9 +726,16 @@ void Response::buildResponse(Request &request, SocketS &server)
 {
 	std::cout << YELLOW << "-------> CHEGAMOS AO BUILD RESPONSE <--------" << END << std::endl;
     // verificar se o método requisitado pela solicitação é permitido pra esse servidor
+	// se nem o server teve allowed_methods e nem o location teve, dá ruim
     std::vector<std::string> allowed_methods = server.getMethods();
     std::string requestMethod = request.getMethod();
 	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
+	if(serverLocations.empty())
+	{
+		std::cerr << "SERVIDOR NÃO TEM LOCATIONS NÃO PODE RESPONDER!" << std::endl;
+		errorCodeHtml(404, server);
+		return;
+	}
     if(_utilsResponse.isThisMethodAllowed(serverLocations, request, server, requestMethod))
 		std::string resposta = _methodsFunctions[requestMethod](request, server, this);
     else {

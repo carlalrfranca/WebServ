@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/05 20:41:11 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/05 23:00:14 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,11 @@ const std::string& CGI::getPathToScript(void) const
 const std::string& CGI::getUploadStore() const
 {
 	return _uploadStore;
+}
+
+void CGI::setScriptNameDirectly(std::string scriptName)
+{
+	_scriptName = scriptName;
 }
 
 void CGI::setPathToScript(std::string scriptName)

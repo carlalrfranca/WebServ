@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 20:52:43 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/05 22:54:40 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@
 #include "HttpGet.hpp"
 #include "Utils.hpp"
 #include "CGI.hpp"
+
+#define PATH_INFO "web/cgi-bin/delete_upload_image.sh"
 
 class SocketS;
 class Request;
