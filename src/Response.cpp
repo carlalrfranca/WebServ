@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/06 23:10:36 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/06 23:52:04 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,30 @@ Response::Response() : _headers(), _body(""), _response(""), _code(""), _path(""
 Response::~Response()
 {}
 
+std::string Response::postMethodTryCGI(Request &request, SocketS &server, std::string uploadStoreFolder, CGI script)
+{
+	try
+		{
+			script.setUploadStoreFolder(uploadStoreFolder);
+			int resultCode = 0;
+			resultCode = script.handleCGIRequest(request); //pode dar um retorno caso precise retornar página de erro?
+			std::cout << "statusCode: " << resultCode << END << std::endl;
+			if(resultCode != 204 && resultCode != 200)
+			{
+				errorCodeHtml(resultCode, server);
+				return getResponse();
+			}
+			setResponse(script.getResponse());
+			return getResponse();
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << '\n';
+			errorCodeHtml(404, server);
+			return getResponse();
+		}
+}
+
 std::string Response::postMethod(Request &request, SocketS &server, Response *this_response)
 {
 	std::string root_for_response = server.getRoot();
@@ -38,18 +62,21 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		- (depois tem que testar quando chega sem '/' no inicio, o httpGET que não consegue extrair a diferença da URI - aconteceu pra pedir o css do cgi com 'location cgi-bin')
 		- tem que tratar uris que podem ter varios '/'? que nem extrair? (acho que sim ne, por praxe)
 	*/
-	if(it != serverLocations.end())
-		std::cout << BLUE << "Location found! >> " << it->first << END << std::endl;
-	std::string scriptName = this_response->extractScriptName(uri);
-	if(scriptName.size() == 0)
-	{
-		std::cerr << "---- Opa, essa request NÃO tem process_data CGI !!! ----" << std::endl;
-		this_response->errorCodeHtml(404, server);
-		return this_response->getResponse();
-	}
 
 	if(it != serverLocations.end())
 	{
+		std::cout << BLUE << "Location found! >> " << it->first << END << std::endl;
+		std::string scriptName = this_response->extractScriptName(uri);
+		if(scriptName.size() == 0)
+		{
+			// aqui na verdade pode ser um caminho alternativo -> não tem ".cgi", mas pode ser apenas upload.. daí como fas? dá erro ou tenta outro meio?
+			// OU pode ser que, se NÃO HOUVER .cgi... ele só verifique se tem as diretivas, e se tiver, ele constrói o caminho do script...
+			// ou tira o cgi do href e constroi aqui com PATH_INFO?
+			// se não tiver daí dá erro mesmo?
+			std::cerr << "---- Opa, essa request NÃO tem process_data CGI !!! ----" << std::endl;
+			this_response->errorCodeHtml(404, server);
+			return this_response->getResponse();
+		}
 		// se nao tem .cgi, tem que ver se esse location tem um cgi.. se tiver usar ele?
 		// e se nao tiver? fazer um upload a partir do código mesmo (com as funções que ja tem, que nao usam CGI por si?)
 		// ver o que é o PATH_INFO de novo na régua (talvez seja só o NOME do script? e daí a gente faz o resto da construção com extensão e tal?)
@@ -66,8 +93,6 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		size_t requestContentLength = UtilsResponse::strToSizeT(request.getContentLength());
 		if(requestContentLength > maxBodySize)
 		{
-			std::cout << RED << "Content-Length da Request: " << requestContentLength << END << std::endl;
-			std::cout << RED << "Max_Body_Size permitido: " << maxBodySize << END << std::endl;
 			this_response->errorCodeHtml(413, server);
 			return this_response->getResponse();
 		}
@@ -91,34 +116,13 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		else
 			uploadStoreFolder = "./";
 		// extrair extensoes e comandos pra executar os scripts
+		// dividir aqui -> e retornar this_response->getResponse()
 		std::vector<std::string> scriptsCommands = commandOfCGI->second;
 		std::vector<std::string> scriptsExtensions = CGIExtension->second;
 		std::string pathToScript = root_for_response + scriptName;
-		try
-		{
-			CGI script(root_for_response, scriptsCommands, scriptsExtensions, scriptName);
-			script.setUploadStoreFolder(uploadStoreFolder);
-			std::cout << "CAMINHO INTEIRO PARA O SCRIPT CONSTRUIDO >>" << YELLOW << script.getPathToScript() << END << std::endl;
-			int resultCode = 0;
-			resultCode = script.handleCGIRequest(request); //pode dar um retorno caso precise retornar página de erro?
-			std::cout << "statusCode: " << resultCode << END << std::endl;
-			if(resultCode != 204 && resultCode != 200)
-			{
-				std::cout << "DEU ERROOOO" << std::endl;
-				this_response->errorCodeHtml(resultCode, server);
-				return this_response->getResponse();
-			}
-			this_response->setResponse(script.getResponse());
-			std::cout << YELLOW << "Saída DO SCRIPT no Response >>>> " << this_response->getResponse() << END << std::endl;
-			// std::cout << RED << this_response->getResponse() << END << std::endl;
-			return this_response->getResponse(); // retorna a response
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << '\n';
-			this_response->errorCodeHtml(404, server);
-			return this_response->getResponse();
-		}
+		CGI script(root_for_response, scriptsCommands, scriptsExtensions, scriptName);
+		std::string responseReturned = this_response->postMethodTryCGI(request, server, uploadStoreFolder, script);
+		return responseReturned;
 	}
 	this_response->errorCodeHtml(404, server);
 	return this_response->getResponse();
@@ -273,7 +277,6 @@ bool Response::listFilesAndGenerateHtml(std::map<std::string, LocationDirective>
     std::string path = getPath();
 	try
 	{
-		std::cout << "PATH> " << path << std::endl;
 		DIR *directory = opendir(path.c_str());
 		if(directory)
 		{
@@ -282,9 +285,6 @@ bool Response::listFilesAndGenerateHtml(std::map<std::string, LocationDirective>
 			while((entry = readdir(directory)) != NULL)
 				fileList.push_back(std::string(entry->d_name));
 			closedir(directory);
-			std::cout << "Tamanho da Lista de Itens do Diretório > " << fileList.size() << std::endl;
-			// for (size_t i = 0; i < fileList.size(); ++i)
-			// 	std::cout << i << " - " << fileList[i] << std::endl;
 			generateHtmlFromFiles(fileList, it);
 		} else
 			throw ErrorException("Error when open directory.");
@@ -522,7 +522,7 @@ std::string Response::extractUriAndBuildPathToResource(std::string root, std::ve
 	std::string uriClear = uri.substr(commonSubstring.length());
 	std::string wholePath = "";
 	if(uri != "/" && uri != root)
-		wholePath = root + uriClear; // isso ja vai adicionar todo o caminho que vem da uri, se tiver?
+		wholePath = root + uriClear;
 	else
 		wholePath = root;
 	return wholePath;

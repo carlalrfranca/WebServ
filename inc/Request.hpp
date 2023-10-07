@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 22:52:00 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/06 23:39:17 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,6 @@ class Request
 		std::string getRequest() const;
         std::string getPortRequest()const;
 		std::string getFileFormat()const;
-		bool		getIsDeleteMaskedAsPost();
         const std::string& getMethod()const;
         const std::string& getURI()const;
         const std::string& getVersion()const;
