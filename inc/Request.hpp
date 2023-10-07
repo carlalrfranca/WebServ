@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
 /*   Updated: 2023/10/05 22:52:00 by lfranca-         ###   ########.fr       */
@@ -46,6 +46,7 @@ class Request
         void setFilename(const std::string& filename);
         
         bool getHasError()const;
+		bool getIsDeleteMaskedAsPost();
         std::string getBoundary()const;
         std::string getFilename()const;
         std::string getContentLength()const;        

@@ -40,16 +40,12 @@ body {
   background: #bb9b49;
   border-radius: 50%;
   opacity: 0;
-  transform: translateX(30px);
+  transform: translateX(20px);
   transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
 
 .navMenu a:nth-child(1):hover ~ .dot {
-  transform: translateX(20px);
-  opacity: 1;
-}
-.navMenu a:nth-child(1):hover ~ .dot {
-  transform: translateX(60px);
+  transform: translateX(0px);
   opacity: 1;
 }
 

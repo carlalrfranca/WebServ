@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 22:13:55 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/05 22:20:30 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,16 @@ WebServ::WebServ()
 
 WebServ::~WebServ()
 {}
+
+void WebServ::setResponse(const std::string& response)
+{
+    _response = response;
+}
+
+std::string WebServ::getResponse()const 
+{
+    return _response;
+}
 
 WebServ::WebServ(std::string filename)
 {
@@ -63,39 +73,42 @@ WebServ::WebServ(std::string filename)
             }
             else if(!isInsideServerBlock && !isLocationBlock && !line.empty())
                 throw ErrorException("Wrong character out of server scope: " + line);
-            else if(line.find("}") != std::string::npos && isLocationBlock == false) {
-				std::cout << RED << "SAÍMOS DE UM SERVER BLOCK" << END << std::endl;
+            else if(line.find("}") != std::string::npos && isLocationBlock == false)
+            {
                 isInsideServerBlock = false; // Saímos do bloco "server"
                 continue;
             }
-            else if(isInsideServerBlock){
-    			if(line.find("location") != std::string::npos || isLocationBlock == true){
+            else if(isInsideServerBlock)
+            {
+    			if(line.find("location") != std::string::npos || isLocationBlock == true)
+    			{
                     if(line.find("location") != std::string::npos && isLocationBlock == true)
 						throw ErrorException("Configuration Error: Can't have location block inside of another location block");
-					if(line.find("}") != std::string::npos){
+					if(line.find("}") != std::string::npos)
+					{
                         isLocationBlock = false;
     					continue;
     				}         
                     _configParser.processLocation(line);
                     isLocationBlock = true;
                 } // configSocket(index);
-                else if(line.find("listen") != std::string::npos){
+                else if(line.find("listen") != std::string::npos)
                     _configParser.processListen(line);
-                }else if(line.find("server_name") != std::string::npos){
+                else if(line.find("server_name") != std::string::npos)
                     _configParser.processServerName(line);
-                }else if(line.find("root") != std::string::npos){
+                else if(line.find("root") != std::string::npos)
                     _configParser.processRoot(line);
-                }else if(line.find("index") != std::string::npos){
+                else if(line.find("index") != std::string::npos)
                     _configParser.processIndex(line);
-    			}else if(line.find("allow_methods") != std::string::npos){
+    			else if(line.find("allow_methods") != std::string::npos)
     				_configParser.processAllowMethods(line);
-    			}else if(line.find("client_max_body_size") != std::string::npos){
+    			else if(line.find("client_max_body_size") != std::string::npos)
     				_configParser.processClientMaxBodySize(line);
-    			}else if(line.find("return") != std::string::npos){
+    			else if(line.find("return") != std::string::npos)
     				_configParser.processReturn(line);
-    			}else if(line.find("error_page") != std::string::npos){
+    			else if(line.find("error_page") != std::string::npos)
                     _configParser.processErrorPage(line);
-                } else {
+                else {
 					std::cout << line << std::endl;
 					throw ErrorException("Configuration Error: Directive not allowed!");
 				}
@@ -105,7 +118,7 @@ WebServ::WebServ(std::string filename)
             throw ErrorException("Configuration Error: Server Block not found!");
 		if(isLocationBlock == true || isInsideServerBlock == true)
 			throw ErrorException("Configuration Error: Server Block or Location Block not closed!");
-    }else
+    } else
         throw ErrorException("File Error : file cannot be opened");
     if(index != 0)
         configSocket();
@@ -131,7 +144,7 @@ void WebServ::checkForDuplicates()
 				}
 			}
 			else if (_serverSocket[i].getPort() == _serverSocket[j].getPort() &&
-	               _serverSocket[i].getAddress() != _serverSocket[j].getAddress()) {
+	               _serverSocket[i].getAddress() != _serverSocket[j].getAddress()){
 					throw ErrorException("Configuration Error : Duplicated Port in multiple servers");
 			}
         }
@@ -188,8 +201,6 @@ void WebServ::configSocket()
 
 void WebServ::initServers()
 {
-	// std::vector<SocketS>::size_type i = 0;
-	
 	checkForDuplicates();
 	bool isDuplicated = false;
 	std::cout << RED << "Qtdade servers: " << _serverSocket.size() << END << std::endl;

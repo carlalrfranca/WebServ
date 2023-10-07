@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
 /*   Updated: 2023/10/05 22:54:40 by lfranca-         ###   ########.fr       */
@@ -40,26 +40,25 @@ class Response
         ~Response();
     
         //getters and setters
-        std::string getResponse()const;//foi criado outro metodo, precisa ajustar .cpp
+		std::string getUri()const;
 		std::string getDate()const;
 		std::string getMethod()const;
+        std::string getResponse()const;//foi criado outro metodo, precisa ajustar .cpp
         std::string getParameter(std::string query, std::string parameter)const;
-        const std::map<std::string, std::string>& getHeader()const; // busca pelo campo de cabeçalho na lista de cabeçalhos
         const std::string getPath()const;
+        const std::map<std::string, std::string>& getHeader()const; // busca pelo campo de cabeçalho na lista de cabeçalhos
 		
-		std::string getUri()const;
 		void setUri(const std::string& uri);
-		
-        void setDateAndTime();
         void setPath(const std::string& allPath); 
+        void setResponse(const std::string& response);
         void setStatusCode(const std::string& statusCode);
         void setContentType(const std::string& contentType);
-        void setResponse(const std::string& response);
+        void setDateAndTime();
         
         //response methods
+        void reset();
         void buildResponse(Request &request, SocketS &server);
         void generateResponse(int statusCode, const Request& request);
-        void reset(); //implementa a redefinição de resposta, limpando cabeçalhos e corpo
         void httpError(std::string errorCode, const std::string &errorMessage);
         void errorPage(Request &response, std::string &root);
 		void errorCodeHtml(int statusCode, SocketS &server);
@@ -83,7 +82,6 @@ class Response
 		static std::string buildHeaderReturn(std::string statusCode, std::string resource, Response *this_response);
 		static std::map<std::string, std::string> initContentTypes();
         std::string getContentTypeFromExtension(const std::string& extension);
-		
 
 		//std::string	_uri;
         std::string generateHeaders(int statusCode, const Request& request, std::string content);
@@ -96,15 +94,13 @@ class Response
         std::string                         _response; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
         std::string                         _code;
         std::string                         _path;
+		std::string                         _uri;
         Utils                               _utils;
         SocketS                             *_chosenSocket;
         UtilsResponse                       _utilsResponse;                
         StatusMessages                      _statusMessages;
 		std::map<std::string, Funcao>		_methodsFunctions;
 		std::map<std::string, std::string>  _extensionToContentType;
-		
-		
-		std::string                         _uri;
 
     class ErrorException: public std::exception
     {

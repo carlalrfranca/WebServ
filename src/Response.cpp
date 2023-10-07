@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/06 21:22:53 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/06 23:10:36 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,13 +130,12 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 	// std::string uri = request.getURI();
 	// construir o caminho do recurso
 	// std::string caminhoDoRecurso = //constroi aqui
+	
 std::string Response::deleteMethod(Request &request, SocketS &server, Response *this_response)
 {
 	std::map<std::string, LocationDirective> serverLocations = server.getLocations();
 	std::map<std::string, LocationDirective>::iterator it = this_response->_utilsResponse.findRequestedLocation(request, serverLocations);
 	std::string uri = request.getURI();
-	std::cout << BLUE << "CHAMAMOS O METODO DELETE" << END << std::endl;
-
 	if(it != serverLocations.end())
 		std::cout << BLUE << "Location found! >> " << it->first << END << std::endl;
 	std::cout << BLUE << "URI >>> " << uri << END << std::endl;
@@ -154,16 +153,9 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 		this_response->setPath(root + request.getFilename());
 	else
 		this_response->buildPathToResource(root, request, server, locationDirectives, it);
-	// vai ter que extrair o arquivo selecionado pra excluir
-	std::cout << BLUE << "Corpo da REQUEST: " << request.getBody() << END << std::endl;
-	std::cout << RED << "Nome do arquivo a ser excluido: " << request.getFilename() << END << std::endl;
-	std::cout << YELLOW << "PATH::: " << this_response->getPath() << END << std::endl;
-	// std::string resourcePath = root + uri;
 	std::string resourcePath = this_response->getPath();
-	//4. verificando a existencia do arquivo antes de excluir
 	if(this_response->_utils.fileExists(resourcePath) == false)
 	{
-		std::cout << RED << "O arquivo NÃO EXISTE nesse caminho" << END << std::endl;
 		this_response->errorCodeHtml(404, server);
 		return this_response->getResponse();
 	}
@@ -412,9 +404,8 @@ std::string Response::getContentTypeFromExtension(const std::string& extension)
     if (it != _extensionToContentType.end()) {
         return it->second;
     }
-    return "text/html"; // o padrão é "text/html" se não houver correspondência
+    return "text/html";
 }
-
 
 std::string Response::generateHeaders(int statusCode, const Request& request, std::string content)
 {

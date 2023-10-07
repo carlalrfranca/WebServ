@@ -43,30 +43,32 @@ class WebServ
 		//void addEndPoint(const std::string& ipAddress, const std::string& port);
 
         Epoll &getEpollS();
-        bool isFirstLineValid(const std::string &request, std::string &_firstLine);
+        std::string getResponse()const;
+        void setResponse(const std::string& response);
+        
+		int	convertContentLength(std::string& header, size_t contentLengthPos);
+		bool hasBodyContent(const std::string& header);
         bool isEventFromServerSocket(struct epoll_event *events, int index);
+        bool isFirstLineValid(const std::string &request, std::string &_firstLine);
         void handleRequest(std::string &requestString);
         void removeClientFromEpoll(Epoll& epollS);
-		// Colocar isso na classe Request, talvez? (tem a ver com ela, afinal)
 		void readRequest(int clientSocket);
-		bool hasBodyContent(const std::string& header);
-		int	convertContentLength(std::string& header, size_t contentLengthPos);
 
-		std::string				_response;
-		size_t					_totalBytesRead;
-		size_t 					_contentLength;
-		std::string				_requestString;
 
     private:
 
         int						_clientSocket;
         Epoll					_epollS;
+        Utils                   _utils;
+		size_t 					_contentLength;
+		size_t					_totalBytesRead;
+        socklen_t				_clientAddressLength;
+		std::string				_response; //set e get
+		std::string				_requestString; //
         std::string				_nameConfigFile;
         ConfigParser			_configParser; // sujeito comentado
         std::vector<SocketS>	_serverSocket; // ----vetor criado
-        socklen_t				_clientAddressLength;
         struct sockaddr_in		_clientAddress;
-        Utils                   _utils;
         //std::set<std::pair<std::string, std::string> > _endPoints;
 
     class ErrorException : public std::exception
