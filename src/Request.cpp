@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/04 21:08:27 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/06 21:30:06 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ Request::Request(const std::string& request)
 	_errorPage["400"] = "./web/error/Error400.html";
 	_errorPage["401"] = "./web/error/Error401.html";
 	_errorPage["403"] = "./web/error/Error403.html";
+	_errorPage["404"] = "./web/error/Error404.html";
 	_errorPage["405"] = "./web/error/Error405.html";
 	_errorPage["413"] = "./web/error/Error413.html";
 	_errorPage["500"] = "./web/error/Error500.html";
@@ -36,7 +37,6 @@ Request::Request(const std::string& request)
 	_errorPage["503"] = "./web/error/Error503.html";
 	_errorPage["504"] = "./web/error/Error504.html";
 	_errorPage["505"] = "./web/error/Error505.html";
-	_errorPage["404"] = "./web/error/Error404.html";
 	// talvez aqui tenha que abrir pra um metodo
 	// que PARSEIA E VALIDA A REQUEST TODA
     std::getline(_requestStream, _firstLine);
