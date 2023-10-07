@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 23:03:12 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/06 21:22:53 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,9 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 
 	if(it != serverLocations.end())
 	{
+		// se nao tem .cgi, tem que ver se esse location tem um cgi.. se tiver usar ele?
+		// e se nao tiver? fazer um upload a partir do código mesmo (com as funções que ja tem, que nao usam CGI por si?)
+		// ver o que é o PATH_INFO de novo na régua (talvez seja só o NOME do script? e daí a gente faz o resto da construção com extensão e tal?)
 		size_t foundCGIExt = scriptName.find(".cgi");
 		if(foundCGIExt != std::string::npos)
 			scriptName = scriptName.substr(0, foundCGIExt);
@@ -98,12 +101,16 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 			std::cout << "CAMINHO INTEIRO PARA O SCRIPT CONSTRUIDO >>" << YELLOW << script.getPathToScript() << END << std::endl;
 			int resultCode = 0;
 			resultCode = script.handleCGIRequest(request); //pode dar um retorno caso precise retornar página de erro?
-			if(resultCode != 204)
+			std::cout << "statusCode: " << resultCode << END << std::endl;
+			if(resultCode != 204 && resultCode != 200)
 			{
+				std::cout << "DEU ERROOOO" << std::endl;
 				this_response->errorCodeHtml(resultCode, server);
 				return this_response->getResponse();
 			}
 			this_response->setResponse(script.getResponse());
+			std::cout << YELLOW << "Saída DO SCRIPT no Response >>>> " << this_response->getResponse() << END << std::endl;
+			// std::cout << RED << this_response->getResponse() << END << std::endl;
 			return this_response->getResponse(); // retorna a response
 		}
 		catch(const std::exception& e)
@@ -166,14 +173,12 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 		if (request.getIsDeleteMaskedAsPost())
 		{
 			// verificar se o script pra gerar outra página existe
-			std::cout << "Aqui" << std::endl;
 			if(this_response->_utils.fileExists(PATH_INFO) == false)
 			{
 				std::cout << RED << "O script PATH_INFO não existe nesse caminho" << END << std::endl;
 				this_response->errorCodeHtml(404, server); //ou será que só devolve 204 e daí, se a pessoa escolher um mesmo arquivo pra excluir (que ja foi excluido, dá 404?)
 				return this_response->getResponse();
 			}
-			std::cout << "Aqui2" << std::endl;
 			//precisa criar um objeto CGI, setar o caminho do script (usar a MACRO PATH_INFO com o caminho todo?)
 			// precisa setar o uploadStore() -> web/images/?  // no caso, a root
 			// e é isso
@@ -181,9 +186,7 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 			// passa o status code, senão, cria as headers e response que nem tá no httpGet
 			CGI script;
 			script.setUploadStoreFolder(root);
-			std::cout << "Aqui3" << std::endl;
 			script.setScriptNameDirectly(PATH_INFO); //tem a extensão em hardcode... como fazer?
-			std::cout << "Aqui4" << std::endl;
 			int result = script.CGIForGetRequest(script.getUploadStore());
 			if (result != 200)
 				this_response->errorCodeHtml(result, server);
