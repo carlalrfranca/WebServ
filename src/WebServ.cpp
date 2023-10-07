@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 22:20:30 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/07 16:49:24 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,18 @@ WebServ::WebServ()
 {}
 
 WebServ::~WebServ()
-{}
+{
+
+    // Libere quaisquer outros recursos alocados dinamicamente ou que exijam limpeza especial
+    // Certifique-se de revisar todos os membros da classe e chamar os destrutores apropriados
+    // ou realizar outras ações de limpeza, se necessário.
+
+    // Exemplo: Chame o destrutor da ConfigParser, se necessário
+    // _configParser.~ConfigParser();
+
+    // Exemplo: Limpe o vetor _serverSocket, se necessário
+    _serverSocket.clear();
+}
 
 void WebServ::setResponse(const std::string& response)
 {
@@ -398,7 +409,7 @@ void WebServ::readRequest(int clientSocket)
 	// loop para receber e acumular os chunks da solicitação
 	//ssize_t bytesRead = 0;
 	std::cout << BLUE << "ENTERING READ REQUEST" << END << std::endl;
-	while(true)
+	while(!shouldExit)
 	{
 		ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
         if(bytesRead == 0)

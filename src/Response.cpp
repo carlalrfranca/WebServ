@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/06 23:52:04 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/07 16:03:41 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,6 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		size_t foundCGIExt = scriptName.find(".cgi");
 		if(foundCGIExt != std::string::npos)
 			scriptName = scriptName.substr(0, foundCGIExt);
-		// agora verificamos se há um "root" dentro desse location (um root mais "especifico", portanto)
 		std::map<std::string, std::vector< std::string > > locationDirectives;
 		locationDirectives = it->second.getDirectives();
         std::map<std::string, std::vector< std::string > >::iterator itLocationRoot = locationDirectives.find("root");
@@ -91,6 +90,8 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		if(itLocationMaxBodySize != locationDirectives.end())
 			maxBodySize = UtilsResponse::strToSizeT(itLocationMaxBodySize->second[0]);
 		size_t requestContentLength = UtilsResponse::strToSizeT(request.getContentLength());
+		std::cout << "MaxBodySize: " << maxBodySize << std::endl;
+		std::cout << "Content-Length da Request: " << requestContentLength << std::endl;
 		if(requestContentLength > maxBodySize)
 		{
 			this_response->errorCodeHtml(413, server);
@@ -120,9 +121,32 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		std::vector<std::string> scriptsCommands = commandOfCGI->second;
 		std::vector<std::string> scriptsExtensions = CGIExtension->second;
 		std::string pathToScript = root_for_response + scriptName;
-		CGI script(root_for_response, scriptsCommands, scriptsExtensions, scriptName);
-		std::string responseReturned = this_response->postMethodTryCGI(request, server, uploadStoreFolder, script);
-		return responseReturned;
+		std::cout << "Eita sô" << std::endl;
+		try
+		{
+			CGI script(root_for_response, scriptsCommands, scriptsExtensions, scriptName);
+			std::string responseReturned = this_response->postMethodTryCGI(request, server, uploadStoreFolder, script);
+			return responseReturned;
+		}
+		catch(const std::exception& e)
+		{
+			std::cout << BLUE << "Esse caminho PRO SCRIPT NÃO EXISTE" << END << std::endl;
+			this_response->errorCodeHtml(500, server); //tem que diferenciar: se NAO EXISTE é 404, se NÃO TEM PERMISSAO é 500
+			return this_response->getResponse();
+		}
+		
+		
+		/* testar se o script existe né */ // ja tem na verificação na hora de construir o cgi com parametros
+		// std::string wholePathToScript = script.getPathToScript();
+		// std::cout << RED << "CAMINHO INTEIRO PRO SCRIPT: " << wholePathToScript << END << std::endl;
+		// if (!this_response->_utils.pathExists(wholePathToScript))
+		// {
+			// std::cout << BLUE << "Esse caminho PRO SCRIPT NÃO EXISTE" << END << std::endl;
+			// this_response->errorCodeHtml(500, server); //tem que diferenciar: se NAO EXISTE é 404, se NÃO TEM PERMISSAO é 500
+			// return this_response->getResponse();
+		// }
+		// std::string responseReturned = this_response->postMethodTryCGI(request, server, uploadStoreFolder, );
+		// return responseReturned;
 	}
 	this_response->errorCodeHtml(404, server);
 	return this_response->getResponse();
@@ -169,7 +193,7 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 		if (request.getIsDeleteMaskedAsPost())
 		{
 			// verificar se o script pra gerar outra página existe
-			if(this_response->_utils.fileExists(PATH_INFO) == false)
+			if(this_response->_utils.fileExists(PATH_INFO) == false) //ou em vez de servir uma pagina, eu possa apenas disponibilizar a opção de deletar ao fazer o upload
 			{
 				std::cout << RED << "O script PATH_INFO não existe nesse caminho" << END << std::endl;
 				this_response->errorCodeHtml(404, server); //ou será que só devolve 204 e daí, se a pessoa escolher um mesmo arquivo pra excluir (que ja foi excluido, dá 404?)

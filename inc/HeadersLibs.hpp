@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/06 19:41:26 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/07 16:49:22 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <cstdlib>
+#include <csignal>
 
 // DEFINES
 #include <algorithm>
@@ -46,6 +47,8 @@
 #include <map>
 #include <set>
 #include <sys/time.h>
+
+extern bool shouldExit;
 
 // COLORS DEFINES
 #define YELLOW  "\033[0;33m"
