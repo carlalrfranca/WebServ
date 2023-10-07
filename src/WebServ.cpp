@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/07 16:49:24 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/07 19:06:26 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -420,7 +420,8 @@ void WebServ::readRequest(int clientSocket)
 		}
 		else if(bytesRead == -1)
 		{
-			std::cerr << "Error during reading of client request: " << strerror(errno) << std::endl; //tem que tirar o client quando dá esse tipo de erro
+			std::cerr << "Error during reading of client request. " << std::endl; //tem que tirar o client quando dá esse tipo de erro
+			// removeClientFromEpoll(_epollS);
 			// _epollS._event.data.fd = _epollS._clientFd;
 			// epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS._clientFd, &_epollS._event);
 			// close(_epollS._clientFd);
@@ -488,9 +489,10 @@ void WebServ::mainLoop()
 		return;
     const int maxEvents = _epollS.getMaxEvents();
     struct epoll_event events[maxEvents];
-    while(true)
+    while(!shouldExit)
     {
-        _epollS.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
+		int timeoutMs = 10000;
+        _epollS.setNumberEvents(epoll_wait(epollFd, events, maxEvents, timeoutMs));
         if(_epollS.getNumberEvents() == -1)
         {
             perror("Error in epoll_wait");

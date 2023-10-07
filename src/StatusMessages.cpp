@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:33:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 22:42:04 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/07 17:15:35 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 StatusMessages::StatusMessages()
 {
     statusMessages[200] = "OK";
+	statusMessages[204] = "No Content";
 	statusMessages[301] = "Moved Permanently";
 	statusMessages[302] = "Temporary Redirect";
 	statusMessages[307] = "Internal Redirect";

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/07 16:03:41 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/07 18:05:48 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -370,7 +370,13 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, s
     headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
     headers += "Content-Type: " + contentType + "\r\n";
     headers += "Content-Length: " + contentLengthStr + "\r\n";
-    headers += "\r\n";
+    headers += "Date: " + getDate() + "\r\n";
+	headers += "Server: Webserv-42SP\r\n";	
+	headers += "Access-Control-Allow-Origin: *\r\n";
+	//headers += "Access-Control-Allow-Methods: GET, POST, DELETE\r\n";
+	headers += "Access-Control-Allow-Headers: Content-Type\r\n";
+	headers += "Cache-Control: no-cache, no-store\r\n";
+	headers += "\r\n";
     //junta os dois e seta a response
     std::string response = headers + html;
     setResponse(response);
@@ -397,6 +403,11 @@ void Response::errorCodeHtml(int statusCode, SocketS &server)
     response += "Content-Type: text/html\r\n";
 	response += "Content-Length: " + contentLengthStr + "\r\n";
 	response += "Date: " + getDate() + "\r\n";
+	response += "Server: Webserv-42SP\r\n";	
+	response += "Access-Control-Allow-Origin: *\r\n";
+	//headers += "Access-Control-Allow-Methods: GET, POST, DELETE\r\n";
+	response += "Access-Control-Allow-Headers: Content-Type\r\n";
+	response += "Cache-Control: no-cache, no-store\r\n";
 	// response += "Connection: close\r\n\r\n" + errorHtml;
 	response += "\r\n" + errorHtml;
 	setResponse(response);
@@ -437,38 +448,43 @@ std::string Response::generateHeaders(int statusCode, const Request& request, st
 	std::stringstream toConvertToString;
 	
     toConvertToString << statusCode;
+	std::string statusMes = _statusMessages.getMessage(statusCode);
     std::string statusCodeStr = toConvertToString.str();
 	std::size_t headerEndPos = response.find("\r\n\r\n");
-	std::size_t contentLength = response.length() - headerEndPos - 4;
-	std::stringstream ss;
-	ss << contentLength;
-	std::string contentLenStr = ss.str();
+	std::string contentLenStr;
+	if (response.size() > 0)
+	{
+		std::size_t contentLength = response.length() - headerEndPos - 4;
+		std::stringstream ss;
+		ss << contentLength;
+		contentLenStr = ss.str();
+	}
+	else
+		contentLenStr = "0";
 	setDateAndTime();
 	
 	std::string uri = request.getURI();
     size_t dotPos = uri.rfind('.');
 	std::string contentType = "text/html";
 	
-	if (dotPos != std::string::npos) 
+	if (dotPos != std::string::npos && (request.getMethod() == "GET" || request.getMethod() == "get")) 
 	{
         std::string extension = uri.substr(dotPos + 1);
         contentType = getContentTypeFromExtension(extension);
     }
+	if (statusCode == 204)
+		contentType = "application/octet-stream";
 	
 	std::string headers;
-    headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
+    headers += "HTTP/1.1 " + statusCodeStr + " " + statusMes + "\r\n";
     headers += "Content-Type: " + contentType + "\r\n";
     headers += "Content-Length: " + contentLenStr + "\r\n";
 	headers += "Date: " + getDate() + "\r\n";
 	headers += "Server: Webserv-42SP\r\n";	
-	
-	if(request.getURI().find("chromium") != std::string::npos)
-	{
-		headers += "Access-Control-Allow-Origin: *\r\n";
-        //headers += "Access-Control-Allow-Methods: GET, POST, DELETE\r\n";
-        headers += "Access-Control-Allow-Headers: Content-Type\r\n";
-        headers += "Cache-Control: no-cache, no-store\r\n";
-	}
+	headers += "Access-Control-Allow-Origin: *\r\n";
+	//headers += "Access-Control-Allow-Methods: GET, POST, DELETE\r\n";
+	headers += "Access-Control-Allow-Headers: Content-Type\r\n";
+	headers += "Cache-Control: no-cache, no-store\r\n";
     headers += "\r\n";	
     
 	return headers;

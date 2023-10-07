@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/06 21:31:30 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/07 17:16:53 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -355,20 +355,30 @@ std::string CGI::setDateAndTime()
 
 std::string CGI::generateHeadersSucessCGI(int statusCode)
 {
+	StatusMessages statusMes;
 	std::stringstream toConvertToString;
     toConvertToString << statusCode;
     std::string statusCodeStr = toConvertToString.str();
 	std::string headers;
 	std::stringstream contentLengthToString;
 	int content_length = _response.size();
+	std::string codeMessage = statusMes.getMessage(statusCode); 
 	contentLengthToString << content_length;
 	std::string contentLen = contentLengthToString.str();
-    headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
+    headers += "HTTP/1.1 " + statusCodeStr + " " + codeMessage + "\r\n";
 	if (statusCode == 200)
+	{
 		headers += "Content-Length: " + contentLen + "\r\n";
+		headers += "Content-Type: text/html\r\n";
+	}
 	else if (statusCode == 204)
+	{
 		headers += "Content-Length: 0\r\n";
+		headers += "Content-Type: application/octet-stream\r\n";
+	}
 	headers += "Date: " + setDateAndTime() + "\r\n";
+	headers += "Server: Webserver-42SP\r\n";
+	headers += "Cache-Control: no-cache, no-store, must-revalidate\r\n";
     headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
 	if (statusCode == 200)
 	{
