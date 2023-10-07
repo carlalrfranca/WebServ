@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/06 21:06:32 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/06 21:31:30 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,11 @@ const std::string& CGI::getPathToScript(void) const
 const std::string& CGI::getUploadStore() const
 {
 	return _uploadStore;
+}
+
+void CGI::setScriptNameDirectly(std::string scriptName)
+{
+	_scriptName = scriptName;
 }
 
 void CGI::setPathToScript(std::string scriptName)
@@ -145,6 +150,7 @@ void CGI::executeProcessChild(int *pipefd, std::string fileName, int *stdoutPipe
 int CGI::executeScript(int *pipefd, std::string fileName)
 {
 	int stdoutPipe[2];
+	std::cout << "----- FILENAME ------" << fileName << std::endl;
 	if(pipe(stdoutPipe) == -1)
 	{
 	    std::cerr << "ERROR creating STDOUT pipe" << std::endl;
@@ -164,7 +170,7 @@ int CGI::executeScript(int *pipefd, std::string fileName)
 	}
 	else
 		executeProcessParent(pipefd, timeoutSeconds, childPid, stdoutPipe);
-	return 204;
+	return 200;
 }
 
 int CGI::uploadImage(Request &request, std::string request_content, size_t data_init_pos)
@@ -199,6 +205,10 @@ int CGI::uploadImage(Request &request, std::string request_content, size_t data_
 
 int CGI::uploadImageCGI(Request &request)
 {
+	std::cout << RED << "Content-Type do arquivo: " << request.getFileFormat() << END << std::endl;
+	setenv("CONTENT_TYPE", request.getFileFormat().c_str(), 1);
+	setenv("LOCATION", "/images/", 1);
+	setenv("FILE_NAME", request.getFilename().c_str(), 1);
 	// _inputFormData = request_content;
 	_inputFormData = request.getBody();
 	size_t startBinaryContent = _inputFormData.find(request.getFileFormat());
@@ -234,9 +244,10 @@ int CGI::uploadImageCGI(Request &request)
 		return 504;
 	if (_scriptOutput.empty())
 		return 500;
-	_response += _scriptOutput;
+	_response = _scriptOutput;
+	std::cout << BLUE << "TAMANHO DO RETORNO DA RESPONSE: " << _response << END << std::endl;
 	// std::cout << _response << std::endl;
-	return 204;
+	return 200;
 }
 
 int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_content)
@@ -348,10 +359,24 @@ std::string CGI::generateHeadersSucessCGI(int statusCode)
     toConvertToString << statusCode;
     std::string statusCodeStr = toConvertToString.str();
 	std::string headers;
-    headers += "HTTP/1.1 " + statusCodeStr + " No Content\r\n";
-	headers += "Content-Length: 0\r\n";
+	std::stringstream contentLengthToString;
+	int content_length = _response.size();
+	contentLengthToString << content_length;
+	std::string contentLen = contentLengthToString.str();
+    headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
+	if (statusCode == 200)
+		headers += "Content-Length: " + contentLen + "\r\n";
+	else if (statusCode == 204)
+		headers += "Content-Length: 0\r\n";
 	headers += "Date: " + setDateAndTime() + "\r\n";
     headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
+	if (statusCode == 200)
+	{
+		headers += _response;
+		_response = headers;
+		std::cout << YELLOW << headers << END << std::endl;
+		std::cout << RED << _response << END << std::endl;	
+	}
 	return headers;
 }
 
@@ -371,7 +396,7 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 	}
 
 	// primeiro criamos a header da response:
-	_response = "HTTP/1.1 204 No Content\r\nDate: Sat, 03 Sep 2023 12:34:56 GMT\r\nConnection: keep-alive\r\n\r\n";
+	// _response = "HTTP/1.1 204 No Content\r\nDate: Sat, 03 Sep 2023 12:34:56 GMT\r\nConnection: keep-alive\r\n\r\n";
 
 	std::string request_content = request.getRequest();
 	// Abre um arquivo para escrever (substitua "request.txt" pelo nome do arquivo desejado)
@@ -410,12 +435,12 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		int resultCode = 0;
 		// resultCode = uploadImage(request, request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
 		resultCode = uploadImageCGI(request);
-		if (resultCode == 204)
-			_response = generateHeadersSucessCGI(resultCode);
+		if (resultCode == 200)
+			generateHeadersSucessCGI(resultCode);
 		return resultCode;
 	}
-	_response = generateHeadersSucessCGI(204);
-	return 204;
+	_response = generateHeadersSucessCGI(200);
+	return 200;
 }
 
 std::string CGI::getResponse(void) const

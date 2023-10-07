@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 12:00:45 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/05 21:44:40 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,18 +235,9 @@ bool ConfigParser::isValidPort(const std::string &port)
 void ConfigParser::processListen(std::string &line)
 {
 	size_t	posInit;
-	
-	// esse if impede a duplicação (tirar depois?)
-    // if(_hasDirListen == true)
-    //     throw ErrorException("Error: The Directive Listen has been duplicated.");
 
-	// tem que extrair o ;
-	//-----------03.10 inclusao da verificacao de IpAddress
-	
-	//-----------------------
 	if (line[line.length() - 1] == ';')
 		line = line.substr(0,  line.length() - 1);
-	// vamos splitar essa linha
 	std::istringstream listen_values(line);
 	std::string word;
     std::vector<std::string> tokens;
@@ -281,10 +272,10 @@ void ConfigParser::processListen(std::string &line)
 			throw ErrorException("Configuration Error: Cannot have repeated port in server!");
 		_allPorts.push_back(_portNumber);
 		_allIps.push_back(_ipAddress);
-		if(!_utils.containsOnlyNumbers(_portNumber)) //ontemApenasNumeros
+		if(!_utils.containsOnlyNumbers(_portNumber))
 			throw ErrorException("Syntax Error: Port must be ONLY numbers.");
 	} else {
-		if(_utils.containsOnlyNumbers(tokens[1])) //ontemApenasNumeros
+		if(_utils.containsOnlyNumbers(tokens[1]))
 		{
 			_portNumber = tokens[1];
 			_ipAddress = "127.0.0.1";
@@ -391,10 +382,19 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine)
 		hasprohibitedDirectiveInLocation(splittedLine[0]);
 		std::map<std::string, std::vector<std::string> >::iterator directiveIt = it->second.getDirectives().find(splittedLine[0]);
 		if(directiveIt != it->second.getDirectives().end())
-			throw ErrorException("Syntax Error: Duplicated directive in location block"); 
+			throw ErrorException("Syntax Error: Duplicated directive in location block");
 		// com os argumentos splitados e num vetor, vamos inserir a key no objeto
 		it->second.addDirective(splittedLine[0], splittedLine[1]);
-		// diretiva (se há mais itens)
+		// diretiva (se há mais itens) // tem que limitar
+		/*
+			Diretivas que PODEM TER MAIS DE UM VALOR:
+				- allow_methods
+				- return
+
+			Diretivas que NÃO PODEM TER MAIS DE UM VALOR:
+		*/
+		if (splittedLine.size() > 2 && splittedLine[0] != "allow_methods" && splittedLine[0] != "return")
+			throw ErrorException("Configuration Error: [LOCATION] Directive of one value with multiple values.");
 		if(splittedLine.size() > 2)
 		{
 			size_t totalValues = splittedLine.size();

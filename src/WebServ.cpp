@@ -158,11 +158,13 @@ void WebServ::configSocket()
 	if(_configParser.getRoot().empty())
 		_configParser.setRoot("./");
 	if(_configParser.getAddress().empty())
-		_configParser.setAddress("localhost");
+		_configParser.setAddress("127.0.0.1");
 	// if (_configParser.getIndexFile().empty())
 		// _configParser.setIndexFile("index.html");
-	if(_configParser.getPort().empty())
-		throw ErrorException("Configuration Error: Port not found!");
+	if(_configParser.getAllPorts().size() == 0)
+		throw ErrorException("Configuration Error: [MANDATORY DIRECTIVE] Port not found!");
+	if (_configParser.getMethods().size() == 0)
+		throw ErrorException("Configuration Error: [MANDATORY DIRECTIVE] It is necessary at least ONE allowed method at server level.");
 	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server,
 	// a gente vai definir um padrão? (ou deixar sem?)
 	std::vector<std::string> tmpPorts = _configParser.getAllPorts();
