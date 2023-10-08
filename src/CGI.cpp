@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/07 17:16:53 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/07 21:39:09 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,6 @@ int CGI::executeProcessParent(int *pipefd, unsigned int timeoutSeconds, pid_t ch
 	close(stdoutPipe[0]);
 	return 0;
 }
-
 
 void CGI::executeProcessChild(int *pipefd, std::string fileName, int *stdoutPipe)
 {

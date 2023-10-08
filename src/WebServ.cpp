@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/07 19:06:26 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/07 21:48:34 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,7 +181,6 @@ void WebServ::configSocket()
 	std::vector<std::string> tmpPorts = _configParser.getAllPorts();
 	std::vector<std::string> tmpAddress = _configParser.getAllIps();
 	size_t totalPorts = tmpPorts.size();
-	std::cout << BLUE << "Qtdade Portas: " << totalPorts << " | Quantidade de Ips: " << tmpAddress.size() << END << std::endl;
 	for(size_t i = 0; i < totalPorts; i++)
 	{
     	SocketS temp_socket;
@@ -214,12 +213,6 @@ void WebServ::initServers()
 {
 	checkForDuplicates();
 	bool isDuplicated = false;
-	std::cout << RED << "Qtdade servers: " << _serverSocket.size() << END << std::endl;
-	// while(i < _serverSocket.size()) //loop que itera os sockets do servidor
-	// {
-		// _serverSocket[i].initServer();
-        // i++;
-	// }
 	for (std::vector<SocketS>::iterator it = _serverSocket.begin(); it != _serverSocket.end(); ++it)
 	{
 		for (std::vector<SocketS>::iterator it2 = _serverSocket.begin(); it != it2; ++it2)
@@ -233,15 +226,6 @@ void WebServ::initServers()
 		if (!isDuplicated)
 			it->initServer();
 	}
-		// verificar se esse server teve mais de um listen (ip e porta)...
-		// se sim, cria um socket pra cada, cada um escutando em sua respectiva
-		// porta, mas com o resto das configurações semelhantes...
-		// ** ATENÇÃO: a MESMA porta não pode ter sido configurada DUAS VEZES (testar
-		// pra ver se escutar na porta 5005 no ip 127.0.0.1 e na mesma porta do ip 128.??? consegue bindar)
-		// aqui vai o if testando se a porta e o address é igual -> daí 
-		// replica o fd deles (tem que ser com iteradores - consultar isso)
-		// e continua;
-		// senão:
 }
 
 void WebServ::printRequest(const std::string& request)
@@ -313,15 +297,7 @@ void WebServ::handleRequest(std::string& requestString)
 {
     Request request(requestString);
     Response currentResponse;
-	// --------------------
-	// isso tem que acontecer NA REQUEST
 	std::cout << BLUE << request.getMethod() << END << std::endl;
-	// ----------------
-    // if (request.isFirstLineValid() != 0)
-    // {
-    //     request.setHasError(true);
-    //     close(clientSocket);
-    // }
 	int resultCode = request.validateRequest();
     if(resultCode != 0)
 	{
@@ -331,9 +307,6 @@ void WebServ::handleRequest(std::string& requestString)
 	}
     if(request.getHasError())
         responseError(); //criar um método pra errorCodeHtml aqui
-    std::cout << "--------------------********---------" << std::endl;
-    std::cout << "Dominio da request: " << request.getDomainRequest() << "| Size: " << request.getDomainRequest().size() << std::endl;
-    std::cout << "--------------------********---------" << std::endl;
     int selectedServer = UtilsResponse::selectServer(request, _serverSocket);
     if(selectedServer != -1)
 	{
@@ -395,17 +368,17 @@ void WebServ::removeClientFromEpoll(Epoll& epollS)
 	close(epollS.getClientFd());
 }
 
-void WebServ::readRequest(int clientSocket)
+int WebServ::readRequest(int clientSocket)
 {
 	char buffer[1000];
 	_epollS.setClientFd(clientSocket);
 	std::string header;
 	std::string body;
+	int header_size = 0;
 	// ah, por enquanto tá funcionando porque ele toda vez processa a requestString no cgi... individualmente..
 	// mas tem que tratar os chunks direito...
 	if(_requestString.size() > 0)
 		std::cout << RED << "Request JÁ TEM COISA!!!" << END << std::endl;
-	ssize_t totalBytesRead = 0;
 	// loop para receber e acumular os chunks da solicitação
 	//ssize_t bytesRead = 0;
 	std::cout << BLUE << "ENTERING READ REQUEST" << END << std::endl;
@@ -416,19 +389,27 @@ void WebServ::readRequest(int clientSocket)
 		{
 			std::cerr << "Client closed connection." << std::endl; //tem que tirar o client quando dá esse tipo de erro
 			removeClientFromEpoll(_epollS);
-			return;
+			return 0;
 		}
 		else if(bytesRead == -1)
 		{
+			// _requestString.append(buffer, bytesRead);
+			// _totalBytesRead += bytesRead;
+			// memset(buffer, 0, sizeof(buffer));
 			std::cerr << "Error during reading of client request. " << std::endl; //tem que tirar o client quando dá esse tipo de erro
-			// removeClientFromEpoll(_epollS);
+			removeClientFromEpoll(_epollS);
+			std::cout << BLUE << _contentLength << END << std::endl;
+			std::cout << BLUE << (_totalBytesRead - header_size) << END << std::endl;
+			if (header_size != 0 && (_totalBytesRead - header_size) == _contentLength)
+				std::cout << BLUE << "TERMINOU A REQUEST! Content-Length: " << _contentLength << " e total Lido: " << (_totalBytesRead - header_size )<< END << std::endl;
 			// _epollS._event.data.fd = _epollS._clientFd;
 			// epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS._clientFd, &_epollS._event);
 			// close(_epollS._clientFd);
-			return ;
+			return -1;
 		}
 		else if (bytesRead != 0)
 		{
+			std::cout << BLUE << "Bytes Read: " << bytesRead << END << std::endl;
 			_requestString.append(buffer, bytesRead);
 			_totalBytesRead += bytesRead;
 			memset(buffer, 0, sizeof(buffer));
@@ -451,10 +432,11 @@ void WebServ::readRequest(int clientSocket)
 				_contentLength = -1;
 			struct epoll_event event;
 			event = _epollS.getEvent();
+			header_size = header.size();
 			if((_totalBytesRead - header.size()) == _contentLength)
 			{
 				std::cout << YELLOW << _contentLength << END << std::endl;
-				std::cout << YELLOW << totalBytesRead << END << std::endl;
+				std::cout << YELLOW << _totalBytesRead << END << std::endl;
         		// printRequest(_requestString);
 				handleRequest(_requestString);
 				event.events = EPOLLOUT;
@@ -462,6 +444,7 @@ void WebServ::readRequest(int clientSocket)
 				_requestString = "";
 				_contentLength = 0;
 				_totalBytesRead = 0;
+				return 0;
 			}
 			else if(_contentLength == (size_t)-1)
 			{
@@ -472,10 +455,12 @@ void WebServ::readRequest(int clientSocket)
 				_requestString = "";
 				_contentLength = 0;
 				_totalBytesRead = 0;
-				return ;
+				return 0;
 			}
+			return 0;
 		}
 	}
+	return 0;
 }
 
 void WebServ::mainLoop()
@@ -491,8 +476,7 @@ void WebServ::mainLoop()
     struct epoll_event events[maxEvents];
     while(!shouldExit)
     {
-		int timeoutMs = 10000;
-        _epollS.setNumberEvents(epoll_wait(epollFd, events, maxEvents, timeoutMs));
+        _epollS.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
         if(_epollS.getNumberEvents() == -1)
         {
             perror("Error in epoll_wait");
@@ -500,23 +484,31 @@ void WebServ::mainLoop()
         }
         for(int index = 0; index < _epollS.getNumberEvents(); ++index)
         {
+			std::cout << RED << "Tem um NOVO EVENTO" << END << std::endl;
 			isEventFromServerSocket(events,index);
 			if(events[index].events & EPOLLIN)
 			{
+				std::cout << RED << "Onde entra o ultimo - 1" << END << std::endl;
             	if(_epollS.getIsServerFdTriggered() == true)
             	{
             	    int result = _epollS.addNewClientToEpoll(events, index);
             	    if (result == -3)
             	        continue;
             	} else {
+					std::cout << RED << "Onde entra o ultimo - 2" << END << std::endl;
 					//quarta: temos que ldiar com as requests pra GET e provavelmente fazer um objeto pro client
 					// - guardando informação de em que server ele está bindando... (pesquisar mais com o chat)
             	    int clientSocket = events[index].data.fd;
-					readRequest(clientSocket);
+					if (readRequest(clientSocket) == -1)
+					{
+						std::cout << RED << "Chegou ao final" << END << std::endl;
+						std::cout << RED << _totalBytesRead << " | " << _contentLength << END << std::endl;
+					}
             	}
 			}
 			else if(events[index].events & EPOLLOUT)
 			{
+				std::cout << "Comassim" << std::endl;
 				ssize_t bytesSent = send(_epollS.getClientFd(), _response.c_str(), _response.length(), 0);
         		if(bytesSent == -1)
             		throw ErrorException ("Erro ao enviar a resposta ao cliente");
