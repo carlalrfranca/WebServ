@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/07 21:39:09 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/08 20:28:50 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,7 +141,7 @@ void CGI::executeProcessChild(int *pipefd, std::string fileName, int *stdoutPipe
 	dup2(stdoutPipe[1], STDOUT_FILENO);
 	close(pipefd[0]);
 	close(stdoutPipe[1]);
-    if (execl(getPathToScript().c_str(), getPathToScript().c_str(), fileName.c_str(), static_cast<char *>(0)) == -1)
+    if (execl(getCommands()[0].c_str(), getCommands()[0].c_str(), getPathToScript().c_str(), fileName.c_str(), static_cast<char *>(0)) == -1)
         std::cerr << "ERROR executing SCRIPT" << std::endl;
         //chaar a do error code 500 //return 500; // Saia com um código de erro (por exemplo, 500)
 }
@@ -293,6 +293,7 @@ int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
 		std::cout << YELLOW << "Caminho do SCRIPT CHAMADO" << END << std::endl;
 		std::cout << BLUE << requestedFilePath << END << std::endl;
 		std::cout << YELLOW << getPathToScript() << END << std::endl;
+		std::cout << BLUE << "Extensão do script: " << getCommands()[0] << END << std::endl;
 		execl(getPathToScript().c_str(), getPathToScript().c_str(), requestedFilePath.c_str(), static_cast<char*>(0));
 		// Se chegou aqui, houve um erro no execl
 		std::cerr << "ERROR executing SCRIPT" << std::endl;
