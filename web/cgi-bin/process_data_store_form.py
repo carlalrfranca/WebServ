@@ -5,11 +5,20 @@ import sys
 import urllib.parse
 
 # Lê o nome do arquivo como argumento
-file_name = sys.argv[1]
+file_path = sys.argv[1]
 
 # Lê o conteúdo da solicitação HTTP
-content_length = int(os.environ.get("CONTENT_LENGTH", 0))
-content = sys.stdin.read(content_length)
+	# content_length = int(os.environ.get("CONTENT_LENGTH", 0)) # ??? nós não estamos passando CONTENT_LENGTH
+	# content = sys.stdin.read(content_length) # ???
+content = ""
+if "E_ARQUIVO" in os.environ:
+	# A variável está definida, o que sugere que dados binários são enviados
+	content_length = int(os.environ["CONTENT_LENGTH"])
+	dados = sys.stdin.buffer.read(content_length)
+	content = dados
+else:
+	dados = sys.stdin.read()
+	content = dados
 
 # Função para decodificar dados codificados em URL
 def urldecode(data):
@@ -26,9 +35,8 @@ if "CONTENT_TYPE" in os.environ:
 
     # Verifica se o valor da variável contém a palavra "image"
     if "image" in content_type:
-        with open(file_name, "wb") as f:
-            conteudo_bytes = content.encode("utf-8")
-            f.write(conteudo_bytes)
+        with open(file_path, "wb") as f:
+            f.write(content)
 
         print("<!DOCTYPE html>")
         print("<html lang='en'>")
@@ -101,13 +109,13 @@ if "CONTENT_TYPE" in os.environ:
 else:
     # São dados do formulário
     # Lê a entrada do pipe (stdin)
-	entrada = sys.stdin.read().strip()
-	decoded_entrada = urllib.parse.unquote(entrada)
+	# entrada = sys.stdin.read().strip()
+	decoded_entrada = urllib.parse.unquote(content)
 	# Divide a string em pares chave-valor usando '&' como separador
 	pares = decoded_entrada.split('&')
 	
 	# Abre um arquivo para escrita
-	with open(file_name, 'w') as arquivo:
+	with open(file_path, 'w') as arquivo:
 		# Itera pelos pares e escreve no formato desejado no arquivo
 		for par in pares:
 			chave, valor = par.split('=')

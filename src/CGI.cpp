@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/09 00:17:01 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/09 07:24:48 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,9 +205,12 @@ int CGI::uploadImage(Request &request, std::string request_content, size_t data_
 int CGI::uploadImageCGI(Request &request)
 {
 	std::cout << RED << "Content-Type do arquivo: " << request.getFileFormat() << END << std::endl;
+	std::cout << RED << "Content-Length do arquivo: " << request.getContentLength() << END << std::endl;
 	setenv("CONTENT_TYPE", request.getFileFormat().c_str(), 1);
 	setenv("LOCATION", "/images/", 1);
 	setenv("FILE_NAME", request.getFilename().c_str(), 1);
+	setenv("CONTENT_LENGTH", request.getContentLength().c_str(), 1);
+	setenv("E_ARQUIVO", "ARQ", 1);
 	// _inputFormData = request_content;
 	_inputFormData = request.getBody();
 	size_t startBinaryContent = _inputFormData.find(request.getFileFormat());
