@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/08 20:04:32 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/08 21:09:37 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ class CGI
 		int storeFormInput(std::size_t data_init_pos, const std::string& request_content);
 		int CGIForGetRequest(std::string requestedFilePath);
 		int executeScriptForGET(int *pipefd, std::string requestedFilePath);
-		std::string generateHeadersSucessCGI(int statusCode);
+		std::string generateHeadersSucessCGI(int statusCode, Request &request);
 
 		std::string setDateAndTime();
 		void setRoot(const std::string& root);

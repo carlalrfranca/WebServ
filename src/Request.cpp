@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/07 17:36:10 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/08 22:27:10 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,16 @@ void Request::printRequest()
 void Request::setMethod(const std::string& method)
 {
     _method = method;
+}
+
+void Request::setAllowedMethods(const std::vector<std::string> allowedMethods)
+{
+	_allowedMethods = allowedMethods;
+}
+
+const std::vector<std::string>& Request::getAllowedMethods()const
+{
+	return _allowedMethods;
 }
 
 void Request::setHasError(bool hasError)
@@ -387,7 +397,6 @@ std::string Request::errorCodeHtml(int statusCode)
 	response += "Date: " + date + "\r\n";
 	response += "Server: Webserv-42SP\r\n";	
 	response += "Access-Control-Allow-Origin: *\r\n";
-	//headers += "Access-Control-Allow-Methods: GET, POST, DELETE\r\n";
 	response += "Access-Control-Allow-Headers: Content-Type\r\n";
 	response += "Cache-Control: no-cache, no-store\r\n";
 	response += "\r\n" + errorHtml;

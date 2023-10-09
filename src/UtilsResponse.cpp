@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/04 15:26:28 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/08 20:59:15 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,13 +145,19 @@ bool UtilsResponse::isThisMethodAllowed(std::map<std::string, LocationDirective>
 			for(std::vector<std::string>::iterator it = locationAllowedMethods.begin(); it != locationAllowedMethods.end(); ++it)
 			{
 				if(strcmp(it->c_str(), requestMethod.c_str()) == 0)
-				return true;
+				{
+					request.setAllowedMethods(locationAllowedMethods);
+					return true;
+				}
 			}
 		} else {
 			for(std::vector<std::string>::iterator it = allowed_methods.begin(); it != allowed_methods.end(); ++it)
 			{
 				if(strcmp(it->c_str(), requestMethod.c_str()) == 0)
+				{
+					request.setAllowedMethods(allowed_methods);
 					return true;
+				}
 			}
 		}
 	}

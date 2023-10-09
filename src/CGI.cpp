@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/08 20:28:50 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/09 00:17:01 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,7 +293,7 @@ int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
 		std::cout << YELLOW << "Caminho do SCRIPT CHAMADO" << END << std::endl;
 		std::cout << BLUE << requestedFilePath << END << std::endl;
 		std::cout << YELLOW << getPathToScript() << END << std::endl;
-		std::cout << BLUE << "Extensão do script: " << getCommands()[0] << END << std::endl;
+		// std::cout << BLUE << "Extensão do script: " << getCommands()[0] << END << std::endl;
 		execl(getPathToScript().c_str(), getPathToScript().c_str(), requestedFilePath.c_str(), static_cast<char*>(0));
 		// Se chegou aqui, houve um erro no execl
 		std::cerr << "ERROR executing SCRIPT" << std::endl;
@@ -353,13 +353,22 @@ std::string CGI::setDateAndTime()
 	return bufferString;
 }
 
-std::string CGI::generateHeadersSucessCGI(int statusCode)
+std::string CGI::generateHeadersSucessCGI(int statusCode, Request &request)
 {
 	StatusMessages statusMes;
 	std::stringstream toConvertToString;
     toConvertToString << statusCode;
     std::string statusCodeStr = toConvertToString.str();
 	std::string headers;
+	std::string allowedMethodsStr = "";
+	std::vector<std::string> allowedMethodsVec = request.getAllowedMethods();
+	for (size_t i = 0; i < allowedMethodsVec.size(); ++i)
+	{
+		if (i == 0)
+			allowedMethodsStr = allowedMethodsVec[i];
+		else
+			allowedMethodsStr =  allowedMethodsStr + ", " + allowedMethodsVec[i]; 
+	}
 	std::stringstream contentLengthToString;
 	int content_length = _response.size();
 	std::string codeMessage = statusMes.getMessage(statusCode); 
@@ -378,6 +387,8 @@ std::string CGI::generateHeadersSucessCGI(int statusCode)
 	}
 	headers += "Date: " + setDateAndTime() + "\r\n";
 	headers += "Server: Webserver-42SP\r\n";
+	headers += "Access-Control-Allow-Origin: *\r\n";
+	headers += "Access-Control-Allow-Methods: " + allowedMethodsStr + "\r\n";
 	headers += "Cache-Control: no-cache, no-store, must-revalidate\r\n";
     headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
 	if (statusCode == 200)
@@ -433,7 +444,7 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		int resultCode = 0;
 		resultCode = storeFormInput(data_init_pos, request_content);
 		if (resultCode == 204)
-			_response = generateHeadersSucessCGI(resultCode);
+			_response = generateHeadersSucessCGI(resultCode, request);
 		return resultCode;
 	}
 	if (data_init_pos != std::string::npos)
@@ -446,10 +457,10 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		// resultCode = uploadImage(request, request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
 		resultCode = uploadImageCGI(request);
 		if (resultCode == 200)
-			generateHeadersSucessCGI(resultCode);
+			generateHeadersSucessCGI(resultCode, request);
 		return resultCode;
 	}
-	_response = generateHeadersSucessCGI(200);
+	_response = generateHeadersSucessCGI(200, request);
 	return 200;
 }
 
