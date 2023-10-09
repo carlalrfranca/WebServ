@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Define o cabeçalho Content-Type para informar que a saída é HTML
-echo "Content-Type: text/html"
-echo ""
-
 # Verifique se foi fornecido um argumento com o nome do diretório
 if [ $# -ne 1 ]; then
   echo "Uso: $0 <caminho_do_diretorio>"
