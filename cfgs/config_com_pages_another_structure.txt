@@ -1,5 +1,5 @@
 server{
-    listen 127.0.0.1:2002;
+    listen 127.0.0.1:2008;
 	server_name	leticia;
 	allow_methods GET POST DELETE
     root web/pages/;

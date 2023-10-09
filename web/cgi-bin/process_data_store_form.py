@@ -107,44 +107,12 @@ if "CONTENT_TYPE" in os.environ:
         print("</body>")
         print("</html>")
 else:
-    # São dados do formulário
-    # Lê a entrada do pipe (stdin)
-	# entrada = sys.stdin.read().strip()
 	decoded_entrada = urllib.parse.unquote(content)
-	# Divide a string em pares chave-valor usando '&' como separador
 	pares = decoded_entrada.split('&')
-	
-	# Abre um arquivo para escrita
 	with open(file_path, 'w') as arquivo:
-		# Itera pelos pares e escreve no formato desejado no arquivo
 		for par in pares:
 			chave, valor = par.split('=')
+			valor = valor.replace('+', ' ')
 			arquivo.write(f"{chave}: {valor}\n")
-	# Decodificar os dados codificados em URL
-    # decoded_data = urldecode(content)
-
-    # # Reformatar os dados e extrair os valores
-    # formatted_data = decoded_data.split('&')
-
-    # # Extrair o valor de "nome"
-    # nome = None
-    # for item in formatted_data:
-    #     if item.startswith('nome='):
-    #         nome = item.split('=')[1]
-
-    # # Extrair o valor de "mensagem" e decodificar os caracteres especiais
-    # mensagem_codificada = ""
-    # for item in formatted_data:
-    #     if item.startswith('mensagem='):
-    #         mensagem_codificada = item.split('=')[1]
-    #         mensagem_decodificada = urldecode(mensagem_codificada)
-
-    # # Imprimir os valores corrigidos
-    # with open(file_name, "w") as f:
-    #     if nome:
-    #         f.write(f"Nome: {nome}\n")
-    #     if mensagem_decodificada:
-    #         f.write(f"Mensagem: {mensagem_decodificada}\n")
-
 	print("HTTP/1.1 204 OK")
 	print("")
