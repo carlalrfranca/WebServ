@@ -1,9 +1,9 @@
 server{
-    listen 127.0.0.1:2007;
+    listen 127.0.0.1:2002;
 	server_name	leticia;
 	allow_methods GET POST DELETE
     root web/pages/;
-	client_max_body_size 20M
+	client_max_body_size 10M
 
 	location / {
 		index index.html
@@ -17,8 +17,8 @@ server{
 
 	location /upload {
 		root web/cgi-bin/;
-      	cgi_path /bin/bash;
-      	cgi_ext .sh;
+      	cgi_path /usr/bin/python3;
+      	cgi_ext .py;
 		upload_store web/images/
 	}
 
