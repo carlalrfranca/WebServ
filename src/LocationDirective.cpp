@@ -17,7 +17,14 @@ LocationDirective::LocationDirective()
 {}
 
 LocationDirective::~LocationDirective()
-{}
+{
+	for (std::map<std::string, std::vector<std::string> >::iterator it = _directives.begin(); it != _directives.end(); ++it) {
+        it->second.clear(); // Limpa os vetores
+    }
+
+    // Limpa o mapa
+    _directives.clear();
+}
 
 void LocationDirective::addDirective(std::string& directiveName, std::string& value)
 {

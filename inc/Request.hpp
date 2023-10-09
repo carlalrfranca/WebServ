@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 22:52:00 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/08 20:46:06 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,10 @@ class Request
         void setContentType(const std::string& contentType);
         void setBoundary(const std::string& boundary);
         void setFilename(const std::string& filename);
+		void setAllowedMethods(const std::vector<std::string> allowedMethods);
         
         bool getHasError()const;
+		const std::vector<std::string>& getAllowedMethods()const;
 		bool getIsDeleteMaskedAsPost();
         std::string getBoundary()const;
         std::string getFilename()const;
@@ -58,7 +60,6 @@ class Request
 		std::string getRequest() const;
         std::string getPortRequest()const;
 		std::string getFileFormat()const;
-		bool		getIsDeleteMaskedAsPost();
         const std::string& getMethod()const;
         const std::string& getURI()const;
         const std::string& getVersion()const;
@@ -67,28 +68,29 @@ class Request
     
     private:
     
-        std::string         _body;
-        std::string         _boundary;
-		std::string			_contentLength;
-		std::string			_contentType;
-        std::string         _domainContent;
-        std::string         _filename;
-		std::string			_fileFormat;
-        std::string         _firstLine; 
-        std::string         _header;
-        std::string         _hostLine;
-        std::string         _hostContent;
-        std::string         _method;
-        std::string         _portRequest;
-        std::istringstream  _requestStream;
-        std::string         _request;
-        std::string         _uri;
-        std::string         _version;
-        bool                _hasError;
-		bool				_isDeleteMaskedAsPost;
-        Utils               _utils;
-		std::map<std::string, std::string> _errorPage;
-		StatusMessages		_statusMessages;
+        std::string							_body;
+        std::string							_boundary;
+		std::string							_contentLength;
+		std::string							_contentType;
+        std::string							_domainContent;
+        std::string							_filename;
+		std::string							_fileFormat;
+        std::string							_firstLine; 
+        std::string							_header;
+        std::string							_hostLine;
+        std::string							_hostContent;
+        std::string							_method;
+        std::string							_portRequest;
+        std::istringstream					_requestStream;
+        std::string							_request;
+        std::string							_uri;
+        std::string							_version;
+        bool								_hasError;
+		bool								_isDeleteMaskedAsPost;
+        Utils								_utils;
+		std::map<std::string, std::string>	_errorPage;
+		StatusMessages						_statusMessages;
+		std::vector<std::string>			_allowedMethods;
         
     
     class ErrorException: public std::exception

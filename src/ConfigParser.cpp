@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 21:44:40 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/08 20:10:56 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,6 @@
 
 ConfigParser::ConfigParser()
 {
-    //_line = ""; // talvez, mas acho que nao precisa mesmo
-    // _domains = ""; // server_name
-    // _rules = "";    // location
     _directive = 0;
     _portNumber = "";
     _ipAddress = "";
@@ -59,31 +56,26 @@ ConfigParser::~ConfigParser()
 void ConfigParser::resetConfig()
 {
 	_hasDirAllowMethods = false;
-	_hasDirIndex = false;
-	_hasDirListen = false;
-	_hasDirLocation = false;
 	_hasDirMaxBodySize = false;
-	_hasDirReturn = false;
 	_hasDirServerName = false;
+	_hasDirLocation = false;
+	_hasDirReturn = false;
+	_hasDirListen = false;
+	_hasDirIndex = false;
 	_maxBodySize = 1024;
-    _directive = 0;
-    // _portNumber = "";
-    // _ipAddress = "";
-    // _httpAddress = "";
-    _path = "";
-    _root = "";
     _hasRoot = true;
 	_indexFile = "";
+    _directive = 0;
+    _path = "";
+    _root = "";
 
-	// _indexFiles.clear();
 	_locationsMap.clear();
 	_locations.clear();
-	_allIps.clear();
 	_allPorts.clear();
-	_methods.clear();
 	_domains.clear();
+	_methods.clear();
+	_allIps.clear();
 
-	// resetar as paginas de erro padrão
 	_errorPage["400"] = "./web/error/Error400.html";
 	_errorPage["401"] = "./web/error/Error401.html";
 	_errorPage["403"] = "./web/error/Error403.html";
@@ -518,16 +510,15 @@ void ConfigParser::processAllowMethods(std::string &line)
 size_t ConfigParser::convertToKB(std::string &sizeStr)
 {
 	int inBytes = 1;
-
 	char suffix = sizeStr[sizeStr.size() - 1];
+	
 	if(suffix == 'K' || suffix == 'k')
 		inBytes = 1024;
 	else if(suffix == 'M' || suffix == 'm')
 		inBytes = 1024 * 1024;
 	else if(suffix == 'G' || suffix == 'g')
 		inBytes = 1024 * 1024 * 1024;
-
-	// remove o sufixo e converte p int	
+	
 	std::string withoutSuffix = sizeStr.substr(0, sizeStr.size() -1);
 	size_t inKB = std::atoi(withoutSuffix.c_str()) * inBytes;
 	
@@ -535,19 +526,21 @@ size_t ConfigParser::convertToKB(std::string &sizeStr)
 }
 
 
-bool ConfigParser::containsInvalidCaractersForMaxBodySize(const std::string& str) {
+bool ConfigParser::containsInvalidCaractersForMaxBodySize(const std::string& str)
+{
 	char a = str[str.length() - 1];
+
 	if(a != 'K' && a != 'M' && a != 'G' && a != 'm' && a != 'k' && a != 'g')
 		return true;
-    for(size_t i = 0; i < str.length(); ++i) {
+    for(size_t i = 0; i < str.length(); ++i)
+	{
         char c = str[i];
-        // Verifica se o caractere não é um número (0-9) ou não é um dos caracteres permitidos (K, M, G).
         if(!isdigit(c) && c != 'K' && c != 'M' && c != 'G' && c != 'k' && c != 'm' && c != 'k')
-            return true; // Encontrou um caractere inválido.
+            return true;
 		if(i != (str.length() - 1) && !isdigit(c))
 			return true;
     }
-    return false; // Não foram encontrados caracteres inválidos.
+    return false;
 }
 
 void ConfigParser::processClientMaxBodySize(std::string &line)
@@ -608,6 +601,7 @@ void ConfigParser::processReturn(std::string &line)
 {
     std::string directive = "return";
     std::size_t pos = line.find(directive);
+	
     if(_hasDirReturn == true)
         throw ErrorException("Error: The Directive Return has been duplicated.");
     if(pos != std::string::npos)

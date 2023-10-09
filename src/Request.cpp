@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/06 21:30:06 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/08 22:27:10 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,16 @@ void Request::printRequest()
 void Request::setMethod(const std::string& method)
 {
     _method = method;
+}
+
+void Request::setAllowedMethods(const std::vector<std::string> allowedMethods)
+{
+	_allowedMethods = allowedMethods;
+}
+
+const std::vector<std::string>& Request::getAllowedMethods()const
+{
+	return _allowedMethods;
 }
 
 void Request::setHasError(bool hasError)
@@ -214,24 +224,7 @@ int Request::isFirstLineValid()
 	_uri = _tokens[1];
     _version = _tokens[2];
 	std::cout << BLUE << "first line SPLITED > " << _method << " | " << _uri << " | " << _version << END << std::endl;
-	//valida http
-    // if(_firstLine.find("GET") == std::string::npos && 
-        // _firstLine.find("POST") == std::string::npos && 
-        //  _firstLine.find("DELETE") == std::string::npos)
-        // return 405; // 405 Method Not Allowed
-    //verifica se tem espaço após o metodo
-    // size_t spacePos = _firstLine.find(' ');
-    // if(spacePos == std::string::npos || spacePos == _firstLine.size() - 1 )
-        // return 400; //dar returns em vez de exceptions?
-    //valida HTTP após o metodo e espaço
-    // std::string version = _firstLine.substr(spacePos + 1);
-    // if(version.find("HTTP/1.1") == std::string::npos)
-        // return 505; //pagina de status 505 (HTTP Version Not Supported)
-    //valida espaço apos a versão
-    // spacePos = version.find(' ');
-    // if (spacePos == std::string::npos || spacePos == version.size() - 1)
-        // return 400; // retorna 400 (Bad Request)
-    //demais validacoes aqui, se houver
+	
     return SUCCESS;
 }
 
@@ -402,6 +395,10 @@ std::string Request::errorCodeHtml(int statusCode)
     response += "Content-Type: text/html\r\n";
 	response += "Content-Length: " + contentLengthStr + "\r\n";
 	response += "Date: " + date + "\r\n";
+	response += "Server: Webserv-42SP\r\n";	
+	response += "Access-Control-Allow-Origin: *\r\n";
+	response += "Access-Control-Allow-Headers: Content-Type\r\n";
+	response += "Cache-Control: no-cache, no-store\r\n";
 	response += "\r\n" + errorHtml;
 	return response;
 }

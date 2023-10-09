@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 22:42:40 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/07 16:29:01 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,11 @@ SocketS::SocketS()
 
 
 SocketS::~SocketS()
-{}
+{
+	for (std::map<std::string, LocationDirective>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
+            it->second.~LocationDirective(); // Chama o destrutor de LocationDirective
+       }
+}
 
 // getter e setter do locations
 

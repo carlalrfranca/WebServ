@@ -129,21 +129,21 @@ else
 	encoded_data=$(cat -)
 	echo "Encoded: $encoded_data" >> "$file_name"
 	# Decodificar os dados codificados em URL
-	decoded_data=$(echo -n "$encoded_data" | sed 's/+/ /g; s/%/\\x/g')
-	echo "Decoded: $decoded_data" >> "$file_name"
+	
+	# echo "Decoded: $decoded_data" >> "$file_name"
 	# Reformatar os dados e extrair os valores
-	formatted_data=$(echo "$decoded_data" | tr '&' '\n')
+	formatted_data=$(echo "$encoded_data" | tr '&' '\n')
 	echo "Formatted: $formatted_data" >> "$file_name"
 	# Extrair o valor de "nome"
 	nome=$(echo "$formatted_data" | grep -o 'nome: [^ ]*' | sed 's/nome: //')
 
 	# Extrair o valor de "mensagem" e decodificar os caracteres especiais
 	mensagem_codificada=$(echo "$formatted_data" | grep -o 'mensagem: [^ ]*' | sed 's/mensagem: //')
-	mensagem_decodificada=$(echo -n "$mensagem_codificada" | jq -r -s @uri)
+	# mensagem_decodificada=$(echo -n "$mensagem_codificada" | jq -r -s @uri)
 
 	# Imprimir os valores corrigidos
 	echo "Nome: $nome" >> "$file_name"
-	echo "Mensagem: $mensagem_decodificada" >> "$file_name"
+	echo "Mensagem: $mensagem_codificada" >> "$file_name"
 
 	# Redirecionar os dados decodificados para o arquivo "$file_name"
 	# echo "$mensagem_corrigida" >> "$file_name"

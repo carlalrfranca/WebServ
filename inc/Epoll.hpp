@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Epoll.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 19:59:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/04 16:22:30 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/08 09:51:28 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ class Epoll
 		const int& getNumberEvents() const;
 		const bool& getIsServerFdTriggered() const;
 		
+		struct epoll_event  _event;
 	
 	private:
 
@@ -53,7 +54,6 @@ class Epoll
 		
 		
 		
-		struct epoll_event  _event;
 		int					_clientFd;
 };
 

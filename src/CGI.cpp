@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/06 21:31:30 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/09 07:24:48 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,6 @@ int CGI::executeProcessParent(int *pipefd, unsigned int timeoutSeconds, pid_t ch
 	return 0;
 }
 
-
 void CGI::executeProcessChild(int *pipefd, std::string fileName, int *stdoutPipe)
 {
 	close(pipefd[1]);
@@ -142,7 +141,7 @@ void CGI::executeProcessChild(int *pipefd, std::string fileName, int *stdoutPipe
 	dup2(stdoutPipe[1], STDOUT_FILENO);
 	close(pipefd[0]);
 	close(stdoutPipe[1]);
-    if (execl(getPathToScript().c_str(), getPathToScript().c_str(), fileName.c_str(), static_cast<char *>(0)) == -1)
+    if (execl(getCommands()[0].c_str(), getCommands()[0].c_str(), getPathToScript().c_str(), fileName.c_str(), static_cast<char *>(0)) == -1)
         std::cerr << "ERROR executing SCRIPT" << std::endl;
         //chaar a do error code 500 //return 500; // Saia com um código de erro (por exemplo, 500)
 }
@@ -206,9 +205,12 @@ int CGI::uploadImage(Request &request, std::string request_content, size_t data_
 int CGI::uploadImageCGI(Request &request)
 {
 	std::cout << RED << "Content-Type do arquivo: " << request.getFileFormat() << END << std::endl;
+	std::cout << RED << "Content-Length do arquivo: " << request.getContentLength() << END << std::endl;
 	setenv("CONTENT_TYPE", request.getFileFormat().c_str(), 1);
 	setenv("LOCATION", "/images/", 1);
 	setenv("FILE_NAME", request.getFilename().c_str(), 1);
+	setenv("CONTENT_LENGTH", request.getContentLength().c_str(), 1);
+	setenv("E_ARQUIVO", "ARQ", 1);
 	// _inputFormData = request_content;
 	_inputFormData = request.getBody();
 	size_t startBinaryContent = _inputFormData.find(request.getFileFormat());
@@ -294,6 +296,7 @@ int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
 		std::cout << YELLOW << "Caminho do SCRIPT CHAMADO" << END << std::endl;
 		std::cout << BLUE << requestedFilePath << END << std::endl;
 		std::cout << YELLOW << getPathToScript() << END << std::endl;
+		// std::cout << BLUE << "Extensão do script: " << getCommands()[0] << END << std::endl;
 		execl(getPathToScript().c_str(), getPathToScript().c_str(), requestedFilePath.c_str(), static_cast<char*>(0));
 		// Se chegou aqui, houve um erro no execl
 		std::cerr << "ERROR executing SCRIPT" << std::endl;
@@ -353,22 +356,43 @@ std::string CGI::setDateAndTime()
 	return bufferString;
 }
 
-std::string CGI::generateHeadersSucessCGI(int statusCode)
+std::string CGI::generateHeadersSucessCGI(int statusCode, Request &request)
 {
+	StatusMessages statusMes;
 	std::stringstream toConvertToString;
     toConvertToString << statusCode;
     std::string statusCodeStr = toConvertToString.str();
 	std::string headers;
+	std::string allowedMethodsStr = "";
+	std::vector<std::string> allowedMethodsVec = request.getAllowedMethods();
+	for (size_t i = 0; i < allowedMethodsVec.size(); ++i)
+	{
+		if (i == 0)
+			allowedMethodsStr = allowedMethodsVec[i];
+		else
+			allowedMethodsStr =  allowedMethodsStr + ", " + allowedMethodsVec[i]; 
+	}
 	std::stringstream contentLengthToString;
 	int content_length = _response.size();
+	std::string codeMessage = statusMes.getMessage(statusCode); 
 	contentLengthToString << content_length;
 	std::string contentLen = contentLengthToString.str();
-    headers += "HTTP/1.1 " + statusCodeStr + " OK\r\n";
+    headers += "HTTP/1.1 " + statusCodeStr + " " + codeMessage + "\r\n";
 	if (statusCode == 200)
+	{
 		headers += "Content-Length: " + contentLen + "\r\n";
+		headers += "Content-Type: text/html\r\n";
+	}
 	else if (statusCode == 204)
+	{
 		headers += "Content-Length: 0\r\n";
+		headers += "Content-Type: application/octet-stream\r\n";
+	}
 	headers += "Date: " + setDateAndTime() + "\r\n";
+	headers += "Server: Webserver-42SP\r\n";
+	headers += "Access-Control-Allow-Origin: *\r\n";
+	headers += "Access-Control-Allow-Methods: " + allowedMethodsStr + "\r\n";
+	headers += "Cache-Control: no-cache, no-store, must-revalidate\r\n";
     headers += "\r\n"; // Linha em branco indica o fim dos cabeçalhos	
 	if (statusCode == 200)
 	{
@@ -423,7 +447,7 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		int resultCode = 0;
 		resultCode = storeFormInput(data_init_pos, request_content);
 		if (resultCode == 204)
-			_response = generateHeadersSucessCGI(resultCode);
+			_response = generateHeadersSucessCGI(resultCode, request);
 		return resultCode;
 	}
 	if (data_init_pos != std::string::npos)
@@ -436,10 +460,10 @@ int CGI::handleCGIRequest(Request &request) //provavelmente vai ter que receber 
 		// resultCode = uploadImage(request, request_content, data_init_pos); //PASSAR ISSO PRO CGI ADAPTADO (é preciso que o server também espere EOF do CGI - ou content-length dele)
 		resultCode = uploadImageCGI(request);
 		if (resultCode == 200)
-			generateHeadersSucessCGI(resultCode);
+			generateHeadersSucessCGI(resultCode, request);
 		return resultCode;
 	}
-	_response = generateHeadersSucessCGI(200);
+	_response = generateHeadersSucessCGI(200, request);
 	return 200;
 }
 

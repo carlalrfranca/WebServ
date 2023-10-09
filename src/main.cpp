@@ -6,15 +6,23 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 22:02:52 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/07 16:50:29 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HeadersLibs.hpp"
 #include "../inc/WebServ.hpp"
 
+bool shouldExit = false;
+
+void handleSignal(int signal) {
+    std::cout << YELLOW << signal << " | [EXITANDO O WEBSERVER....]" << shouldExit << END << std::endl;
+	shouldExit = true;
+}
+
 int main(int argc, char **argv)
 {
+	signal(SIGINT, handleSignal);
 	std::string filename;
 	if(argc == 1)
 		filename = "./src/config.txt";

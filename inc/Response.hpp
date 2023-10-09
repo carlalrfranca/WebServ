@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/05 22:54:40 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/09 00:08:42 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,13 +47,15 @@ class Response
         std::string getParameter(std::string query, std::string parameter)const;
         const std::string getPath()const;
         const std::map<std::string, std::string>& getHeader()const; // busca pelo campo de cabeçalho na lista de cabeçalhos
-		
+		const std::vector<std::string>& getAllowedMethods()const;
+
 		void setUri(const std::string& uri);
         void setPath(const std::string& allPath); 
         void setResponse(const std::string& response);
         void setStatusCode(const std::string& statusCode);
         void setContentType(const std::string& contentType);
         void setDateAndTime();
+		void setAllowedMethods(const std::vector<std::string> allowedMethods);
         
         //response methods
         void reset();
@@ -76,6 +78,7 @@ class Response
         std::string readHtmlFile(const std::string& filePath);
 		std::map<std::string, LocationDirective>::iterator findRequestedLocation(Request &request, std::map<std::string, LocationDirective>& serverLocations);
 		// method for each method
+		std::string postMethodTryCGI(Request &request, SocketS &server, std::string uploadStoreFolder, CGI script);
         static std::string httpGet(Request &request, SocketS &server, Response *this_response);
 		static std::string deleteMethod(Request &request, SocketS &server, Response *this_response);
 		static std::string postMethod(Request &request, SocketS &server, Response *this_response);
@@ -101,6 +104,7 @@ class Response
         StatusMessages                      _statusMessages;
 		std::map<std::string, Funcao>		_methodsFunctions;
 		std::map<std::string, std::string>  _extensionToContentType;
+		std::vector<std::string>			_allowedMethods;
 
     class ErrorException: public std::exception
     {

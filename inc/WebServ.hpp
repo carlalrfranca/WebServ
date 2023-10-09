@@ -52,7 +52,7 @@ class WebServ
         bool isFirstLineValid(const std::string &request, std::string &_firstLine);
         void handleRequest(std::string &requestString);
         void removeClientFromEpoll(Epoll& epollS);
-		void readRequest(int clientSocket);
+		int readRequest(int clientSocket);
 
 
     private:

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/05 23:00:10 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/08 21:09:37 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ class CGI
 		int storeFormInput(std::size_t data_init_pos, const std::string& request_content);
 		int CGIForGetRequest(std::string requestedFilePath);
 		int executeScriptForGET(int *pipefd, std::string requestedFilePath);
-		std::string generateHeadersSucessCGI(int statusCode);
+		std::string generateHeadersSucessCGI(int statusCode, Request &request);
 
 		std::string setDateAndTime();
 		void setRoot(const std::string& root);
@@ -44,6 +44,8 @@ class CGI
 		void setPathToScript(std::string scriptName);
 		void setScriptNameDirectly(std::string scriptName);
 		void setUploadStoreFolder(std::string uploadStore);
+		void setScriptPathWithCommand();
+		std::string getScriptPathWithCommand()const;
 
 		std::vector<std::string> getCommands()const;
 		std::vector<std::string> getExtensions()const;
@@ -70,15 +72,16 @@ class CGI
 
 	private:
 
-		std::vector<std::string> _scriptCommands;
-		std::vector<std::string> _scriptExtensions;
-		std::string				 _response;
-		std::string				 _method;
-		std::string				 _inputFormData;
-		std::string				 _scriptOutput;
-		std::string				 _rootToScripts;
-		std::string				 _scriptName;
-		std::string				 _uploadStore;
+		std::vector<std::string>	_scriptCommands;
+		std::vector<std::string>	_scriptExtensions;
+		std::string					_response;
+		std::string					_method;
+		std::string					_inputFormData;
+		std::string					_scriptOutput;
+		std::string					_rootToScripts;
+		std::string					_scriptName;
+		std::string					_uploadStore;
+		std::string					_scriptPathWithCommand;
 		
 };
 #endif
