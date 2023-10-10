@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+         #
+#    By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/03 13:28:38 by cleticia          #+#    #+#              #
-#    Updated: 2023/10/03 15:59:27 by cleticia         ###   ########.fr        #
+#    Updated: 2023/10/10 10:33:34 by lfranca-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -70,7 +70,7 @@ $(DIR_OBJ)/%.o: $(DIR_SRCS)/%.cpp
 
 run: $(NAME)
 	@make banner
-	@./$(NAME) ./cfgs/config_com_pages_another_structure.txt
+	@sudo ./$(NAME) ./cfgs/default_config.txt
 
 clean:
 	@$(RM) $(DIR_OBJ)

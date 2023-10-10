@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/08 20:10:56 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:18:46 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,17 +30,11 @@ ConfigParser::ConfigParser()
     _hasDirReturn = false;
 	_indexFile = "";
 	_maxBodySize = 1024;
-
-	// configurando por padrão os paths das paginas de erro (se o arquivo personalizar alguma, vai sobrescrever na hora em que estiver processando a diretiva de error_page)
-	_errorPage["404"] = "./web/error/Error404.html";
-	struct stat info;
-		if (stat(_errorPage["404"].c_str(), &info) != 0)
-			std::cout << "This error page does not exist" << std::endl;
-		else
-			std::cout << "This error page exist" << std::endl;
+	// verificar tudo porque vai que alguém seja comédia de excluir
 	_errorPage["400"] = "./web/error/Error400.html";
 	_errorPage["401"] = "./web/error/Error401.html";
 	_errorPage["403"] = "./web/error/Error403.html";
+	_errorPage["404"] = "./web/error/Error404.html";
 	_errorPage["405"] = "./web/error/Error405.html";
 	_errorPage["413"] = "./web/error/Error413.html";
 	_errorPage["500"] = "./web/error/Error500.html";
@@ -48,6 +42,11 @@ ConfigParser::ConfigParser()
 	_errorPage["503"] = "./web/error/Error503.html";
 	_errorPage["504"] = "./web/error/Error504.html";
 	_errorPage["505"] = "./web/error/Error505.html";
+	struct stat info;
+		if (stat(_errorPage["404"].c_str(), &info) != 0)
+			std::cout << RED << "This error page does not exist" << std::endl;
+		else
+			std::cout << "This error page exist" << std::endl;
 }
 
 ConfigParser::~ConfigParser()
@@ -68,14 +67,12 @@ void ConfigParser::resetConfig()
     _directive = 0;
     _path = "";
     _root = "";
-
 	_locationsMap.clear();
 	_locations.clear();
 	_allPorts.clear();
 	_domains.clear();
 	_methods.clear();
 	_allIps.clear();
-
 	_errorPage["400"] = "./web/error/Error400.html";
 	_errorPage["401"] = "./web/error/Error401.html";
 	_errorPage["403"] = "./web/error/Error403.html";
@@ -180,9 +177,9 @@ const std::vector<std::string>& ConfigParser::getAllIps()const
 
 bool ConfigParser::duplicatedPort(std::string& portNumber)
 {
-	for (std::vector<std::string>::iterator it = _allPorts.begin(); it != _allPorts.end(); ++it)
+	for(std::vector<std::string>::iterator it = _allPorts.begin(); it != _allPorts.end(); ++it)
 	{
-    	if (*it == portNumber)
+    	if(*it == portNumber)
     	    return true;
 	}
 	return false;
@@ -198,18 +195,19 @@ bool ConfigParser::isValidIPAddress(const std::string &ipAddress)
 	std::istringstream splitOctets(ipAddress);
 	std::string octet;
 	int count = 0;
+
 	while(std::getline(splitOctets, octet, '.'))
 	{
 		count++;
 		if(count > 4)
 			return false;
 	}
-	if (ipAddress != "127.0.0.1" && ipAddress != "0.0.0.0") //tem mais algum tipo de IP que pode?
+	if(ipAddress != "127.0.0.1" && ipAddress != "0.0.0.0")
 		return false;
 	int value;
     std::istringstream octetStream(octet);
     octetStream >> value;
-    if (octetStream.fail() || value < 0 || value > 255)
+    if(octetStream.fail() || value < 0 || value > 255)
         return false;
     return count == 4;
 }
@@ -228,7 +226,7 @@ void ConfigParser::processListen(std::string &line)
 {
 	size_t	posInit;
 
-	if (line[line.length() - 1] == ';')
+	if(line[line.length() - 1] == ';')
 		line = line.substr(0,  line.length() - 1);
 	std::istringstream listen_values(line);
 	std::string word;
@@ -238,7 +236,7 @@ void ConfigParser::processListen(std::string &line)
 	if(tokens.size() != 2)
 		throw ErrorException("Syntax Error: Only ONE value by listen directive.");
 	if(tokens[0] != "listen")
-		throw ErrorException("Syntax Error: Format of line: [directive] [value] ...");
+		throw ErrorException("Syntax Error: Format of line: [directive] [value]...");
 	posInit = tokens[1].find("https");
 	if(posInit != std::string::npos)
 		throw ErrorException("Configuration Error: Can't configure https protocol.");
@@ -247,7 +245,6 @@ void ConfigParser::processListen(std::string &line)
 	{
 		posInit += 3;
 		tokens[1] = tokens[1].substr(posInit);
-		std::cout << "Valor da listen sem '://' >> " << tokens[1] << std::endl;
 	}
 	posInit = tokens[1].find(":");
 	if(posInit != std::string::npos)
@@ -289,7 +286,6 @@ void ConfigParser::processServerName(std::string &line)
 	{
 		if(line[line.length() - 1] == ';')
 			line = line.substr(0, line.length() - 1);
-		// vamos splitar essa linha
 		std::istringstream server_name_values(line);
 		std::string word;
     	std::vector<std::string> tokens;
@@ -300,13 +296,10 @@ void ConfigParser::processServerName(std::string &line)
 				throw ErrorException("Syntax Error: Server_name can only be written with [letters and dot]. You CANNOT use regex or wildcards, only LITERAL names.");
         	tokens.push_back(word);
     	}
-		// o problema é que no vetor "tokens", ele gravou o nome da diretiva (server_name), temos que extrai-la do vetor
 		tokens.erase(tokens.begin());
+
 		for(size_t i = 0; i < tokens.size(); ++i)
-		{
-			std::cout << BLUE << "Dominio: " << tokens[i] << END << std::endl;
         	_domains.push_back(tokens[i]);
-		}
     }
     _hasDirServerName = true;
 }
@@ -316,14 +309,18 @@ bool ConfigParser::processRoot(std::string &line)
 	std::istringstream iss(line);
 	std::vector<std::string> partes;
 	std::string word;
+
 	if(_root.empty() == false)
 		throw ErrorException("Error: The Directive Root has been duplicated.");
-	while (iss >> word)
+
+	while(iss >> word)
 		partes.push_back(word);
+
 	if(partes[0] != "root" || partes.size() != 2)
 		throw ErrorException("Syntax Error: Directive Root");
 	_root = partes[1];
 	struct stat info;
+
 	if(stat(_root.c_str(), &info) != 0)
 		throw ErrorException("Error: The path apointed by 'root' doesn't exist.");
 	if((info.st_mode & S_IFDIR) == 0)
@@ -343,8 +340,8 @@ void ConfigParser::hasprohibitedDirectiveInLocation(std::string &directive)
     allowedDirectives.push_back("cgi_ext");
     allowedDirectives.push_back("upload_store");
 	allowedDirectives.push_back("return");
-
 	std::vector<std::string>::iterator itAllowedDirective;
+
     for(itAllowedDirective = allowedDirectives.begin(); itAllowedDirective != allowedDirectives.end(); ++itAllowedDirective)
 	{
         if(*itAllowedDirective == directive)
@@ -360,13 +357,10 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine)
 	std::map<std::string, LocationDirective>::iterator it = _locations.find(currentLocation);
 	if(it != _locations.end())
 	{
-		// acessa o método atraves do iterador second.método()
-		// mas antes tem que extrair o nome da diretiva e o valor (splitar e colocar num vetor?)
-		// tambem contar quantos itens resultam do split porque isso quer dizer que a diretiva tem mais de um valor...
-		// primeiro, splitamos a linha da diretiva para poder separar o nome da diretiva de seus valores
 		std::istringstream iss(directiveLine);
 		std::vector<std::string> splittedLine;
 		std::string singleValue;
+
 		while(iss >> singleValue)
 			splittedLine.push_back(singleValue);
 		if(splittedLine.size() < 2)
@@ -375,17 +369,8 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine)
 		std::map<std::string, std::vector<std::string> >::iterator directiveIt = it->second.getDirectives().find(splittedLine[0]);
 		if(directiveIt != it->second.getDirectives().end())
 			throw ErrorException("Syntax Error: Duplicated directive in location block");
-		// com os argumentos splitados e num vetor, vamos inserir a key no objeto
 		it->second.addDirective(splittedLine[0], splittedLine[1]);
-		// diretiva (se há mais itens) // tem que limitar
-		/*
-			Diretivas que PODEM TER MAIS DE UM VALOR:
-				- allow_methods
-				- return
-
-			Diretivas que NÃO PODEM TER MAIS DE UM VALOR:
-		*/
-		if (splittedLine.size() > 2 && splittedLine[0] != "allow_methods" && splittedLine[0] != "return")
+		if(splittedLine.size() > 2 && splittedLine[0] != "allow_methods" && splittedLine[0] != "return")
 			throw ErrorException("Configuration Error: [LOCATION] Directive of one value with multiple values.");
 		if(splittedLine.size() > 2)
 		{
@@ -415,14 +400,15 @@ void ConfigParser::validateFile(std::ifstream& fileToParse)
 void ConfigParser::processLocation(std::string &line)
 {
     std::vector<std::string> filesForPath1;
+
     if(line.find("location")!= std::string::npos)
     {
 		if(line[line.size() - 1] != '{')
 			throw ErrorException("Syntax Error: Missing '{' to open LOCATION BLOCK");
         std::istringstream iss(line);
         std::vector<std::string> parts;
-    
         std::string part;
+
         while(iss >> part)
             parts.push_back(part);
         _currentLocationPathOnMap = parts[1];
@@ -439,6 +425,7 @@ void ConfigParser::processLocation(std::string &line)
 void ConfigParser::processIndex(std::string &line)
 {
 	std::vector<std::string>	_indexFiles;
+
     if(_hasDirIndex == true)
         throw ErrorException("Error: The Directive Index has been duplicated.");
     if(line.find("index") != std::string::npos)
@@ -447,9 +434,9 @@ void ConfigParser::processIndex(std::string &line)
         std::string index;
         while(indicesStream >> index)
             _indexFiles.push_back(index);
-		if (_indexFiles.size() != 2)
+		if(_indexFiles.size() != 2)
 			throw ErrorException("Configuration Error: You must point ONE index file.");
-		if (_indexFiles[0] != "index")
+		if(_indexFiles[0] != "index")
 			throw ErrorException("Syntax Error: Correct Format: [directive] [value]");
 		_indexFile = _indexFiles[1];
     }
@@ -465,13 +452,13 @@ void ConfigParser::processErrorPage(std::string &line)
         std::string token;
         while(iss >> token)
         {
-            std::cout << "error_page: " << token << std::endl;
             errorCode.push_back(token);   
         }
         if(errorCode.size() != 3 || errorCode[0] != "error_page")
             throw ErrorException("Syntax Error: Found inconsistence in error_page directive");
 		std::string statusCode;
         statusCode = errorCode[1];
+
         for(size_t i = 0; i < statusCode.size(); ++i)
 		{
             if(!isdigit(statusCode[i]))
@@ -480,9 +467,10 @@ void ConfigParser::processErrorPage(std::string &line)
         std::string pathError;
         pathError = errorCode[2];
 		struct stat info;
+
 		if(stat(pathError.c_str(), &info) != 0)
 			throw ErrorException("Configuration Error: Error page file doesn't exist!");
-        _errorPage[statusCode] = pathError; // Armazena a página de erro no mapa
+        _errorPage[statusCode] = pathError;
     }
 }
 
@@ -493,12 +481,14 @@ void ConfigParser::processAllowMethods(std::string &line)
     std::vector<std::string> methods;
     std::istringstream iss(line);
     std::string method;
+
     while(iss >> method)
         methods.push_back(method);
     if(methods.size() < 2 || methods[0] != "allow_methods")
 		throw ErrorException("Syntax Error: The Directive Allow Methods isn't properly configured.");
 	_methods = methods;
 	_methods.erase(_methods.begin());
+
 	for(size_t i = 0; i < _methods.size(); ++i)
 	{
 		if(_methods[i] != "GET" && _methods[i] != "POST" && _methods[i] != "DELETE")
@@ -521,7 +511,6 @@ size_t ConfigParser::convertToKB(std::string &sizeStr)
 	
 	std::string withoutSuffix = sizeStr.substr(0, sizeStr.size() -1);
 	size_t inKB = std::atoi(withoutSuffix.c_str()) * inBytes;
-	
 	return inKB;
 }
 
@@ -570,7 +559,6 @@ void ConfigParser::processClientMaxBodySize(std::string &line)
 			_maxBodySize = convertToKB(maxBodyLine[1]);
 		else
 			_maxBodySize = atoi(maxBodyLine[1].c_str());
-		std::cout << BLUE << "Client_Max_Body_Size em KB: " << _maxBodySize << END << std::endl;
     }
     _hasDirMaxBodySize = true;
 }
@@ -614,7 +602,7 @@ void ConfigParser::processReturn(std::string &line)
             if(end_status_pos != std::string::npos)
             {
                 std::string status_str = line.substr(status_pos, end_status_pos - status_pos);
-                int status_code = atoi(status_str.c_str());
+                // int status_code = atoi(status_str.c_str());
                 std::size_t message_pos = line.find_first_of('"', end_status_pos);
                 if(message_pos != std::string::npos)
                 {
@@ -622,7 +610,6 @@ void ConfigParser::processReturn(std::string &line)
                     if(end_message_pos != std::string::npos)
                     {
                         std::string message = line.substr(message_pos + 1, end_message_pos - message_pos - 1);
-                        std::cout << "return status code: " << status_code << ", message: " << message << std::endl;
                     }
                 }
             }

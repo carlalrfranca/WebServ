@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 20:39:26 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/09/17 21:47:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 11:53:17 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ class LocationDirective
 		
 		LocationDirective();
 		~LocationDirective();
-		void addDirective(std::string& directiveName, std::string& value); //se houver mais de um valor pra diretiva, adiciona um por um, só passar o mesmo nome de diretiva
+		void addDirective(std::string& directiveName, std::string& value);
 		std::map<std::string, std::vector<std::string > >getDirectives(void) const;
 		std::vector<std::string> getSpecificDirective(std::string directiveName) const;
 

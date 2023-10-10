@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 20:22:28 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/08 12:11:37 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 11:08:31 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,15 +77,15 @@ void Epoll::setIsServerFdTriggered(bool isServerTriggered)
 int Epoll::addServersToEpoll(std::vector<SocketS>& servers)
 {
 	_epollFd = epoll_create1(0);
+
 	if(_epollFd == -1)
 	{
-		perror("Error creating epoll");
+		std::cout << RED << "Error: Creating epoll" << END << std::endl;
 		return -1;
 	}
-    //Imprimir detalhes de cada servidor
-	// struct epoll_event event;
 	bool isDuplicated = false;
-    for (std::vector<SocketS>::iterator it = servers.begin(); it != servers.end(); ++it)
+
+    for(std::vector<SocketS>::iterator it = servers.begin(); it != servers.end(); ++it)
     {
         for (std::vector<SocketS>::iterator it2 = servers.begin(); it2 != it; ++it2)
         {
@@ -94,20 +94,16 @@ int Epoll::addServersToEpoll(std::vector<SocketS>& servers)
 				isDuplicated = true;
             }
         }
-		if (!isDuplicated)
+		if(!isDuplicated)
 		{
-			// add server to epoll
-        	std::cout << "Porta: " << it->getPort() << std::endl;
-        	std::cout << "Endereço: " << it->getAddress() << std::endl;
-			std::cout << "WebServ SOCKET FD: " <<  it->getWebServSocket() << std::endl;
-        	std::cout << "-----------------------------------------\n" << std::endl;
 			fcntl(it->getWebServSocket(), F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 			_event.data.u64 = 0;
         	_event.data.fd = it->getWebServSocket();
         	_event.events = EPOLLIN;
+
         	if(epoll_ctl(_epollFd, EPOLL_CTL_ADD, _event.data.fd, &_event) == -1)
         	{
-        	    perror("Error adding socket to epoll");
+        	    std::cout << RED << "Error: Adding server socket to epoll" << END << std::endl;
         	    return -2;
         	}
 		}
@@ -117,15 +113,14 @@ int Epoll::addServersToEpoll(std::vector<SocketS>& servers)
 
 int Epoll::addNewClientToEpoll(struct epoll_event *event_ptr, int i)
 {
-	// NOTA:  aqui criamos e adicionamos um novo objeto Client (ainda não foi incorporado) ao vetor [ou map?] de clients no Webserv. 
-	//struct sockaddr_in clientAddress = {0};
 	struct sockaddr_in clientAddress = {0, AF_INET, 0, INADDR_ANY};
 	socklen_t clientAddressLength = sizeof(clientAddress);
 	int clientSocket = accept(event_ptr[i].data.fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
+	
 	if(clientSocket == -1)
 	{
-	    perror("Error accepting client connection");
-	    return -3; // Move to the next event
+	    std::cout << RED << "Error: Accepting client connection" << END << std::endl;
+	    return -3;
 	}
 	fcntl(clientSocket, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	_event.data.u64 = 0;
@@ -134,9 +129,9 @@ int Epoll::addNewClientToEpoll(struct epoll_event *event_ptr, int i)
 	
 	if(epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSocket, &_event) == -1)
 	{
-	    perror("Error adding client socket to epoll");
-	    close(clientSocket); // Close the socket on error
+	    std::cout << RED << "Error: Adding client socket to epoll" << END << std::endl;
+	    close(clientSocket);
 	}
-	std::cout << RED << "Conexão aceita com client FD: " << clientSocket << END << std::endl;
+	std::cout << BLUE << "Accepted connection with client: " << clientSocket << END << std::endl;
 	return 0;
 }

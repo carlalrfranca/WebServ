@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/09 23:10:53 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 11:55:22 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 #include "Utils.hpp"
 #include "CGI.hpp"
 
-#define PATH_DELETE_RESET "web/cgi-bin/delete_upload_image.py" //colocar versão em py
+#define PATH_DELETE_RESET "web/cgi-bin/delete_upload_image.py"
 #define	PATH_POST_INFO "process_data_store_form.cgi"
 #define PATH_GET_INFO "delete_upload_image.cgi"
 // #define	DEFAULT_UPLOAD_STORE "web/images/" //usar depois pro valor default do 'uploadStore' (só procurar onde tem essa verificação no código na Response.cpp)
@@ -49,7 +49,7 @@ class Response
         std::string getResponse()const;//foi criado outro metodo, precisa ajustar .cpp
         std::string getParameter(std::string query, std::string parameter)const;
         const std::string getPath()const;
-        const std::map<std::string, std::string>& getHeader()const; // busca pelo campo de cabeçalho na lista de cabeçalhos
+        const std::map<std::string, std::string>& getHeader()const;
 		const std::vector<std::string>& getAllowedMethods()const;
 
 		void setUri(const std::string& uri);
@@ -89,15 +89,13 @@ class Response
 		static std::map<std::string, std::string> initContentTypes();
         std::string getContentTypeFromExtension(const std::string& extension);
 
-		//std::string	_uri;
         std::string generateHeaders(int statusCode, const Request& request, std::string content);
-		// std::string	_uri;
 
     private:
     
         std::map<std::string, std::string>  _headers;
         std::string                         _body;
-        std::string                         _response; //criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
+        std::string                         _response;
         std::string                         _code;
         std::string                         _path;
 		std::string                         _uri;
@@ -124,30 +122,3 @@ class Response
 };
 
 #endif 
-
-//Response &operator=(Response const &other);
-//std::string createHTTPResponse200(int statusCode, SocketS &server);
-//tá eu inicalizei dentro so .hpp, sei lá se isso pod o nao, mas se jogasse no construor or algum motivo
-//acho ue dariamuito errado por ser uma const...se bem que eu pderia apenas tirar isso
-// void setContentLength(size_t length);
-//std::string httpPost(Request &request, SocketS &server);
-//std::string httpDelete(Request &request, SocketS &server);
-
-
-
-
-// std::ostream& operator<<(std::ostream& out, Response const& rhs);
-/*
-    ------------------------------------------- LETICIA DEIXOU ANOTADO ----------------------------------------------
-    criar uma string response que, será todo esse cabeçalho + body (ver exemplos no chat)
-    PRA DEIFINIR O BODY (um arquivo html que voce precisa "pegar" do diretorio que temos, por exemplo)
-    1. Identificar QUAL é o método sendo pedido pela request e verificar que esse socket ACEITA ESSA MÉTODO (get, por exemplo)
-        ---> se NÃO aceitar, construir uma RESPOSTA DE ERRO (com o statusCode adequado) e ARMAZENAR isso na response da classe e retornar (pra interromper o metodo)
-    2. SE ACEITAR, daí IDENTIFICAR qual é o RECURSO (URI) pedido pela request e verificar se
-         esse recurso está entre os locations (map) desse SERVER SOCKET (qualquer duvida, dar uma olhada no hpp do SocketS)
-        ---> Se esse recurso NÃO ESTIVER DENTRE AS LOCATIONS, tem que construir uma RESPOSTA DE ERRO (404?) e armazenar na resposne da classe e retornar (pra interromper o metodo)
-    3. SE ESTIVER PRESENTE, acessar o valor (LocationsDirective) desse location no map e indeitificar o arquivo INDEX pedido (está em algum lugar do diretorio) e
-        criar um método pra abrir esse arquivo e armazenar seu conteúdo numa string (a string body, no caso)
- precisa devolver essa string de alguma forma (get?) pra mainLoop
- pra que ela possa fazer send() dessa response pro clientSocket
-*/

@@ -19,17 +19,13 @@ LocationDirective::LocationDirective()
 LocationDirective::~LocationDirective()
 {
 	for (std::map<std::string, std::vector<std::string> >::iterator it = _directives.begin(); it != _directives.end(); ++it) {
-        it->second.clear(); // Limpa os vetores
+        it->second.clear();
     }
-
-    // Limpa o mapa
     _directives.clear();
 }
 
 void LocationDirective::addDirective(std::string& directiveName, std::string& value)
 {
-	// std::cout << "Diretivas: " << directiveName << std::endl;
-	// std::cout << "Valor: " << value << std::endl;
 	_directives[directiveName].push_back(value);
 }
 
@@ -41,10 +37,11 @@ std::map<std::string, std::vector<std::string > > LocationDirective::getDirectiv
 std::vector<std::string> LocationDirective::getSpecificDirective(std::string directiveName)const
 {
 	std::map<std::string, std::vector<std::string> >::const_iterator it = _directives.find(directiveName);
+    
     if(it != _directives.end())
         return it->second;
     else
-        std::cout << "Key not found!" << std::endl;
+        std::cout << RED << "Key not found!" << END << std::endl;
     return std::vector<std::string>();
 
 }
