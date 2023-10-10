@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/09 00:08:42 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/09 23:10:53 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,10 @@
 #include "Utils.hpp"
 #include "CGI.hpp"
 
-#define PATH_INFO "web/cgi-bin/delete_upload_image.sh"
+#define PATH_DELETE_RESET "web/cgi-bin/delete_upload_image.py" //colocar versão em py
+#define	PATH_POST_INFO "process_data_store_form.cgi"
+#define PATH_GET_INFO "delete_upload_image.cgi"
+// #define	DEFAULT_UPLOAD_STORE "web/images/" //usar depois pro valor default do 'uploadStore' (só procurar onde tem essa verificação no código na Response.cpp)
 
 class SocketS;
 class Request;
