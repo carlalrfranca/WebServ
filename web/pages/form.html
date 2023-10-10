@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exemplo de Formulário CGI</title>
+    <title>Example of CGI Form</title>
 	<link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -14,15 +14,16 @@
                 <div class="dot"></div>
             </div>
         </section>
-		<h1>Preencha o Formulário</h1>
+		<h1>Send us a message</h1>
 	</header>
 	<section class="test-container">
 		<form method="post" id="myForm" action="upload/process_data_store_form.cgi">
-			<label for="name">Nome</label>
+			<label for="name">Name</label>
 			<input id="name" type="text" name="nome"><br>
-			<textarea name="mensagem" id="mensagem" cols="30" rows="10"></textarea>
-			<input class="form-button" type="submit" value="Enviar">
-			<input class="form-button" type="reset" value="Limpar">
+			<label for="message">Message</label>
+			<textarea name="message" id="messagem" cols="30" rows="10"></textarea>
+			<input class="form-button" type="submit" value="Send">
+			<input class="form-button" type="reset" value="Clear">
 		</form>
 	</section>
 	<footer>

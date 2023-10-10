@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/10 13:03:04 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:40:24 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ CGI::CGI(const std::string& root, std::vector<std::string> commands, std::vector
 	setPathToScript(scriptName);
 	struct stat info;
 
-	if (stat(_scriptName.c_str(), &info) != 0)
+	if(stat(_scriptName.c_str(), &info) != 0)
 	{
 		throw ErrorException("Script Error: Path doesn't exist");
 	}
@@ -274,12 +274,12 @@ int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
 {
 	pid_t childPid = fork();
 
-	if (childPid == -1)
+	if(childPid == -1)
 	{
 		std::cout << RED << "Error creating CHILD PROCESS" << END << std::endl;
 		return 500;
 	}
-	else if (childPid == 0)
+	else if(childPid == 0)
 	{
 		dup2(pipefd[1], STDOUT_FILENO);
 		close(pipefd[0]);
@@ -318,10 +318,10 @@ int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
 		    usleep(1000);
 		}
 		char buffer[1024];
-		while (true)
+		while(true)
 		{
 			ssize_t bytesRead = read(pipefd[0], buffer, sizeof(buffer));
-			if (bytesRead <= 0)
+			if(bytesRead <= 0)
 				break;
 			_scriptOutput.append(buffer, bytesRead);
 		}
@@ -334,7 +334,7 @@ int CGI::CGIForGetRequest(std::string requestedFilePath)
 {
 	int pipefd[2];
 
-	if (pipe(pipefd) == -1)
+	if(pipe(pipefd) == -1)
 	{
 		std::cout << RED << "Error creating PIPE." << END << std::endl;
 		return 500;
@@ -342,9 +342,9 @@ int CGI::CGIForGetRequest(std::string requestedFilePath)
 	int resultCGI = 0;
 	resultCGI = executeScriptForGET(pipefd, requestedFilePath);
 
-	if (resultCGI == 504)
+	if(resultCGI == 504)
 		return 504;
-	if (_scriptOutput.empty())
+	if(_scriptOutput.empty())
 		return 500;
 	_response += _scriptOutput;
 	return 200;
@@ -372,7 +372,7 @@ std::string CGI::generateHeadersSucessCGI(int statusCode, Request &request)
 	std::string allowedMethodsStr = "";
 	std::vector<std::string> allowedMethodsVec = request.getAllowedMethods();
 
-	for (size_t i = 0; i < allowedMethodsVec.size(); ++i)
+	for(size_t i = 0; i < allowedMethodsVec.size(); ++i)
 	{
 		if (i == 0)
 			allowedMethodsStr = allowedMethodsVec[i];
@@ -386,12 +386,12 @@ std::string CGI::generateHeadersSucessCGI(int statusCode, Request &request)
 	std::string contentLen = contentLengthToString.str();
     headers += "HTTP/1.1 " + statusCodeStr + " " + codeMessage + "\r\n";
 
-	if (statusCode == 200)
+	if(statusCode == 200)
 	{
 		headers += "Content-Length: " + contentLen + "\r\n";
 		headers += "Content-Type: text/html\r\n";
 	}
-	else if (statusCode == 204)
+	else if(statusCode == 204)
 	{
 		headers += "Content-Length: 0\r\n";
 		headers += "Content-Type: application/octet-stream\r\n";
@@ -403,7 +403,7 @@ std::string CGI::generateHeadersSucessCGI(int statusCode, Request &request)
 	headers += "Cache-Control: no-cache, no-store, must-revalidate\r\n";
     headers += "\r\n";
 	
-	if (statusCode == 200)
+	if(statusCode == 200)
 	{
 		headers += _response;
 		_response = headers;
@@ -413,7 +413,7 @@ std::string CGI::generateHeadersSucessCGI(int statusCode, Request &request)
 
 int CGI::handleCGIRequest(Request &request)
 {
-	if (request.getMethod() == "GET")
+	if(request.getMethod() == "GET")
 	{
 		int result = CGIForGetRequest(getUploadStore());
 		return result;
@@ -422,20 +422,20 @@ int CGI::handleCGIRequest(Request &request)
 	std::size_t data_init_pos = request_content.find("\r\n\r\n");
 	std::size_t boundary_pos = request_content.find("boundary=");
 
-	if (boundary_pos == std::string::npos)
+	if(boundary_pos == std::string::npos)
 	{
 		int resultCode = 0;
 		resultCode = storeFormInput(data_init_pos, request_content);
-		if (resultCode == 204)
+		if(resultCode == 204)
 			_response = generateHeadersSucessCGI(resultCode, request);
 		return resultCode;
 	}
-	if (data_init_pos != std::string::npos)
+	if(data_init_pos != std::string::npos)
 	{
 		int resultCode = 0;
 		resultCode = uploadImageCGI(request);
 
-		if (resultCode == 200)
+		if(resultCode == 200)
 			generateHeadersSucessCGI(resultCode, request);
 		return resultCode;
 	}

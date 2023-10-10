@@ -2,31 +2,55 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
 
 * {
+
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+main {
+
+    text-align: center;
+}
+
+img {
+
+    display: block;
+    margin: 0 auto;
+    margin-top: 25px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 30px rgba(85, 84, 84, 0.5);
+}
+
+img[alt] {
+
+    color: #f6f4e6;
+    font-size: 12px;
 }
 
 h1 {
   color: #f6f4e6;
   font-size: 2em;
   margin-bottom: 20px;
-  margin-top: 25vh; /* Defina o espaçamento a 40% da altura da janela de visualização */
+  margin-top: 25vh;
   align-content: center;
   text-align: center;
   font-family: "Montserrat", sans-serif;
 }
 
 h2 {
+
 	color: #f6f4e6;
 }
 
 body {
+
   background: #272727;
   font-family: "Montserrat", sans-serif;
 }
 
 .navMenu {
+
   position: absolute;
   top: 20%;
   left: 50%;
@@ -34,6 +58,7 @@ body {
 }
 
 .navMenu a {
+
   color: #f6f4e6;
   text-decoration: none;
   font-size: 1.2em;
@@ -46,10 +71,12 @@ body {
 }
 
 .navMenu a:hover {
+
   color: #bb9b49;
 }
 
 .navMenu .dot {
+
   width: 6px;
   height: 6px;
   background: #bb9b49;
@@ -79,24 +106,24 @@ body {
   opacity: 1;
 }
 
-
-/* Adicione essas regras para estilizar o texto e a caixa retangular */
 .section-container {
+
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 90vh; /* Ajuste a altura conforme necessário */
-    background-color: #272727; /* Cor de fundo da caixa retangular */
-    border: 0px solid #272727; /* Borda da caixa retangular */
+    min-height: 90vh;
+    background-color: #272727;
+    border: 0px solid #272727;
     padding: 60px;
     gap: 30px;
     font-weight: 300;
-    line-height: 1.5; /* Ajuste o valor conforme necessário */
+    line-height: 1.5;
 	margin-bottom: 2rem;
 }
 
 .section-content {
+
     max-width: 600px;
     text-align: justify;
 	margin-top: 7rem;
@@ -118,7 +145,7 @@ body {
     color: #ead8b2;
     font-weight: 200;
     max-width: 600px;
-    letter-spacing: 1px; /* Ajuste o valor conforme necessário */
+    letter-spacing: 1px;
 }
 
 footer {
@@ -167,8 +194,6 @@ footer {
 .cards {
 	padding: 1rem;
 	background-color: #3b3b3b;
-	/* border: 1px solid red; */
-	/* box-shadow: 4px 4px 4px 0px #1a1a1a; */
 	border-radius: 10px;
 	width: 200px;
 	display: flex;
@@ -249,13 +274,7 @@ footer {
     border-radius: 50%;
 	color: #3b3b3b;
 	font-weight: bold;
-    /* margin: 50px auto; Centraliza a bolinha na página */
 }
-
-
-/*  */
-
-/* form */
 
 #myForm {
 	display: flex;
@@ -280,7 +299,7 @@ footer {
 	bottom: 2rem; */
 }
 
-.form-button:hover {
+/*.form-button:hover {
 	background-color: #272727;
 	border: 1px solid #bb9b49;
 }
@@ -292,8 +311,144 @@ footer {
 	gap: 1rem;
 	font-family: "Montserrat", sans-serif;
 }
+*/
+
+#myForm {
+	
+	max-width: 400px;
+	margin: 0 auto;
+	padding: 20px;
+	background-color: #f0f0f0;
+	border-radius: 10px;
+}
+
+#myForm label {
+
+    display: block;
+    margin-bottom: 10px;
+}
+
+#myForm input[type="text"],
+#myForm textarea {
+
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: vertical;
+}
+
+#myForm input[type="submit"],
+#myForm input[type="reset"] {
+
+    padding: 10px 20px;
+    background-color: #3b3b3b;
+    color: #bb9b49;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#myForm input[type="submit"]:hover,
+#myForm input[type="reset"]:hover {
+
+    background-color: #4b4948;
+}
+
+#myForm .form-button {
+
+    border: 1px solid #3b3b3b;
+    background-color: #3b3b3b;
+    color: #bb9b49;
+    cursor: pointer;
+    padding: 0.75rem;
+    transition: 0.3s;
+}
+
+#myForm .form-button:hover {
+
+    background-color: #272727;
+    border: 1px solid #bb9b49;
+}
+
+#myForm .form-info {
+    color: #bb9b49;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    font-family: "Montserrat", sans-serif;
+}
+
+#myForm .field {
+    text-transform: capitalize;
+}
+
+#myForm .submitted-info {
+    gap: 0.75rem;
+    flex-direction: column;
+    padding: 0.25rem;
+    border: 1px solid #756d6d;
+    color: #756d6d;
+}
+
+#myForm #choose-image {
+
+    display: flex;
+    flex-direction: column;
+    width: 55%;
+    gap: 1rem;
+}
+
+#myForm #image {
+
+    width: 300px;
+    height: 300px;
+    border: 1px solid #bb9b49;
+}
+
+#myForm .upload-container {
+
+    width: 55%;
+}
+
+#myForm .upload-span {
+
+    color: #756d6d;
+}
+
+#myForm .custom-file {
+
+    display: none;
+}
+
+#myForm #fileUpload {
+
+    color: #bb9b49;
+    background-color: #3b3b3b;
+    padding: 0.25rem;
+}
+
+#myForm #fileUpload,
+#myForm #submit-image {
+
+    padding: 0.25rem;
+    cursor: pointer;
+    border: 1px solid #3b3b3b;
+    background-color: #3b3b3b;
+    color: #bb9b49;
+    transition: 0.3s;
+}
+
+#myForm #fileUpload:hover,
+#myForm #submit-image:hover {
+
+    background-color: #272727;
+    border: 1px solid #bb9b49;
+}
 
 .field {
+
 	text-transform: capitalize;
 }
 
@@ -306,6 +461,7 @@ footer {
 }
 
 #choose-image {
+
 	display: flex;
 	flex-direction: column;
 	width: 55%;
@@ -313,24 +469,29 @@ footer {
 }
 
 #image {
+
 	width: 300px;
 	height: 300px;
 	border: 1px solid #bb9b49;
 }
 
 .upload-container {
+
 	width: 55%;
 }
 
 .upload-span {
+
 	color: #756d6d;
 }
 
 .custom-file {
+
 	display: none;
 }
 
 #fileUpload {
+
 	color: #bb9b49;
 	background-color: #3b3b3b;
 	padding: 0.25rem;
@@ -338,6 +499,7 @@ footer {
 
 #fileUpload,
 #submit-image {
+
 	padding: 0.25rem;
 	cursor: pointer;
 	border: 1px solid #3b3b3b;
@@ -350,4 +512,53 @@ footer {
 #submit-image:hover {
 	background-color: #272727;
 	border: 1px solid #bb9b49;
+}
+
+/* Estilos para o formulário */
+.upload-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.upload-span {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.custom-file {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #007bff;
+    cursor: pointer;
+}
+
+#fileUpload {
+    display: none;
+}
+
+#fileUploadLabel {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#fileUploadLabel:hover {
+    background-color: #0056b3;
+}
+
+#image {
+    width: 100%;
+    max-width: 400px;
+    margin: 20px auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }

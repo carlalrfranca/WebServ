@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/10 13:18:46 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 20:26:03 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,6 +351,8 @@ void ConfigParser::hasprohibitedDirectiveInLocation(std::string &directive)
 		throw ErrorException("Configuration Error: Prohibited directive in location block");
 }
 
+
+
 void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine)
 {
 	std::string currentLocation = _currentLocationPathOnMap;
@@ -367,6 +369,7 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine)
 			throw ErrorException("Syntax Error: Missing values to directive in location block");
 		hasprohibitedDirectiveInLocation(splittedLine[0]);
 		std::map<std::string, std::vector<std::string> >::iterator directiveIt = it->second.getDirectives().find(splittedLine[0]);
+	
 		if(directiveIt != it->second.getDirectives().end())
 			throw ErrorException("Syntax Error: Duplicated directive in location block");
 		it->second.addDirective(splittedLine[0], splittedLine[1]);
@@ -602,7 +605,6 @@ void ConfigParser::processReturn(std::string &line)
             if(end_status_pos != std::string::npos)
             {
                 std::string status_str = line.substr(status_pos, end_status_pos - status_pos);
-                // int status_code = atoi(status_str.c_str());
                 std::size_t message_pos = line.find_first_of('"', end_status_pos);
                 if(message_pos != std::string::npos)
                 {

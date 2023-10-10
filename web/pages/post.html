@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Upload de um arquivo</title>
+	<title>Upload of a file</title>
 	<link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -11,38 +11,37 @@
 		<div class="navMenu">
 			<a href="/">home</a>
 			<a href="/tour.html">tour</a>
-			<a href="#">tests</a>
 			<div class="dot"></div>
 		</div>
 	</header>
 	<section class="section-container">
 		<div class="upload-container">
-			<h1>Olá! Vamos treinar um pouco com o POST?</h1>
+			<h1>Hello! Let's practice a bit with POST?</h1>
 			<span class="upload-span">
-				Esse projeto exige que seja feito alguns scripts CGI.
+				This project requires the creation of some CGI scripts.
 			</span>
 			<span class="upload-span">
-				Nesse caso, Vamos mexer um pouco com a funcionalidade de postar um arquivo de imagem
-				no nosso servidor, e exibir essa imagem aqui.
+				In this case, let's play around with the functionality of uploading
+				an image file to our server and displaying that image here.
 			</span>
 		</div>
 		<div class="upload-container">
-			<h2>LEMBRE-SE</h3>
-			<span class="upload-span">Tudo tem limite</span>
-			<span class="upload-span">A imagem submetida precisa ter até - megas. Mais do que isso e o servidor não irá aceitar!</span>
+			<h2>REMEMBER</h3>
+			<span class="upload-span">Everything has a limit</span>
+			<span class="upload-span">The submitted image must be up to - megabytes.
+				More than that, and the server will not accept it!</span>
 		</div>
 		<div id="choose-image">
 			<div>
-				<span class="upload-span">Vamos lá? A imagem aparecerá nesse <span class="colored">espaço destacado</span></span>
+				<span class="upload-span">
+					Let's go? The image will appear in this <span class="colored">highlighted space</span></span>
 				<form action="upload/process_data_store_form.cgi" method="post" enctype="multipart/form-data">
-					<label for="fileUpload" class="custom-file">Selecione um arquivo:</label>
+					<label for="fileUpload" class="custom-file">Select a file:</label>
 					<input type="file" name="fileUpload" id="fileUpload">
 					<input type="submit" value="Enviar Arquivo" id="submit-image">
 				</form>
-
-				<!-- fazer um botao aqui pra caso a pessoa queira gerar uma pagina html - em CGI? - com a imagem postada? -->
 			</div>
-			<div id="image">	
+			<div id="image">
 			</div>
 		</div>
 	</section>
