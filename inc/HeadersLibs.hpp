@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:15:00 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/07 16:49:22 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 11:52:30 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@
 #include <cctype>
 #include <vector>
 #include <string>
-#include <cctype> // to std::isspace
+#include <cctype>
 #include <map>
 #include <set>
 #include <sys/time.h>

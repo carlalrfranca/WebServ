@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:33:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/07 17:15:35 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 11:56:43 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ StatusMessages::StatusMessages()
     statusMessages[503] = "Service Unavailable";
 	statusMessages[504] = "Gateway Timeout";
     statusMessages[505] = "HTTP Version Not Supported";
-    // Adicione mais códigos e mensagens conforme necessário
 }
 
 std::string StatusMessages::getMessage(int statusCode)

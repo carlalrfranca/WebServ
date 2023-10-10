@@ -40,7 +40,6 @@ class WebServ
         void printRequest(const std::string &request);
         void configSocket();
 		void initServers();
-		//void addEndPoint(const std::string& ipAddress, const std::string& port);
 
         Epoll &getEpollS();
         std::string getResponse()const;
@@ -63,13 +62,12 @@ class WebServ
 		size_t 					_contentLength;
 		size_t					_totalBytesRead;
         socklen_t				_clientAddressLength;
-		std::string				_response; //set e get
-		std::string				_requestString; //
+		std::string				_response;
+		std::string				_requestString;
         std::string				_nameConfigFile;
-        ConfigParser			_configParser; // sujeito comentado
-        std::vector<SocketS>	_serverSocket; // ----vetor criado
+        ConfigParser			_configParser;
+        std::vector<SocketS>	_serverSocket;
         struct sockaddr_in		_clientAddress;
-        //std::set<std::pair<std::string, std::string> > _endPoints;
 
     class ErrorException : public std::exception
     {
@@ -89,22 +87,3 @@ class WebServ
     };
 
 #endif
-
-/*
-    em 31.08.2023
-
-   g++ -std=c++98 -I inc/ src/main.cpp src/CGI.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response
-    ./executavel_com_response src/config.txt
-
-*/
-
-/*
-
-    static int getTypePath(std::string const path);
-    static int checkFile(std::string const path, int mode);
-    std::string	readFile(std::string path);
-    static int isFileExistAndReadable(std::string const path, std::string const index);
-    std::string getPath();
-    int getSize();
-
-*/

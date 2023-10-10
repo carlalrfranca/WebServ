@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 19:59:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/08 09:51:28 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 11:52:20 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,11 +50,7 @@ class Epoll
 		const int	_maxEvents;
 		bool		_isServerFdInPoolTriggered;
 		int			_numberEvents;
-		
-		
-		
-		
-		int					_clientFd;
+		int			_clientFd;
 };
 
 #endif

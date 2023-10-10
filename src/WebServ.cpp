@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/09 22:18:59 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:04:39 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,15 +17,6 @@ WebServ::WebServ()
 
 WebServ::~WebServ()
 {
-
-    // Libere quaisquer outros recursos alocados dinamicamente ou que exijam limpeza especial
-    // Certifique-se de revisar todos os membros da classe e chamar os destrutores apropriados
-    // ou realizar outras ações de limpeza, se necessário.
-
-    // Exemplo: Chame o destrutor da ConfigParser, se necessário
-    // _configParser.~ConfigParser();
-
-    // Exemplo: Limpe o vetor _serverSocket, se necessário
     _serverSocket.clear();
 }
 
@@ -45,7 +36,6 @@ WebServ::WebServ(std::string filename)
 	size_t index = 0;
     fileToParse.open(filename.c_str());
     char contentFile;
-	std::cout << BLUE << "Qtdade servers inicio: " << _serverSocket.size() << END << std::endl;
 	_totalBytesRead = 0;
 	_contentLength = 0;
 
@@ -54,7 +44,7 @@ WebServ::WebServ(std::string filename)
         fileToParse.close();
         throw ErrorException("Configuration Error: empty file!");
     }
-    fileToParse.unget(); //funcao que desfaz a leitura do conteudo.
+    fileToParse.unget();
     _configParser.validateFile(fileToParse);
 
     if(fileToParse.is_open())
@@ -64,29 +54,28 @@ WebServ::WebServ(std::string filename)
         bool isInsideServerBlock = false;
         while(getline(fileToParse, line))
         {
-            _utils.trimWhiteSpace(line); //trima espaços em branco
+            _utils.trimWhiteSpace(line);
 			size_t startPos = line.find_first_not_of(" \t");
-    		if (startPos == std::string::npos) //quer dizer que ou só tem espaço ou tab, nao tem conteudo, entao pode pular pra proxima iteração
+    		if(startPos == std::string::npos)
 				continue;
-            _utils.removeComments(line); //remove comentarios
-            size_t semicolon = line.find_last_not_of(" \t"); //remove semicolon
+            _utils.removeComments(line);
+            size_t semicolon = line.find_last_not_of(" \t");
             if(semicolon != std::string::npos && line[semicolon] == ';')
                 line = line.substr(0, semicolon);   
-            if (line.find("server{") != std::string::npos){
-				// verifica que o arquivo nao está tentando abrir outro server dentro de um bloco de server (ou dentro de um bloco de location)..
-				if (isInsideServerBlock == true || isLocationBlock == true)
+            if(line.find("server{") != std::string::npos)
+			{
+				if(isInsideServerBlock == true || isLocationBlock == true)
 					throw ErrorException("Configuration Error: Server Block INSIDE another Server or Location block!");
-                std::cout << "Index: " << index << std::endl;
-                if (index > 0)
+                if(index > 0)
                     configSocket();
 				index++;
-			    isInsideServerBlock = true; // Entramos em um bloco "server"
+			    isInsideServerBlock = true;
             }
             else if(!isInsideServerBlock && !isLocationBlock && !line.empty())
                 throw ErrorException("Wrong character out of server scope: " + line);
             else if(line.find("}") != std::string::npos && isLocationBlock == false)
             {
-                isInsideServerBlock = false; // Saímos do bloco "server"
+                isInsideServerBlock = false;
                 continue;
             }
             else if(isInsideServerBlock)
@@ -99,10 +88,10 @@ WebServ::WebServ(std::string filename)
 					{
                         isLocationBlock = false;
     					continue;
-    				}         
+    				}
                     _configParser.processLocation(line);
                     isLocationBlock = true;
-                } // configSocket(index);
+                }
                 else if(line.find("listen") != std::string::npos)
                     _configParser.processListen(line);
                 else if(line.find("server_name") != std::string::npos)
@@ -134,28 +123,31 @@ WebServ::WebServ(std::string filename)
     if(index != 0)
         configSocket();
     fileToParse.close();
-	// checkForDuplicates();
 	initServers();
 	mainLoop();
 }
 
 void WebServ::checkForDuplicates()
 {
-    for(size_t i = 0; i < _serverSocket.size() - 1; ++i){
-        for(size_t j = i + 1; j < _serverSocket.size(); ++j){
-            if(_serverSocket[i].getPort() == _serverSocket[j].getPort() &&
-               _serverSocket[i].getAddress() == _serverSocket[j].getAddress()){
+    for(size_t i = 0; i < _serverSocket.size() - 1; ++i)
+	{
+        for(size_t j = i + 1; j < _serverSocket.size(); ++j)
+		{
+            if(_serverSocket[i].getPort() == _serverSocket[j].getPort() && _serverSocket[i].getAddress() == _serverSocket[j].getAddress())
+			{
 				std::vector<std::string> currentSocketServerNames = _serverSocket[i].getServerName();
 				std::vector<std::string> nextSocketServerNames = _serverSocket[j].getServerName();
-				for (size_t k = 0; k < currentSocketServerNames.size(); ++k){
-					for (size_t l = 0; l < nextSocketServerNames.size(); ++l){
-						if (currentSocketServerNames[k] == nextSocketServerNames[l])
+				for(size_t k = 0; k < currentSocketServerNames.size(); ++k)
+				{
+					for(size_t l = 0; l < nextSocketServerNames.size(); ++l)
+					{
+						if(currentSocketServerNames[k] == nextSocketServerNames[l])
 							throw ErrorException("Configuration Error : Duplicated server_name in multiple servers");
                     }
 				}
 			}
-			else if (_serverSocket[i].getPort() == _serverSocket[j].getPort() &&
-	               _serverSocket[i].getAddress() != _serverSocket[j].getAddress()){
+			else if(_serverSocket[i].getPort() == _serverSocket[j].getPort() && _serverSocket[i].getAddress() != _serverSocket[j].getAddress())
+			{
 					throw ErrorException("Configuration Error : Duplicated Port in multiple servers");
 			}
         }
@@ -164,30 +156,23 @@ void WebServ::checkForDuplicates()
 
 void WebServ::configSocket()
 {
-	// antes de passar os itens do _configParser para o socket,
-	// verificar que todas as diretivas mandatórias estão preenchidas..
 	if(_configParser.getRoot().empty())
 		_configParser.setRoot("./");
 	if(_configParser.getAddress().empty())
 		_configParser.setAddress("127.0.0.1");
-	// if (_configParser.getIndexFile().empty())
-		// _configParser.setIndexFile("index.html");
 	if(_configParser.getAllPorts().size() == 0)
 		throw ErrorException("Configuration Error: [MANDATORY DIRECTIVE] Port not found!");
-	if (_configParser.getMethods().size() == 0)
+	if(_configParser.getMethods().size() == 0)
 		throw ErrorException("Configuration Error: [MANDATORY DIRECTIVE] It is necessary at least ONE allowed method at server level.");
-	// o client_max_body_size vai ser OBRIGATÓRIO ou, se nao houver no nivel server,
-	// a gente vai definir um padrão? (ou deixar sem?)
 	std::vector<std::string> tmpPorts = _configParser.getAllPorts();
 	std::vector<std::string> tmpAddress = _configParser.getAllIps();
 	size_t totalPorts = tmpPorts.size();
+	
 	for(size_t i = 0; i < totalPorts; i++)
 	{
     	SocketS temp_socket;
 		temp_socket.setPort(tmpPorts[i]);
 		temp_socket.setAddress(tmpAddress[i]);
-	    // temp_socket.setPort(_configParser.getPort());
-	    // temp_socket.setAddress(_configParser.getAddress());
 		temp_socket.setLocations(_configParser.getLocations());
 	    temp_socket.setMethods(_configParser.getMethods());
 	    temp_socket.setRoot(_configParser.getRoot());
@@ -197,41 +182,34 @@ void WebServ::configSocket()
 		temp_socket.setMaxBodySize(_configParser.getMaxBodySize());
 	    _serverSocket.push_back(temp_socket);
 	}
-	_configParser.resetConfig(); // O PROBLEMA DESSA MERDA É AQUI
-	// iterar o map do Locations pra verificar os valores
-	// std::map<std::string, LocationDirective>::iterator it = _serverSocket.back().getLocations().begin();
-	// int size_locations =  _serverSocket.back().getLocations().size();
-	
+	_configParser.resetConfig();
 }
-
-// função pra inicializar os servers depois de todos já estarem setados no vetor
-// (é aqui que vamos verificar se tem algum com ip:address repetida e só dar UM bind e compartilhar o fd!)
-// criar essas estruturas e fazer o bind e o listen é algo que está num método próprio do server (SocketS)
-
 
 void WebServ::initServers()
 {
 	checkForDuplicates();
 	bool isDuplicated = false;
-	for (std::vector<SocketS>::iterator it = _serverSocket.begin(); it != _serverSocket.end(); ++it)
+
+	for(std::vector<SocketS>::iterator it = _serverSocket.begin(); it != _serverSocket.end(); ++it)
 	{
-		for (std::vector<SocketS>::iterator it2 = _serverSocket.begin(); it != it2; ++it2)
+		for(std::vector<SocketS>::iterator it2 = _serverSocket.begin(); it != it2; ++it2)
 		{
-			if (it2->getAddress() == it->getAddress() && it2->getPort() == it->getPort())
+			if(it2->getAddress() == it->getAddress() && it2->getPort() == it->getPort())
 			{
 				it->setWebServSocket(it2->getWebServSocket());
 				isDuplicated = true;
 			}
 		}
-		if (!isDuplicated)
+		if(!isDuplicated)
 			it->initServer();
 	}
 }
 
 void WebServ::printRequest(const std::string& request)
 {
-    std::istringstream iss(request);//permite tratar a string request como um fluxo de entrada
+    std::istringstream iss(request);
     std::string line;
+
     while(std::getline(iss, line) && line != "\r")
         std::cout << line << std::endl;
 }
@@ -257,23 +235,6 @@ bool WebServ::isFirstLineValid(const std::string& request, std::string& _firstLi
     return true;
 }
 
-void WebServ::responseError()
-{
-    std::string response;
-    int errorCode = 400;
-    if(errorCode == 400)
-        response = "HTTP/1.1 400 Bad Request\r\n\r\n";
-    else if(errorCode == 404)
-        response = "HTTP/1.1 404 Not Found\r\n\r\n";
-    else if(errorCode == 500)
-        response = "HTTP/1.1 500 Internal Server\r\n\r\n";
-    else
-        response = "HTTP/1.1 Error\r\n\r\n";
-    ssize_t bytesSent = send(_clientSocket, response.c_str(), response.size(), 0);
-    if(bytesSent < 0)
-        std::cerr << "[Error] sending error response." << std::endl;
-}
-
 Epoll& WebServ::getEpollS()
 {
     return _epollS;
@@ -282,60 +243,56 @@ Epoll& WebServ::getEpollS()
 bool WebServ::isEventFromServerSocket(struct epoll_event* events, int index)
 {
     _epollS.setIsServerFdTriggered(false);
-    for (size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+
+    for(size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
     {
-        if (events[index].data.fd == _serverSocket[serverIndex].getWebServSocket())
+        if(events[index].data.fd == _serverSocket[serverIndex].getWebServSocket())
         {
-            getEpollS().setIsServerFdTriggered(true); // Retorna true se encontrar um socket do servidor
+            getEpollS().setIsServerFdTriggered(true);
             break;
         }
     }
-    return false; // Retorna false se não encontrar nenhum socket do servidor
+    return false;
 }
 
 void WebServ::handleRequest(std::string& requestString)
 {
     Request request(requestString);
     Response currentResponse;
-	std::cout << BLUE << request.getMethod() << END << std::endl;
+	std::cout << request.getMethod() << std::endl;
 	int resultCode = request.validateRequest();
+
     if(resultCode != 0)
 	{
 		request.setHasError(true);
 		_response = request.errorCodeHtml(resultCode);
 		return ;
 	}
-    if(request.getHasError())
-        responseError(); //criar um método pra errorCodeHtml aqui
     int selectedServer = UtilsResponse::selectServer(request, _serverSocket);
+
     if(selectedServer != -1)
 	{
         currentResponse.buildResponse(request, _serverSocket[selectedServer]);
         _response = currentResponse.getResponse();
     } 
     else
-        std::cout << "Server não encontrado!" << std::endl;
+        std::cout << "Error: Server not found!" << std::endl;
 }
 
 int	WebServ::convertContentLength(std::string& header, size_t contentLengthPos)
 {
-	contentLengthPos += strlen("Content-Length: "); // Avance para o início do valor.
-    size_t lineEndPos = header.find("\r\n", contentLengthPos); // Encontre o final da linha.
+	contentLengthPos += strlen("Content-Length: ");
+    size_t lineEndPos = header.find("\r\n", contentLengthPos);
 
     if(lineEndPos != std::string::npos)
 	{
-        std::string contentLengthStr = header.substr(contentLengthPos, lineEndPos - contentLengthPos);
-        // Agora, 'contentLengthStr' contém o valor do Content-Length como uma string.
-		// std::cout << RED << "Content-Length > " << contentLengthStr << END << std::endl;
-        // Você pode converter 'contentLengthStr' para um valor numérico, se necessário.
-        // Exemplo:
-        try
+		std::string contentLengthStr = header.substr(contentLengthPos, lineEndPos - contentLengthPos);
+		try
 		{
-            _contentLength = std::atoi(contentLengthStr.c_str());
+			_contentLength = std::atoi(contentLengthStr.c_str());
         } catch (const std::invalid_argument& e)
 		{
-            // Lida com erros de conversão, se necessário. O que fazer aqui? Erro de cabeçalho? Tem isso?
-			std::cout << RED << "Erro de conversão -->>> " << e.what() << std::endl;
+			std::cout << "Error of conversion." << e.what() << std::endl;
         }
     }
 	return 0;
@@ -343,18 +300,11 @@ int	WebServ::convertContentLength(std::string& header, size_t contentLengthPos)
 
 bool WebServ::hasBodyContent(const std::string& header)
 {
-	// retorna se há "content-length", ou seja, se a request tem um body sendo enviado além dos cabeçalhos
 	size_t contentLengthPos = header.find("Content-Length: ");
 	if(contentLengthPos != std::string::npos)
 		return true;
 	return false;
 }
-
-/*
-	epollS._event.data.fd = epollS._clientFd;
-	epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, epollS._clientFd, &epollS._event);
-	close(epollS._clientFd);
-*/
 
 void WebServ::removeClientFromEpoll(Epoll& epollS)
 {
@@ -362,12 +312,10 @@ void WebServ::removeClientFromEpoll(Epoll& epollS)
 	
 	event = epollS.getEvent();
 	event.data.fd = epollS.getClientFd();
-	// epollS.setEvent(event);
 	
 	epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, epollS.getClientFd(), &event);
 	epollS.setEvent(event);
 	close(epollS.getClientFd());
-	// _epollS.setClientFd(-1);
 }
 
 int WebServ::readRequest(int clientSocket)
@@ -376,65 +324,54 @@ int WebServ::readRequest(int clientSocket)
 	_epollS.setClientFd(clientSocket);
 	std::string header;
 	std::string body;
-	// int header_size = 0;
-	// ah, por enquanto tá funcionando porque ele toda vez processa a requestString no cgi... individualmente..
-	// mas tem que tratar os chunks direito...
-	if(_requestString.size() > 0)
-		std::cout << RED << "Request JÁ TEM COISA!!!" << END << std::endl;
-	// loop para receber e acumular os chunks da solicitação
-	//ssize_t bytesRead = 0;
-	std::cout << BLUE << "ENTERING READ REQUEST" << END << std::endl;
 	while(!shouldExit)
 	{
 		ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
         if(bytesRead == 0)
 		{
-			std::cerr << RED << "Client closed connection." << END << std::endl; //tem que tirar o client quando dá esse tipo de erro
-			// removeClientFromEpoll(_epollS);
-			epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS.getClientFd(), &_epollS._event);
+			std::cerr << "Client closed connection." << std::endl;
+			_epollS._event.data.fd = clientSocket;
+			_epollS._event.events = EPOLLOUT;
+			epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, clientSocket, &_epollS._event);
 			close(_epollS.getClientFd());
+			_requestString = "";
+			_contentLength = 0;
+			_totalBytesRead = 0;
 			return 0;
 		}
 		else if(bytesRead == -1)
 		{
-			std::cerr << RED << "Error during reading of client request." << END << std::endl; //tem que tirar o client quando dá esse tipo de erro
-			// removeClientFromEpoll(_epollS);
-			epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS.getClientFd(), &_epollS._event);
+			std::cerr << "Error during reading of client request." << std::endl;
+			_epollS._event.data.fd = clientSocket;
+			_epollS._event.events = EPOLLOUT;
+			epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, clientSocket, &_epollS._event);
 			close(_epollS.getClientFd());
+			_requestString = "";
+			_contentLength = 0;
+			_totalBytesRead = 0;
 			return -1;
 		}
-		else if (bytesRead != 0)
+		else if(bytesRead != 0)
 		{
-			// std::cout << BLUE << "Bytes Read: " << bytesRead << END << std::endl;
 			_requestString.append(buffer, bytesRead);
 			_totalBytesRead += bytesRead;
 			memset(buffer, 0, sizeof(buffer));
 		}
-		// Agora temos a solicitação completa em requestString e podemos processá-la
 		size_t headerEndPos = _requestString.find("\r\n\r\n");
 		if(headerEndPos != std::string::npos) {
 			if(header.size() == 0)
 			{
-			    header = _requestString.substr(0, headerEndPos + 4); // +4 para incluir "\r\n\r\n"
-				std::cout << YELLOW << header << END << std::endl;
+			    header = _requestString.substr(0, headerEndPos + 4);
 			}
 			if(_contentLength == 0 && hasBodyContent(header) == true)
 			{
 				size_t contentLengthPos = header.find("Content-Length: ");
-				// Agora, extraia o valor do Content-Length.
 				convertContentLength(header, contentLengthPos);
 			}
 			else if(hasBodyContent(header) == false)
 				_contentLength = -1;
-			// struct epoll_event event;
-			// event = _epollS.getEvent();
-			// header_size = header.size();
 			if((_totalBytesRead - header.size()) == _contentLength)
 			{
-				std::cout << YELLOW << _contentLength << END << std::endl;
-				std::cout << YELLOW << _totalBytesRead << END << std::endl;
-        		// printRequest(_requestString);
-				// std::cout << BLUE << "----- PASSANDO CLIENT PRA EPOLLOUT 1 ----" << END << std::endl;
 				handleRequest(_requestString);
 				_epollS._event.data.fd = clientSocket;
 				_epollS._event.events = EPOLLOUT;
@@ -446,8 +383,6 @@ int WebServ::readRequest(int clientSocket)
 			}
 			else if(_contentLength == (size_t)-1)
 			{
-				// printRequest(_requestString);
-				// std::cout << BLUE << "----- PASSANDO CLIENT PRA EPOLLOUT 2 ----" << END << std::endl;
 				handleRequest(_requestString);
 				_epollS._event.data.fd = clientSocket;
 				_epollS._event.events = EPOLLOUT;
@@ -471,16 +406,15 @@ void WebServ::mainLoop()
     
 	_epollS.addServersToEpoll(_serverSocket);
     int epollFd = _epollS.getEpollFd();
+
     if(epollFd == -1 || epollFd == -2)
 		return;
-
     const int maxEvents = _epollS.getMaxEvents();
     struct epoll_event events[maxEvents];
     
 	while(!shouldExit)
     {
         _epollS.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
-		// std::cout << YELLOW << "VAMOS PEGAR A QUANTIDADE DE EVENTOS EM ESPERA :: " << _epollS.getNumberEvents() << END << std::endl;
         if(_epollS.getNumberEvents() == -1)
         {
             std::cout << RED << "Error: Epoll_wait" << END << std::endl;
@@ -488,59 +422,44 @@ void WebServ::mainLoop()
         }
         for(int index = 0; index < _epollS.getNumberEvents(); ++index)
         {
-			// std::cout << RED << "Tem um NOVO EVENTO" << END << std::endl;
 			isEventFromServerSocket(events,index);
 			if(events[index].events & EPOLLIN)
 			{
-				// std::cout << RED << "Onde entra o ultimo - 1" << END << std::endl;
             	if(_epollS.getIsServerFdTriggered() == true)
             	{
-					// std::cout << BLUE << "Adicionando OUTRO CLIENT" << END << std::endl;
             	    int result = _epollS.addNewClientToEpoll(events, index);
-            	    if (result == -3)
+            	    if(result == -3)
             	        continue;
             	} else {
-					// std::cout << RED << "Onde entra o ultimo - 2" << END << std::endl;
-					//quarta: temos que ldiar com as requests pra GET e provavelmente fazer um objeto pro client
-					// - guardando informação de em que server ele está bindando... (pesquisar mais com o chat)
 					int clientSocket = events[index].data.fd;
-            	    // std::cout << BLUE << "LER REQUEST PARA O CLIENT: " << clientSocket << END << std::endl;
 					readRequest(clientSocket);
             	}
 			}
 			else if(events[index].events & EPOLLOUT)
 			{
-				if (_epollS.getClientFd() == events[index].data.fd) {
-                    // O soquete do cliente está pronto para escrita, pode usar send
+				if(_epollS.getClientFd() == events[index].data.fd)
+				{
                     ssize_t bytesSent = send(_epollS.getClientFd(), _response.c_str(), _response.length(), 0);
-                    if (bytesSent == -1) {
-    					
-						// removeClientFromEpoll(_epollS);
+                    if(bytesSent == -1)
+					{
 						_epollS._event.data.fd = _epollS.getClientFd();
 						_epollS._event.events = EPOLLOUT;
 						epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS.getClientFd(), &_epollS._event);
-						// std::cout << YELLOW << "[REMOVER O FD DO CLIENT] > " << _epollS.getClientFd() << END << std::endl;
 						close(_epollS.getClientFd());
-						// std::cout << YELLOW << "[FD REMOVIDO] > " << _epollS.getClientFd() << END << std::endl;
-						// std::cout << RED << "\n---------------------------------------" << END << std::endl;
-                        // std::cout << RED << "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
-                        // std::cout << RED << "-----------------------------------------" << END << std::endl;
 					} else {
-                        // Envio bem-sucedido
-                        // removeClientFromEpoll(_epollS);
+                        std::cout << BLUE << "\n---------------------------------------" << END << std::endl;
+                        std::cout << BLUE << "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
+                        std::cout << BLUE << "-----------------------------------------" << END << std::endl;
 						_epollS._event.data.fd = _epollS.getClientFd();
 						_epollS._event.events = EPOLLOUT;
 						epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS.getClientFd(), &_epollS._event);
-						// std::cout << YELLOW << "[REMOVER O FD DO CLIENT] > " << _epollS.getClientFd() << END << std::endl;
 						close(_epollS.getClientFd());
-                        // std::cout << BLUE << "\n---------------------------------------" << END << std::endl;
-                        // std::cout << BLUE << "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
-                        // std::cout << BLUE << "-----------------------------------------" << END << std::endl;
                     }
                 }
 			}
         }
 	}
-    for(size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
-        close(_serverSocket[serverIndex].getWebServSocket());
+	for(size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+		close(_serverSocket[serverIndex].getWebServSocket());
+	close(_epollS.getEpollFd());
 }

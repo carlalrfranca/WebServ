@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/03 22:41:52 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 11:57:16 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ void Utils::trimSpaces(std::string &str)
     str = str.substr(start, end - start + 1);
 }
 
-//não esta sendo usada pra nada na ConfigParser
 void Utils::trimWhiteSpace(std::string &line)
 {
     size_t startPos = line.find_first_not_of(" \t");
@@ -91,12 +90,9 @@ std::vector<std::string> Utils::splitString(const std::string& input, char delim
         	tokens.push_back(part);
         start = end + 1;
     }
-    // Adicione a última parte da string
-    // tokens.push_back(input.substr(start));
     return tokens;
 }
 
-//antiga contains
 bool Utils::isInVector(const std::vector<std::string>& vec, const std::string& content)
 {
     for(size_t i = 0; i < vec.size(); ++i)

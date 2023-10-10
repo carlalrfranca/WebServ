@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 17:24:52 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/07 16:50:29 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:05:04 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,9 @@
 
 bool shouldExit = false;
 
-void handleSignal(int signal) {
-    std::cout << YELLOW << signal << " | [EXITANDO O WEBSERVER....]" << shouldExit << END << std::endl;
+void handleSignal(int signal)
+{
+    std::cout << YELLOW << "[EXITING WEBSERVER....] - " << signal << END << std::endl;
 	shouldExit = true;
 }
 
@@ -25,7 +26,7 @@ int main(int argc, char **argv)
 	signal(SIGINT, handleSignal);
 	std::string filename;
 	if(argc == 1)
-		filename = "./src/config.txt";
+		filename = "./cfgs/default_config.txt";
     else if(argc == 2)
 	{
 		struct stat info;
@@ -51,12 +52,3 @@ int main(int argc, char **argv)
     }  
     return 0;
  }
-
-
-/*
-    em 31.08.2023
-
-   g++ -std=c++98 -I inc/ src/main.cpp src/CGI.cpp src/WebServ.cpp src/SocketS.cpp src/ConfigParser.cpp src/LocationDirective.cpp src/Epoll.cpp src/Request.cpp src/Response.cpp -o executavel_com_response 
-    ./executavel_com_response src/config.txt
-
-*/

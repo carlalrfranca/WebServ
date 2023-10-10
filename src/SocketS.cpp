@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/07 16:29:01 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:21:21 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,12 +28,11 @@ SocketS::SocketS()
 
 SocketS::~SocketS()
 {
-	for (std::map<std::string, LocationDirective>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
-            it->second.~LocationDirective(); // Chama o destrutor de LocationDirective
-       }
+	for (std::map<std::string, LocationDirective>::iterator it = _locations.begin(); it != _locations.end(); ++it)
+	{
+		it->second.~LocationDirective();
+    }
 }
-
-// getter e setter do locations
 
 std::map<std::string, LocationDirective> SocketS::getLocations() const
 {
@@ -59,11 +58,11 @@ void SocketS::setPort(std::string portNumber)
 
     for(size_t i = 0; i < portNumber.length(); ++i){
         if(!std::isdigit(portNumber[i]))
-            throw SocketSException("Error: Worng Syntax: port");
+            throw SocketSException("Error: Wrong Syntax: port");
     }
 	port = atoi(portNumber.c_str());
     if(port < 1 || port > 65636)
-        throw SocketSException("Error: Worng Syntax: port");
+        throw SocketSException("Error: Wrong Syntax: port");
     this->_portNumber = portNumber;
 }
 
@@ -103,7 +102,7 @@ const std::string SocketS::getErrorPage(int statusCode)const
     toConvertToStr << statusCode;
     std::string statusCodeStr = toConvertToStr.str();
 	std::map<std::string, std::string>::const_iterator it = _errorPage.find(statusCodeStr);
-	if (it != _errorPage.end())
+	if(it != _errorPage.end())
 		return it->second;
 	return "";
 }
@@ -160,16 +159,13 @@ void SocketS::setErrorPage(std::map<std::string, std::string> errorPages)
 
 void SocketS::addAliasToHostsFile(const std::string& alias)
 {
-    std::string command = "sudo echo '127.0.0.1 " + alias + "' >> /etc/hosts";
+    std::string command = "echo '127.0.0.1 " + alias + "' >> /etc/hosts";
     int result = system(command.c_str());
-    if (result != 0)
+    if(result != 0)
         throw SocketSException("Error while adding the alias to the file /etc/hosts.");
-    result = system("sudo systemctl restart systemd-resolved");
-    if (result == -1) {
-        std::cerr << "Failed to flush DNS cache." << std::endl;
-    } else {
-        std::cout << "DNS cache flushed successfully." << std::endl;
-    }
+    result = system("systemctl restart systemd-resolved");
+    if (result == -1)
+        std::cout << "Server_Name Error: Failed to flush DNS cache." << std::endl;
 }
 
 void SocketS::initServer()
@@ -179,19 +175,16 @@ void SocketS::initServer()
 	{
         throw SocketSException("Socket Error: Failed to create socket!");
     }
-	//configura endereço do servidor e inicializa os campos da estrutura com 0
     struct sockaddr_in server_address = {0};
-    server_address.sin_family = AF_INET; //socket usará os ends. IPv4
-	std::cout << RED << "Port: " << getPort() << END << std::endl;
-    server_address.sin_port = htons(std::atoi(getPort().c_str())); //usa a função htons para converter8080 para a ordem de bytes da rede e atribui a sin_port
-    server_address.sin_addr.s_addr = INADDR_ANY; //especifica o end.IP que o socket do server será vinculado
-    //chamada para o bind - vincula o socket ao endereço e porta, 0 -1 tem haver com a falha na chamada do bind
+    server_address.sin_family = AF_INET;
+    server_address.sin_port = htons(std::atoi(getPort().c_str()));
+    server_address.sin_addr.s_addr = INADDR_ANY;
+
     if(bind(getWebServSocket(),(struct sockaddr*)&server_address, sizeof(server_address)) == -1)
 	{
         close(getWebServSocket());
-          throw SocketSException("Socket Error: Bind failed!");
+        throw SocketSException("Socket Error: Bind failed!");
     }
-    //habilitar o socket para aguardar conexões de entrada. ) 5 representa o tamanho máximo da fila de conexões pendentes.
     if(listen(getWebServSocket(), 5) == -1)
 	{
         close(getWebServSocket());
@@ -203,75 +196,7 @@ void SocketS::initServer()
 		for(std::vector<std::string>::const_iterator it = _serverName.begin(); it != _serverName.end(); ++it)
 		{
 			serverName = *it;
-			std::cout << YELLOW << "Server name: " << serverName << END << std::endl;
 			addAliasToHostsFile(serverName);
 		}
 	}
 }
-
-
-
-
-
-// int SocketS::bindSocketListenConnections(){
-// 
-    // try{
-        // if(bind(_webServSocket,(struct sockaddr*)&_serverAddress, sizeof(_serverAddress)) == -1){
-            // throw SocketSException("Error: when binding socket.");
-        // }
-        // if(listen(_webServSocket, 5) == -1){
-            // throw SocketSException("Error: when listening socket.");
-        // }
-//  
-    // }catch(const SocketSException& e){
-        // std::cerr << e.what() << std::endl;
-        // close(_webServSocket);
-        // return -1;
-    // }
-    // return 0; //coloquei 1 mais para tirar a linha vermelha
-// }
-// 
-// std::ostream& operator<<(std::ostream& output, const SocketS& instance){
-    // output << "SocketS Info:" << std::endl;
-    // output << "WebServ Socket : " << instance.getFD() << std::endl;
-    // output << "Socket FD: " << instance.getFD() << std::endl;
-    // return (output);
-// }
-
-
-    /*
-     if(bind(server_socket,(struct sockaddr*)&server_address, sizeof(server_address)) == -1){
-        std::cerr << "Erro ao vincular socket: " << std::endl;
-        close(server_socket);
-        return 1;
-    }
-    
-    //habilitar o socket para aguardar conexões de entrada. ) 5 representa o tamanho máximo da fila de conexões pendentes.
-    if(listen(server_socket, 5) == -1){
-        std::cerr << "Erro ao ouvir socket: " << std::endl;
-        close(server_socket);
-        return 1;
-    }
-    
-    */
-    
-    
-    
-
-    // aqui vão ser chamados os métodos (que serão criados ainda)
-    // pra parseamento do arquivo de configuração
-    // e armazenamento de seus dados importantes
-
-    /*cria socket
-    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if(server_socket == -1){
-        std::cerr << "Erro ao criar socket: " << std::endl;
-        return 1;
-    }
-    //configura endereço do servidor e inicializa os campos da estrutura com 0
-    struct sockaddr_in server_address = {0};
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(8080); 
-    server_address.sin_addr.s_addr = INADDR_ANY;
-    */
- 

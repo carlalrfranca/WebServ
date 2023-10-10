@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 18:26:41 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/08 22:27:10 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 11:37:28 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,6 @@ Request::Request(const std::string& request)
 	_errorPage["503"] = "./web/error/Error503.html";
 	_errorPage["504"] = "./web/error/Error504.html";
 	_errorPage["505"] = "./web/error/Error505.html";
-	// talvez aqui tenha que abrir pra um metodo
-	// que PARSEIA E VALIDA A REQUEST TODA
     std::getline(_requestStream, _firstLine);
 	size_t headerEndPos = _request.find("\r\n\r\n");
 	std::string body;
@@ -50,19 +48,16 @@ Request::Request(const std::string& request)
 	{
 		body = _request.substr(headerEndPos + 4);
 		setBody(body);
-		// std::cout << RED << "******************" << END << std::endl;
-		// std::cout << RED << body << " | Body Size: " << body.size() << END << std::endl;
-		// std::cout << RED << "******************" << END << std::endl;
 		size_t methodDelete = body.find("_method=DELETE");
 		if(methodDelete != std::string::npos)
 		{
 			_isDeleteMaskedAsPost = true;
 			setMethod("DELETE");
 			size_t fileNameToDelete = body.find("&");
-			if (fileNameToDelete != std::string::npos)
+			if(fileNameToDelete != std::string::npos)
 			{
 				fileNameToDelete = body.find("=", fileNameToDelete);
-				if (fileNameToDelete != std::string::npos)
+				if(fileNameToDelete != std::string::npos)
 				{
 					size_t endFileNameToDelete = body.find("\r\n", fileNameToDelete);
 					fileNameToDelete++;
@@ -209,22 +204,17 @@ int Request::isFirstLineValid()
 		_utils.trimSpaces(_token);
         _tokens.push_back(_token);
 	}
-    for(size_t i = 0; i < _tokens.size(); ++i)
-        std::cout << "Token " << i << " (da primeira Linha da Request): " << _tokens[i] << " | Tamanho: " << _tokens[i].size() << std::endl;
-    // valida os tokens da primeira linha
 	if(_tokens.size() != 3)
-		return 400; // retorna 400 (Bad Request)
+		return 400;
 	if(_tokens[0] != "GET" && _tokens[0] != "POST" && _tokens[0] != "DELETE"
 		&& _tokens[0] != "get" && _tokens[0] != "post" && _tokens[0] != "delete")
-		return 501; // 501 Not Implemented
+		return 501;
 	if(_tokens[2] != "HTTP/1.1")
-		return 505; //505 (HTTP Version Not Supported)
+		return 505;
 	if(_method.size() == 0)
     	_method = _tokens[0];
 	_uri = _tokens[1];
     _version = _tokens[2];
-	std::cout << BLUE << "first line SPLITED > " << _method << " | " << _uri << " | " << _version << END << std::endl;
-	
     return SUCCESS;
 }
 
@@ -239,23 +229,19 @@ void Request::processHeaderRequest()
         {
 			_hostLine = line;
             _hostContent = _hostLine.substr(6);
-            std::cout << "Host content: " << _hostContent << std::endl;
         }
 		if(line.substr(0, 16) == "Content-Length: ")
 		{
 			_contentLength = line.substr(16);
-			std::cout << "Content-Length na REQUEST: " << _contentLength << std::endl;
 		}
 		if(line.substr(0, 14) == "Content-Type: ")
 		{
 			_contentType = line.substr(14);
-			std::cout << "Content-Type na REQUEST: " << _contentType << std::endl;
 			size_t boundaryPos = line.find("boundary=");
+
 			if(boundaryPos != std::string::npos)
 			{
 				_contentType = line.substr(0, boundaryPos);
-				std::cout << BLUE << "BOUNDARY: " << line.substr(boundaryPos + 9) << END << std::endl;
-				std::cout << BLUE << "Content-Type na REQUEST: " << _contentType << END << std::endl;
 				std::string boundaryValue = line.substr(boundaryPos + 9);
 				setBoundary(boundaryValue);
 			}
@@ -266,6 +252,7 @@ void Request::processHeaderRequest()
 			if(_contentLength.size() == 0 || _contentType.size() == 0)
 				errorCodeHtml(400);
 		size_t posDiv = _hostContent.find(":");
+
 		if(posDiv != std::string::npos)
 		{
 			_domainContent = _hostContent.substr(0, posDiv);
@@ -292,17 +279,16 @@ void Request::processBodyRequest()
 	{
 		filenamePos += (field.size() + 1);
 		size_t filenameEnd = _body.find("\"", filenamePos);
+
 		if(filenameEnd != std::string::npos)
 		{
 			std::string filename = _body.substr(filenamePos, filenameEnd - filenamePos);
-			std::cout << YELLOW << "Filename FOUND: " << filename << END << std::endl;
 			setFilename(filename);
-			std::cout << RED << "Filename size: " << filename.size() << END << std::endl;
-		} else
-			std::cout << RED << "Filename not FOUND" << END << std::endl;
+		}
 	}
 	std::string fieldContent = "Content-Type:";
 	size_t contentFormat = _body.find(fieldContent);
+
 	if(contentFormat != std::string::npos)
 	{
 		contentFormat += (fieldContent.size() + 1);
@@ -310,11 +296,8 @@ void Request::processBodyRequest()
 		if(contentFormatEnd != std::string::npos)
 		{
  			std::string fileFormat = _body.substr(contentFormat, contentFormatEnd - contentFormat);
-			std::cout << YELLOW << "File format FOUND: " << fileFormat << END << std::endl;
-			std::cout << RED << "Fileformat size: " << fileFormat.size() << END << std::endl;
 			_fileFormat = fileFormat;
-		} else
-			std::cout << RED << "File format not FOUND" << END << std::endl;
+		}
 	}
 }
 
@@ -323,10 +306,7 @@ int Request::validateRequest()
     int result = isFirstLineValid();
 
 	if(result != SUCCESS)
-	{
-		std::cout << RED << "Resultado da Validação da linha 1 da Request: " << result << END << std::endl;
 		return result;
-	}
 	processHeaderRequest();
 	processBodyRequest();	
 	return SUCCESS;
@@ -350,12 +330,11 @@ const std::string& Request::getVersion() const
 const std::string Request::getErrorPage(int statusCode)const
 {
 	std::stringstream toConvertToStr;
-
     toConvertToStr << statusCode;
     std::string statusCodeStr = toConvertToStr.str();
 	std::map<std::string, std::string>::const_iterator it = _errorPage.find(statusCodeStr);
-	// loop pra printar os _errorPage que tem aqui (na request?s???)
-	if (it != _errorPage.end())
+	
+	if(it != _errorPage.end())
 		return it->second;
 	return "";
 }
@@ -365,7 +344,6 @@ std::string Request::getDateAndTime()const
     char buffer[80];
     time_t rawTime;
     struct tm *timeInfo;
-    
     time(&rawTime);
     timeInfo = localtime(&rawTime);
     strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S %Z", timeInfo);
@@ -378,9 +356,8 @@ std::string Request::errorCodeHtml(int statusCode)
     std::string errorFileName;
     std::string errorDefault;
     std::string date;
-	errorFileName = getErrorPage(statusCode); //caminho
-	std::cout << "Error File Name Path: " << errorFileName << std::endl;
-    errorDefault = _statusMessages.getMessage(statusCode); //mensagm
+	errorFileName = getErrorPage(statusCode);
+    errorDefault = _statusMessages.getMessage(statusCode);
 	date = getDateAndTime();
     std::string errorHtml = UtilsResponse::readFileToString(errorFileName);
 	size_t content_length = errorHtml.size();

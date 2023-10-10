@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/08 20:59:15 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 12:02:04 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ UtilsResponse::~UtilsResponse()
 std::string UtilsResponse::readHtmlFile(const std::string& filePath)
 {
     std::ifstream file(filePath.c_str());
+
     if(!file.is_open())
         return"";
     std::string content;
@@ -39,18 +40,11 @@ int UtilsResponse::selectServer(Request& request, std::vector<SocketS> serverSoc
 
 	for(size_t serverIndex = 0; serverIndex < serverSocket.size(); ++serverIndex)
 	{
-		std::cout << BLUE << "-------------- DENTRO DO SELECT SERVER ------------" << std::endl;
-		std::cout << "Dominio da request: " << request.getDomainRequest() << "| Size: " << request.getDomainRequest().size() << std::endl;
-		std::cout << "Address do servidor: " << serverSocket[serverIndex].getAddress() << "| Size: " << serverSocket[serverIndex].getAddress().size() << std::endl;
-		std::cout << "Porta do servidor: " << serverSocket[serverIndex].getPort() << " | Size: " << serverSocket[serverIndex].getPort().size() << std::endl;
-		std::cout << "Porta da request: " << request.getPortRequest() << " | Size: " << request.getPortRequest().size() << END << std::endl;
 		if(domainRequest == serverSocket[serverIndex].getAddress())
 		{
-			std::cout << "Dominio igual!" << std::endl;
 			if(portRequest == serverSocket[serverIndex].getPort())
 			{
-				std::cout << "Porta igual!!!!!" << std::endl;
-				indexChosenSocket = serverIndex; //depois passar isso pra essa condicao abaixo
+				indexChosenSocket = serverIndex;
 				return indexChosenSocket;
 			}
 		}
@@ -61,7 +55,6 @@ int UtilsResponse::selectServer(Request& request, std::vector<SocketS> serverSoc
 			{
 				if(domainRequest == tempServerName[nameIndex])
 				{
-					std::cout << YELLOW << "Servidor escolhido!" << END << std::endl;
 					indexChosenSocket = serverIndex;
 					return indexChosenSocket;
 				}
@@ -69,21 +62,18 @@ int UtilsResponse::selectServer(Request& request, std::vector<SocketS> serverSoc
 		}
 	}
     return indexChosenSocket;
-    // construir resposta de erro... (se sair do loop é que deu merda)
 }
 
 std::string UtilsResponse::readFileToString(const std::string& filename)
 {
     std::ifstream file(filename.c_str());
+
     if(!file.is_open())
-	{
-        std::cout << "Não deu pra abrir o html" << std::endl;
-        return ""; // Retorna uma string vazia se não for possível abrir o arquivo
-    }
+        return "";
     std::string content;
     std::string line;
     while(std::getline(file, line))
-        content += line + "\n"; // Adiciona cada linha ao conteúdo da string
+        content += line + "\n";
     file.close();
     return content;
 }
@@ -91,42 +81,36 @@ std::string UtilsResponse::readFileToString(const std::string& filename)
 bool UtilsResponse::isDirectory(const std::string& path)
 {
     struct stat info;
+
     if(stat(path.c_str(), &info) != 0)
-	{
-        std::cout << RED << "Esse file >>> " << path << " e aí?" << END << std::endl;
 		return false;
-	}
     return(info.st_mode & S_IFDIR) != 0;
 }
 
 std::map<std::string, LocationDirective>::iterator UtilsResponse::findRequestedLocation(Request &request, std::map<std::string, LocationDirective>& serverLocations)
 {
-    std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI()); //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
+    std::map<std::string, LocationDirective>::iterator it = serverLocations.find(request.getURI());
 	std::string uri = request.getURI();
+
 	if(it == serverLocations.end())
 	{
 		bool canBeRootLoc = false;
-		// casos em que nao tem literalmente o que vem na URI nos location (tipo /styles/styles.css ou /about.html)
-		// vamos ter que encontrar o location que lida com esse tipo de URI. No caso do 'styles/styles.css', tem que ser o location 'styles/'
-		// e no caso do '/about.html', tem que ser o location 'about'
-		for(std::map<std::string, LocationDirective>::iterator locFind = serverLocations.begin(); locFind != serverLocations.end(); ++locFind) //cria um iterador p percorrer o map e encontrar uma chave correspondente ao vlr de retorno da getURI
+		for(std::map<std::string, LocationDirective>::iterator locFind = serverLocations.begin(); locFind != serverLocations.end(); ++locFind)
 		{
 			if(locFind->first == "/")
 				canBeRootLoc = true;
 			if(locFind->first != "/")
 			{
-				// nao pode tirar as duas primeiras condições? só deixar a terceira?
-		        if(uri == locFind->first || uri.find(locFind->first + "/") != std::string::npos || uri.find(locFind->first) != std::string::npos){
+		        if(uri == locFind->first || uri.find(locFind->first + "/") != std::string::npos || uri.find(locFind->first) != std::string::npos)
+				{
 	                it = locFind;
-					std::cout << YELLOW << "LOCATION que se ENCAIXA nessa URI >>>>> " << it->first << END << std::endl;
 	                return it;
 	            }
 			}
 	    }
-		if(it == serverLocations.end() && canBeRootLoc == true) //caso nao haja um location mais especifico, o location '/' vai responder pela requisição
+		if(it == serverLocations.end() && canBeRootLoc == true)
 			it = serverLocations.find("/");
 	}
-	std::cout << YELLOW << "LOCATION que se ENCAIXA >> " << it->first << END << std::endl;
 	return it;
 }
 
