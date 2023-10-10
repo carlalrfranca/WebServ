@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/09 19:17:27 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/09 23:21:38 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,7 @@ int CGI::executeProcessParent(int *pipefd, unsigned int timeoutSeconds, pid_t ch
 		_scriptOutput.append(buffer, bytesRead);
 	}
 	close(stdoutPipe[0]);
-	return 0;
+	return 200;
 }
 
 void CGI::executeProcessChild(int *pipefd, std::string fileName, int *stdoutPipe)
@@ -168,7 +168,11 @@ int CGI::executeScript(int *pipefd, std::string fileName)
 		return 500;
 	}
 	else
-		executeProcessParent(pipefd, timeoutSeconds, childPid, stdoutPipe);
+	{
+		int result = executeProcessParent(pipefd, timeoutSeconds, childPid, stdoutPipe);
+		if (result == 504)
+			return 504;
+	}
 	return 200;
 }
 
@@ -279,7 +283,9 @@ int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_co
 int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
 {
 	pid_t childPid = fork();
-	
+	std::cout << YELLOW << "Caminho do SCRIPT CHAMADO" << END << std::endl;
+	std::cout << BLUE << requestedFilePath << END << std::endl;
+	std::cout << YELLOW << getPathToScript() << END << std::endl;
 	if (childPid == -1)
 	{
 		std::cerr << "ERROR creating CHILD PROCESS" << std::endl;
@@ -289,22 +295,48 @@ int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
 	{
 		// por estarmos no processo filho nesse bloco, vamos então modificar o valor
 		// do STDOUT pra poder redirecionar a saída do script pra cá
+		// std::cout << YELLOW << "Caminho do SCRIPT CHAMADO" << END << std::endl;
+		// std::cout << BLUE << requestedFilePath << END << std::endl;
+		// std::cout << YELLOW << getPathToScript() << END << std::endl;
 		dup2(pipefd[1], STDOUT_FILENO);
 		close(pipefd[0]); //não vamos usar o pipe de leitura, então fechamos ele por boa convenção
 		
 		// Executamos agora o script de exemplo
-		std::cout << YELLOW << "Caminho do SCRIPT CHAMADO" << END << std::endl;
-		std::cout << BLUE << requestedFilePath << END << std::endl;
-		std::cout << YELLOW << getPathToScript() << END << std::endl;
 		// std::cout << BLUE << "Extensão do script: " << getCommands()[0] << END << std::endl;
-		execl(getPathToScript().c_str(), getPathToScript().c_str(), requestedFilePath.c_str(), static_cast<char*>(0));
+		// execl(getPathToScript().c_str(), getPathToScript().c_str(), requestedFilePath.c_str(), static_cast<char*>(0));
+		if (execl(getCommands()[0].c_str(), getCommands()[0].c_str(), getPathToScript().c_str(), requestedFilePath.c_str(), static_cast<char *>(0)) == -1)
+        	std::cerr << "ERROR executing SCRIPT" << std::endl;
 		// Se chegou aqui, houve um erro no execl
-		std::cerr << "ERROR executing SCRIPT" << std::endl;
+		// std::cerr << "ERROR executing SCRIPT" << std::endl;
 		return 500;
 	} else {
 		// processo pai
 		close(pipefd[1]); //nao vamos usar o fd de escrita, então o fechamos por boa convenção
-		
+		struct timeval startTime;
+		unsigned int timeoutSeconds = 10000;
+		gettimeofday(&startTime, NULL);
+		while(true)
+		{
+		    pid_t result = waitpid(childPid, NULL, WNOHANG);
+		    if(result == -1)
+		    {
+		        perror("waitpid");
+		        throw std::exception();
+		    }
+		    if(result != 0)
+		        break;
+		    struct timeval currentTime;
+		    gettimeofday(&currentTime, NULL);
+		    unsigned int elapsedTime = (currentTime.tv_sec - startTime.tv_sec) * 1000
+		        + (currentTime.tv_usec - startTime.tv_usec) / 1000;
+		    if(elapsedTime >= timeoutSeconds)
+		    {
+				std::cout << "ESTOUROU O TEMPO" << std::endl;
+		        kill(childPid, SIGKILL);
+		        return 504;
+		    }
+		    usleep(1000);
+		}
 		// Ler a saída do script CGI do pipe e armazená-la numa string
 		// std::string scriptOutPut;
 		char buffer[1024]; //a saída crua terá que vir primeiro para um buffer
@@ -318,8 +350,8 @@ int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
 		close(pipefd[0]); //terminamos de ler da saída do script, então podemos fechar esse pipe
 		
 		// É importante colocarmos esse processo (pai) pra aguardar o término do processo filho
-		int status;
-		waitpid(childPid, &status, 0);
+		// int status;
+		// waitpid(childPid, &status, 0);
 		// Agora a saída do script CGI está armazenada em 'scriptOutPut'
 		std::cout << "------ SAÍDA DO SCRIPT --------\n" << _scriptOutput << std::endl;
 	}

@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/08 23:21:30 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/09 23:21:11 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,9 +83,7 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 			// OU pode ser que, se NÃO HOUVER .cgi... ele só verifique se tem as diretivas, e se tiver, ele constrói o caminho do script...
 			// ou tira o cgi do href e constroi aqui com PATH_INFO?
 			// se não tiver daí dá erro mesmo?
-			std::cerr << "---- Opa, essa request NÃO tem process_data CGI !!! ----" << std::endl;
-			this_response->errorCodeHtml(404, server);
-			return this_response->getResponse();
+			scriptName = PATH_POST_INFO;
 		}
 		// se nao tem .cgi, tem que ver se esse location tem um cgi.. se tiver usar ele?
 		// e se nao tiver? fazer um upload a partir do código mesmo (com as funções que ja tem, que nao usam CGI por si?)
@@ -189,9 +187,9 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 		if (request.getIsDeleteMaskedAsPost())
 		{
 			// verificar se o script pra gerar outra página existe
-			if(this_response->_utils.fileExists(PATH_INFO) == false) //ou em vez de servir uma pagina, eu possa apenas disponibilizar a opção de deletar ao fazer o upload
+			if(this_response->_utils.fileExists(PATH_DELETE_RESET) == false) //ou em vez de servir uma pagina, eu possa apenas disponibilizar a opção de deletar ao fazer o upload
 			{
-				std::cout << RED << "O script PATH_INFO não existe nesse caminho" << END << std::endl;
+				std::cout << RED << "O script PATH_DELETE_RESET não existe nesse caminho" << END << std::endl;
 				this_response->errorCodeHtml(404, server); //ou será que só devolve 204 e daí, se a pessoa escolher um mesmo arquivo pra excluir (que ja foi excluido, dá 404?)
 				return this_response->getResponse();
 			}
@@ -201,8 +199,11 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 			// daí gerar a resposta com base no -> se for != 200
 			// passa o status code, senão, cria as headers e response que nem tá no httpGet
 			CGI script;
+			std::vector<std::string> commandDeleteScript;
+			commandDeleteScript.push_back("/usr/bin/python3");
+			script.setCommands(commandDeleteScript);
 			script.setUploadStoreFolder(root);
-			script.setScriptNameDirectly(PATH_INFO); //tem a extensão em hardcode... como fazer?
+			script.setScriptNameDirectly(PATH_DELETE_RESET); //tem a extensão em hardcode... como fazer?
 			int result = script.CGIForGetRequest(script.getUploadStore());
 			if (result != 200)
 				this_response->errorCodeHtml(result, server);
@@ -699,8 +700,9 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 			std::string scriptName = this_response->extractScriptName(uri);
 			if(scriptName.size() == 0)
 			{
-				this_response->errorCodeHtml(404, server);
-				return this_response->getResponse();
+				// this_response->errorCodeHtml(404, server);
+				// return this_response->getResponse();
+				scriptName = PATH_GET_INFO;
 			}
 			// agora, depois de resolver o scriptName,
 			// temos que tirar a extensão .cgi pra poder substituir pela extensao correta

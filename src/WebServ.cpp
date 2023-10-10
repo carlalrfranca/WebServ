@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/08 18:09:35 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/09 22:18:59 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -363,8 +363,6 @@ void WebServ::removeClientFromEpoll(Epoll& epollS)
 	event = epollS.getEvent();
 	event.data.fd = epollS.getClientFd();
 	// epollS.setEvent(event);
-
-	std::cout << YELLOW << "[REMOVER O FD DO CLIENT] > " << _epollS.getClientFd() << END << std::endl;
 	
 	epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, epollS.getClientFd(), &event);
 	epollS.setEvent(event);
@@ -391,16 +389,15 @@ int WebServ::readRequest(int clientSocket)
 		ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
         if(bytesRead == 0)
 		{
-			std::cerr << "Client closed connection." << std::endl; //tem que tirar o client quando dá esse tipo de erro
+			std::cerr << RED << "Client closed connection." << END << std::endl; //tem que tirar o client quando dá esse tipo de erro
 			// removeClientFromEpoll(_epollS);
-			std::cout << YELLOW << "[REMOVER O FD DO CLIENT] > " << _epollS.getClientFd() << END << std::endl;
 			epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS.getClientFd(), &_epollS._event);
 			close(_epollS.getClientFd());
 			return 0;
 		}
 		else if(bytesRead == -1)
 		{
-			std::cerr << "Error during reading of client request. " << std::endl; //tem que tirar o client quando dá esse tipo de erro
+			std::cerr << RED << "Error during reading of client request." << END << std::endl; //tem que tirar o client quando dá esse tipo de erro
 			// removeClientFromEpoll(_epollS);
 			epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS.getClientFd(), &_epollS._event);
 			close(_epollS.getClientFd());
@@ -486,7 +483,7 @@ void WebServ::mainLoop()
 		// std::cout << YELLOW << "VAMOS PEGAR A QUANTIDADE DE EVENTOS EM ESPERA :: " << _epollS.getNumberEvents() << END << std::endl;
         if(_epollS.getNumberEvents() == -1)
         {
-            perror("Error in epoll_wait");
+            std::cout << RED << "Error: Epoll_wait" << END << std::endl;
             return;
         }
         for(int index = 0; index < _epollS.getNumberEvents(); ++index)
