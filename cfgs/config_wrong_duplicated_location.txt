@@ -2,7 +2,6 @@ server{
     listen localhost:2002;
 	allow_methods GET POST DELETE
     root web/pages/;
-	alias
 
 	location / {
 		index index.html
@@ -11,19 +10,18 @@ server{
 
 	location /images {
 		root web/images/
-		auto_index 0
 	}
 
 	location /upload {
 		root web/cgi-bin/
       	cgi_path /bin/bash
-      	cgi_ext ../
+      	cgi_ext .sh
 		upload_store web/images/
 	}
 
 	location /about {
 		index index.css
-		return 0 tourII.html
+		return 301 tourII.html
 	}
 
 	location /cgi-bin {
@@ -31,34 +29,15 @@ server{
       cgi_p1th /bin/bash;
   	}
 
-	cgi_ext .sh;
-
 	location /cgi-bin {
       alias web/cgi-bin/;
       cgi_path /bin/bash;
-
-	location /cgi-bin {
-      
-  	}
-
-	location /cgi-bin {
-		web/cgi-bin/;
-  	}
+	}
 
 	location /upload {
-		listen 12313.56:2002;
 		root web/cgi-bin/;
       	cgi_path /bin/bash;
       	cgi_ext .sh;
 		upload_store web/images/
 	}	
-}
-server{
-	listen 123.588.658:2002;
-	allow_methods GET POST DELETE
-	root web/pages/;
-
-location / {
-	index index.html
-	auto_index off
 }

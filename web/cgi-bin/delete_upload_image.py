@@ -1,21 +1,16 @@
 import os
 import sys
 
-# Verifique se foi fornecido um argumento com o nome do diretório
 if len(sys.argv) != 2:
 	print("Usage: python script.py <directory path>")
 	sys.exit(1)
 
-# Caminho do diretório passado como argumento
 dir_path = sys.argv[1]
 
-# Verifica se o diretório existe
 if os.path.isdir(dir_path):
-	# Lista os arquivos no diretório
 	files = os.listdir(dir_path)
-
-	# Cria o conteúdo HTML
 	html = f"""
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,14 +30,13 @@ if os.path.isdir(dir_path):
 	</section>
 	<section class="section-container">
 		<div class="section-button">
-			<h1>Files in Directory</h1>
+			<h1>Content in Directory</h1>
 			<form method="POST" action="/images/delete">
-				<input type="hidden" name="_method" value="DELETE"> <!-- form com campo oculto para especificar o método DELETE -->
+				<input type="hidden" name="_method" value="DELETE">
 				<ul>
 """
-	# Adicione opções para cada arquivo no diretório
 	for file in files:
-		html += f"                    <li>{file} <button type=\"submit\" name=\"arquivoSelecionado\" value=\"{file}\">Excluir</button></li>"
+		html += f"                    <li>{file} <button class='delete-button' type=\"submit\" name=\"arquivoSelecionado\" value=\"{file}\">Excluir</button></li>"
 
 	html += """
 				</ul>
@@ -60,5 +54,4 @@ if os.path.isdir(dir_path):
 </html>
 """
 
-	# Imprime o conteúdo HTML modificado
 	print(html)

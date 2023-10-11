@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 20:22:28 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/10 11:08:31 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/11 18:05:15 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,6 +132,5 @@ int Epoll::addNewClientToEpoll(struct epoll_event *event_ptr, int i)
 	    std::cout << RED << "Error: Adding client socket to epoll" << END << std::endl;
 	    close(clientSocket);
 	}
-	std::cout << BLUE << "Accepted connection with client: " << clientSocket << END << std::endl;
 	return 0;
 }

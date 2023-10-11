@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 17:46:53 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/10 11:55:56 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/11 15:21:16 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,5 @@ class SocketS
             const char* message;
         };
 };
-
 std::ostream& operator<<(std::ostream& output, const SocketS& instance);
 #endif

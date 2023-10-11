@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/22 16:43:49 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/10 11:53:42 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/11 15:16:12 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class Request
     
     public:
 
-        Request(const std::string& request); //criar instancia
+        Request(const std::string& request);
         ~Request();
         
         int validateRequest();
@@ -34,7 +34,6 @@ class Request
         void processHeaderRequest();
         std::string errorCodeHtml(int statusCode);
         
-        //sets and gets
         void setHasError(bool hasError);
         void setRequest(const std::string& request);
 		void setMethod(const std::string& method);
@@ -47,7 +46,6 @@ class Request
 		void setAllowedMethods(const std::vector<std::string> allowedMethods);
         
         bool getHasError()const;
-		const std::vector<std::string>& getAllowedMethods()const;
 		bool getIsDeleteMaskedAsPost();
         std::string getBoundary()const;
         std::string getFilename()const;
@@ -64,6 +62,7 @@ class Request
         const std::string& getURI()const;
         const std::string& getVersion()const;
 		const std::string getErrorPage(int statusCode)const;
+		const std::vector<std::string>& getAllowedMethods()const;
     
     private:
     
@@ -80,10 +79,10 @@ class Request
         std::string							_hostContent;
         std::string							_method;
         std::string							_portRequest;
-        std::istringstream					_requestStream;
         std::string							_request;
         std::string							_uri;
         std::string							_version;
+        std::istringstream					_requestStream;
         bool								_hasError;
 		bool								_isDeleteMaskedAsPost;
         Utils								_utils;

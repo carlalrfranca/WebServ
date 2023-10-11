@@ -1,6 +1,6 @@
 server{  
     listen 127.0.0.1:2002;
-    server_name example.com;
+    server_name example3;
     client_max_body_size 10M;
     allow_methods GET
 
@@ -11,15 +11,15 @@ server{
 
 server{  
     listen localhost;
-    server_name example.com google.com protonmail.co.uk yahoo.com.br;
+    server_name webserv;
     root src/;
 	client_max_body_size 50M;
-	allow_methods POST
+	allow_methods GET
 }
 
 server{  
     listen localhost:5003;
-    server_name example.com www.example.com;
+    server_name example;
     allow_methods DELETE
 }
 

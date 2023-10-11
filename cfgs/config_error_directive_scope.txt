@@ -5,6 +5,7 @@ server{
     root web/pages/;
 
 	location / {
+		listen localhost:2008;
 		index index.html
 	}
 

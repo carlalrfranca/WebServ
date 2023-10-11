@@ -1,6 +1,7 @@
 server{
     listen localhost:2006;
-    server_name example.com;
+	listen 127.0.0.1:2006;
+    server_name example;
 	allow_methods GET POST
     root src;
 

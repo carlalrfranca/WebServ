@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/17 20:39:26 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/10 11:53:17 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/11 15:15:33 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,4 @@ class LocationDirective
 	
 		std::map<std::string, std::vector< std::string > > _directives;
 };
-
-
 #endif

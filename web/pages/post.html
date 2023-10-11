@@ -30,15 +30,14 @@
 			<span class="upload-span">Everything has a limit</span>
 			<span class="upload-span">The submitted image must be up to - megabytes.
 				More than that, and the server will not accept it!</span>
+			<span class="upload-span">Let's go? The image will appear in this <span class="colored">highlighted space.</span></span>
 		</div>
 		<div id="choose-image">
 			<div>
-				<span class="upload-span">
-					Let's go? The image will appear in this <span class="colored">highlighted space</span></span>
-				<form action="upload/process_data_store_form.cgi" method="post" enctype="multipart/form-data">
-					<label for="fileUpload" class="custom-file">Select a file:</label>
+				<form action="images/process_data_store_form.cgi" method="post" enctype="multipart/form-data">
+					<label for="fileUpload" class="custom-file">Select a file</label>
 					<input type="file" name="fileUpload" id="fileUpload">
-					<input type="submit" value="Enviar Arquivo" id="submit-image">
+					<input type="submit" value="Send File" id="submit-image">
 				</form>
 			</div>
 			<div id="image">

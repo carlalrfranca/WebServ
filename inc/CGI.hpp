@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:37 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/09 19:17:38 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/11 16:20:53 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,8 @@
 
 #include "./HeadersLibs.hpp"
 #include "./Request.hpp"
-#define PATH_FORM_DATA "./form_data.txt"
+#define PATH_FORM_DATA "form_data.txt"
+#define	UPLOAD_STORE_LOC "/images/"
 
 class CGI
 {
@@ -27,14 +28,13 @@ class CGI
 
 		int executeScript(int *pipefd, std::string fileName);
 		int executeProcessParent(int *pipefd, unsigned int timeoutSeconds, pid_t childPi, int *stdoutPipe);
-		void executeProcessChild(int *pipefd, std::string fileName, int *stdoutPipe);
-	
 		int handleCGIRequest(Request &request);
 		int uploadImage(Request &request, std::string request_content, size_t data_init_pos);
 		int uploadImageCGI(Request &request);
 		int storeFormInput(std::size_t data_init_pos, const std::string& request_content);
 		int CGIForGetRequest(std::string requestedFilePath);
 		int executeScriptForGET(int *pipefd, std::string requestedFilePath);
+		void executeProcessChild(int *pipefd, std::string fileName, int *stdoutPipe);
 		std::string generateHeadersSucessCGI(int statusCode, Request &request);
 
 		std::string setDateAndTime();
@@ -44,8 +44,8 @@ class CGI
 		void setPathToScript(std::string scriptName);
 		void setScriptNameDirectly(std::string scriptName);
 		void setUploadStoreFolder(std::string uploadStore);
-		void setScriptPathWithCommand();
-		std::string getScriptPathWithCommand()const;
+		void setLocation(std::string location);
+		std::string getLocation()const;
 
 		std::vector<std::string> getCommands()const;
 		std::vector<std::string> getExtensions()const;
@@ -58,7 +58,7 @@ class CGI
     	{
     	    public:
 	
-    	        ErrorException(const std::string& message) throw() : _errorMessage(message) {}
+    	        ErrorException(const std::string& message) throw() : _errorMessage(message){}
     			virtual ~ErrorException() throw() {}
     			virtual const char* what() const throw()
     	        {
@@ -82,6 +82,6 @@ class CGI
 		std::string					_scriptName;
 		std::string					_uploadStore;
 		std::string					_scriptPathWithCommand;
-		
+		std::string					_locationUri;
 };
 #endif
