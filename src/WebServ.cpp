@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/11 18:04:20 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/11 18:14:52 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -402,7 +402,7 @@ int WebServ::readRequest(int clientSocket)
 void WebServ::mainLoop()
 {
     std::cout << YELLOW << "-----------------------------------------" << END << std::endl;
-    std::cout << YELLOW << "Servidor iniciado. Aguardando conexões..." << END << std::endl;
+    std::cout << YELLOW << "SERVER INITIALIZED. WAITING FOR CONNECTIONS..." << END << std::endl;
     std::cout << YELLOW << "-----------------------------------------\n" << END << std::endl;
     
 	_epollS.addServersToEpoll(_serverSocket);
