@@ -36,3 +36,6 @@ server{
 	  upload_store web/images/
   	}
 }
+
+# sobre o script post: pode ser uma declaração explicita, daí ele constroi a partir desses dados do arquivo
+# ou tem o default. Entao se mudar o diretorio do cgi, tem que modificar o default tambem, nao? (a MACRO)
