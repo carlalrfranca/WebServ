@@ -1,5 +1,5 @@
 server{
-    listen 127.0.0.1:2003;
+    listen 127.0.0.1:2002;
 	server_name	leticia;
 	allow_methods GET POST DELETE
     root web/pages/;
@@ -8,6 +8,8 @@ server{
 	location / {
 		index index.html
 		auto_index off
+		cgi_path /usr/bin/python3;
+      	cgi_ext .py;
 	}
 
 	location /images {
