@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/10 11:55:22 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 23:57:22 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,10 @@
 
 #define PATH_DELETE_RESET "web/cgi-bin/delete_upload_image.py"
 #define	PATH_POST_INFO "process_data_store_form.cgi"
+#define PATH_INFO "web/cgi-bin/process_data_store_form.py"
 #define PATH_GET_INFO "delete_upload_image.cgi"
-// #define	DEFAULT_UPLOAD_STORE "web/images/" //usar depois pro valor default do 'uploadStore' (só procurar onde tem essa verificação no código na Response.cpp)
+#define	DEFAULT_UPLOAD_STORE "web/images/" //usar depois pro valor default do 'uploadStore' (só procurar onde tem essa verificação no código na Response.cpp)
+#define	FILE_FORM_STORE "form_data.txt"
 
 class SocketS;
 class Request;

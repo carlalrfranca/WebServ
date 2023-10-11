@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/10 11:53:28 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/11 00:00:01 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,8 +84,6 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		if(itLocationMaxBodySize != locationDirectives.end())
 			maxBodySize = UtilsResponse::strToSizeT(itLocationMaxBodySize->second[0]);
 		size_t requestContentLength = UtilsResponse::strToSizeT(request.getContentLength());
-		std::cout << "MaxBodySize: " << maxBodySize << std::endl;
-		std::cout << "Content-Length da Request: " << requestContentLength << std::endl;
 		if(requestContentLength > maxBodySize)
 		{
 			this_response->errorCodeHtml(413, server);
@@ -116,6 +114,7 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		try
 		{
 			CGI script(root_for_response, scriptsCommands, scriptsExtensions, scriptName);
+			script.setScriptNameDirectly(PATH_INFO);
 			std::string responseReturned = this_response->postMethodTryCGI(request, server, uploadStoreFolder, script);
 			return responseReturned;
 		}
@@ -135,8 +134,6 @@ std::string Response::deleteMethod(Request &request, SocketS &server, Response *
 	std::map<std::string, LocationDirective>::iterator it = this_response->_utilsResponse.findRequestedLocation(request, serverLocations);
 	std::string uri = request.getURI();
 
-	if(it != serverLocations.end())
-		std::cout << BLUE << "Location found! >> " << it->first << END << std::endl;
 	std::cout << BLUE << "URI >>> " << uri << END << std::endl;
 	std::string root;
 
@@ -313,11 +310,9 @@ void Response::generateHtmlFromFiles(const std::vector<std::string>& fileList, s
 		{
 			if(!itemName.empty() && itemName[itemName.size() - 1] != '/')
         		itemName += '/';
-			std::cout << RED << "É diretorio: " << getUri() + itemName << END << std::endl;
 			html += "<li><a href='" + getUri() + itemName + "'>" + itemName + "</a></li>\n";
 		} else {
-			std::cout << YELLOW << "É arquivo: " << getUri() + itemName << END << std::endl;
-			html += "<li>" + itemName + "</li>\n";		
+			html += "<li>" + itemName + "</li>\n";
 		}
     }
     html += "</ul>\n";
@@ -509,7 +504,6 @@ bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS 
 
 std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
 {
-	std::cout << "Tem caminho além do arquivo | Tamanho: " << parts_uri.size() << std::endl;
 	std::string this_location = it->first;
 	std::string commonSubstring = "";
 
@@ -569,7 +563,6 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 			if(isErrorPageOrAutoIndexPage == true)
 				return true;
 		} else {
-			std::cout << path << " é um arquivo" << std::endl;
 			setPath(path);
 		}
 	}
@@ -658,7 +651,7 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 					uploadStoreFolder = uploadStoreFolder + '/';
 			}
 			else
-				uploadStoreFolder = "web/images/";
+				uploadStoreFolder = DEFAULT_UPLOAD_STORE;
 			std::vector<std::string> scriptsCommands = commandOfCGI->second;
 			std::vector<std::string> scriptsExtensions = CGIExtension->second;
 			CGI script;
@@ -680,7 +673,7 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
 			this_response->setResponse(response);
 			return this_response->getResponse();
 		}
-		std::string bodyHTML = UtilsResponse::readFileToString(this_response->getPath()); //declara o corpo do HTML
+		std::string bodyHTML = UtilsResponse::readFileToString(this_response->getPath());
 		struct stat info;
 		if(stat(this_response->getPath().c_str(), &info) != 0)
 		{
