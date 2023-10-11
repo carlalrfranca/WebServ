@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 import sys
 import urllib.parse
@@ -21,15 +20,11 @@ def correct_file_path(file_path, corrected_file_name):
 
     return new_file_path
 
-# Lê o nome do arquivo como argumento
 file_path = sys.argv[1]
 
-# Lê o conteúdo da solicitação HTTP
-	# content_length = int(os.environ.get("CONTENT_LENGTH", 0)) # ??? nós não estamos passando CONTENT_LENGTH
-	# content = sys.stdin.read(content_length) # ???
 content = ""
-if "E_ARQUIVO" in os.environ:
-	# A variável está definida, o que sugere que dados binários são enviados
+if "E_FILE" in os.environ:
+
 	content_length = int(os.environ["CONTENT_LENGTH"])
 	all_data = sys.stdin.buffer.read(content_length)
 	content = all_data
@@ -37,11 +32,11 @@ else:
 	all_data = sys.stdin.read()
 	content = all_data
 
-# Função para decodificar dados codificados em URL
 def urldecode(data):
     return urllib.parse.unquote_plus(data)
 
 # Verifica se a variável de ambiente CONTENT_TYPE está definida
+
 if "CONTENT_TYPE" in os.environ:
 	content_type = os.environ["CONTENT_TYPE"]
 	location = os.environ["LOCATION"]

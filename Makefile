@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+         #
+#    By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/03 13:28:38 by cleticia          #+#    #+#              #
-#    Updated: 2023/10/10 10:33:34 by lfranca-         ###   ########.fr        #
+#    Updated: 2023/10/10 21:55:15 by cleticia         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,34 +19,31 @@ CC = g++
 # directories
 DIR_SRCS = src
 DIR_OBJ = obj
-#DIR_CFGS = cfgs/tests  # Diretório de configuração de testes
 
 # origin files
 OBJS = $(patsubst $(DIR_SRCS)/%.cpp,$(DIR_OBJ)/%.o,$(SRCS))
 SRCS = $(wildcard $(DIR_SRCS)/*.cpp)
 
 # compilation options
-#BANNER = web/.banner
 CFLAGS = -Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-missing-braces -g -std=c++98
 
-#ifeq ($(SANITIZE_A),true)
-#    CFLAGS += -fsanitize=address -fno-omit-frame-pointer
-#endif
-#
-#ifeq ($(SANITIZE_L),true)
-#    CFLAGS += -fsanitize=leak -fno-omit-frame-pointer
-#endif
-#
-#ifeq ($(DEBUG),true)
-#    CFLAGS += -g -fno-limit-debug-info -DDEBUG
-#endif
+ifeq ($(SANITIZE_A),true)
+    CFLAGS += -fsanitize=address -fno-omit-frame-pointer
+endif
+
+ifeq ($(SANITIZE_L),true)
+    CFLAGS += -fsanitize=leak -fno-omit-frame-pointer
+endif
+
+ifeq ($(DEBUG),true)
+    CFLAGS += -g -fno-limit-debug-info -DDEBUG
+endif
 
 # headers
 INC	= -I ./inc/ 
 
 # command remove
 RM	= rm -rf
-#TEST_CMD = ./$(NAME) < $(TESTS_DIR)/test_file.txt
 
 all: $(NAME)
 
@@ -84,12 +81,4 @@ fclean: clean
 
 re: fclean all
 
-# Test Commands: 
-#test: run_test
-#
-#run_test:
-#	@echo "Running test..."
-#	@$(TEST_CMD)
-#	@echo "Test completed."
-
-.PHONY: all clean fclean re #run_test
+.PHONY: all clean fclean re

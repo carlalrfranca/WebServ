@@ -6,7 +6,7 @@
 /*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/10 20:26:03 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/10 21:46:31 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ ConfigParser::ConfigParser()
     _hasDirReturn = false;
 	_indexFile = "";
 	_maxBodySize = 1024;
-	// verificar tudo porque vai que alguém seja comédia de excluir
 	_errorPage["400"] = "./web/error/Error400.html";
 	_errorPage["401"] = "./web/error/Error401.html";
 	_errorPage["403"] = "./web/error/Error403.html";
@@ -42,15 +41,21 @@ ConfigParser::ConfigParser()
 	_errorPage["503"] = "./web/error/Error503.html";
 	_errorPage["504"] = "./web/error/Error504.html";
 	_errorPage["505"] = "./web/error/Error505.html";
-	struct stat info;
-		if (stat(_errorPage["404"].c_str(), &info) != 0)
-			std::cout << RED << "This error page does not exist" << std::endl;
-		else
-			std::cout << "This error page exist" << std::endl;
+	checkErrorPages();
 }
 
 ConfigParser::~ConfigParser()
 {}
+
+void ConfigParser::checkErrorPages()
+{
+    for (std::map<std::string, std::string>::iterator it = _errorPage.begin(); it != _errorPage.end(); ++it)
+    {
+        struct stat info;
+        if (stat(it->second.c_str(), &info) != 0)
+            std::cout << "This error page " << it->first << " does not exist." << std::endl;
+    }
+}
 
 void ConfigParser::resetConfig()
 {
@@ -517,7 +522,6 @@ size_t ConfigParser::convertToKB(std::string &sizeStr)
 	return inKB;
 }
 
-
 bool ConfigParser::containsInvalidCaractersForMaxBodySize(const std::string& str)
 {
 	char a = str[str.length() - 1];
@@ -545,7 +549,7 @@ void ConfigParser::processClientMaxBodySize(std::string &line)
     std::size_t pos = line.find(directive);
     if(pos != std::string::npos)
     {
-		std::cout << YELLOW << "Client_Max_Body_Size no Config File: " << line << END << std::endl;
+		//std::cout << YELLOW << "Client_Max_Body_Size no Config File: " << line << END << std::endl;
 		std::vector<std::string> maxBodyLine;
 		std::istringstream iss(line);
 		std::string value;
@@ -557,7 +561,7 @@ void ConfigParser::processClientMaxBodySize(std::string &line)
 			throw ErrorException("Syntax Error: Client_Max_Body_Size directive must COME FIRST IN LINE.");
 		if(containsInvalidCaractersForMaxBodySize(maxBodyLine[1]))
 			throw ErrorException("Syntax Error: Client_Max_Body_Size value must contain only numbers finalized by K/M/G/k/m/g caracters.");
-		std::cout << YELLOW << "client_max_body_size: " << maxBodyLine[1] << END << std::endl;
+		//std::cout << YELLOW << "client_max_body_size: " << maxBodyLine[1] << END << std::endl;
 		if(maxBodyLine[1][maxBodyLine[1].size() - 1] != 'K' && maxBodyLine[1][maxBodyLine[1].size() - 1] != 'k')
 			_maxBodySize = convertToKB(maxBodyLine[1]);
 		else
@@ -573,6 +577,7 @@ void ConfigParser::processAutoIndex(std::string &line)
 	std::vector<std::string> autoIndexLine;
 	std::istringstream iss(line);
 	std::string value;
+
 	while(iss >> value)
 		autoIndexLine.push_back(value);
 	if(autoIndexLine.size() != 2)

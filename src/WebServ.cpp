@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/10 13:04:39 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 21:16:17 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -400,9 +400,9 @@ int WebServ::readRequest(int clientSocket)
 
 void WebServ::mainLoop()
 {
-    std::cout << BLUE << "-----------------------------------------" << END << std::endl;
-    std::cout << BLUE << "Servidor iniciado. Aguardando conexões..." << END << std::endl;
-    std::cout << BLUE << "-----------------------------------------\n" << END << std::endl;
+    std::cout << YELLOW << "-----------------------------------------" << END << std::endl;
+    std::cout << YELLOW << "Servidor iniciado. Aguardando conexões..." << END << std::endl;
+    std::cout << YELLOW << "-----------------------------------------\n" << END << std::endl;
     
 	_epollS.addServersToEpoll(_serverSocket);
     int epollFd = _epollS.getEpollFd();
@@ -447,9 +447,9 @@ void WebServ::mainLoop()
 						epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS.getClientFd(), &_epollS._event);
 						close(_epollS.getClientFd());
 					} else {
-                        std::cout << BLUE << "\n---------------------------------------" << END << std::endl;
-                        std::cout << BLUE << "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
-                        std::cout << BLUE << "-----------------------------------------" << END << std::endl;
+                        std::cout << YELLOW << "\n-----------------------------------------" << END << std::endl;
+                        std::cout << YELLOW << "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
+                        std::cout << YELLOW << "-----------------------------------------" << END << std::endl;
 						_epollS._event.data.fd = _epollS.getClientFd();
 						_epollS._event.events = EPOLLOUT;
 						epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS.getClientFd(), &_epollS._event);
