@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 13:36:38 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/10 11:52:05 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/10 21:43:49 by cleticia         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class ConfigParser
         ConfigParser();
         ~ConfigParser();
     
+        void checkErrorPages();
         bool processRoot(std::string &line);
         bool isValidIPAddress(const std::string &ipAddress);
 		bool isValidPort(const std::string &port);

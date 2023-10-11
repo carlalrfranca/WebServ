@@ -1,39 +1,30 @@
 #!/usr/bin/env python3
-
 import os
 import sys
 import urllib.parse
 
-# Lê o nome do arquivo como argumento
 file_path = sys.argv[1]
 
-# Lê o conteúdo da solicitação HTTP
-	# content_length = int(os.environ.get("CONTENT_LENGTH", 0)) # ??? nós não estamos passando CONTENT_LENGTH
-	# content = sys.stdin.read(content_length) # ???
 content = ""
-if "E_ARQUIVO" in os.environ:
-	# A variável está definida, o que sugere que dados binários são enviados
-	content_length = int(os.environ["CONTENT_LENGTH"])
-	dados = sys.stdin.buffer.read(content_length)
-	content = dados
-else:
-	dados = sys.stdin.read()
-	content = dados
+if "E_FILE" in os.environ:
 
-# Função para decodificar dados codificados em URL
+	content_length = int(os.environ["CONTENT_LENGTH"])
+	data = sys.stdin.buffer.read(content_length)
+	content = data
+else:
+	data = sys.stdin.read()
+	content = data
+
 def urldecode(data):
     return urllib.parse.unquote_plus(data)
 
-# Inicialize mensagem_decodificada como uma string vazia
-mensagem_decodificada = ""    
+decoded_message = ""    
 
-# Verifica se a variável de ambiente CONTENT_TYPE está definida
 if "CONTENT_TYPE" in os.environ:
     content_type = os.environ["CONTENT_TYPE"]
     location = os.environ["LOCATION"]
     file_name = os.environ["FILE_NAME"]
 
-    # Verifica se o valor da variável contém a palavra "image"
     if "image" in content_type:
         with open(file_path, "wb") as f:
             f.write(content)
@@ -108,12 +99,12 @@ if "CONTENT_TYPE" in os.environ:
         print("</body>")
         print("</html>")
 else:
-	decoded_entrada = urllib.parse.unquote(content)
-	pares = decoded_entrada.split('&')
-	with open(file_path, 'w') as arquivo:
-		for par in pares:
-			chave, valor = par.split('=')
-			valor = valor.replace('+', ' ')
-			arquivo.write(f"{chave}: {valor}\n")
+	decoded_entrance = urllib.parse.unquote(content)
+	pairs = decoded_entrance.split('&')
+	with open(file_path, 'w') as file:
+		for pair in pairs:
+			key, key = pair.split('=')
+			key = key.replace('+', ' ')
+			file.write(f"{key}: {key}\n")
 	print("HTTP/1.1 204 OK")
 	print("")
