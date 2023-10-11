@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/08 16:45:29 by cleticia          #+#    #+#             */
-/*   Updated: 2023/09/17 21:48:52 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/11 15:18:06 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ class RequestParser
         public:
             virtual const char* what() const throw()
             {
-                return "\nError: No Parseamento da Request Parsa, dá seu jeito!\n";
+                return "\nError: In Request Parsing!\n";
             }
     };
 };

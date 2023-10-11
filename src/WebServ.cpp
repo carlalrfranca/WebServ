@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/21 18:02:01 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/10 21:16:17 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/11 18:04:20 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -272,6 +272,7 @@ void WebServ::handleRequest(std::string& requestString)
 
     if(selectedServer != -1)
 	{
+		std::cout << YELLOW << "CONNECTION WITH SERVER ---- " << _serverSocket[selectedServer].getAddress() << ":" << _serverSocket[selectedServer].getPort() << END << std::endl;
         currentResponse.buildResponse(request, _serverSocket[selectedServer]);
         _response = currentResponse.getResponse();
     } 
@@ -417,7 +418,9 @@ void WebServ::mainLoop()
         _epollS.setNumberEvents(epoll_wait(epollFd, events, maxEvents, -1));
         if(_epollS.getNumberEvents() == -1)
         {
-            std::cout << RED << "Error: Epoll_wait" << END << std::endl;
+			for(size_t serverIndex = 0; serverIndex < _serverSocket.size(); ++serverIndex)
+				close(_serverSocket[serverIndex].getWebServSocket());
+			close(_epollS.getEpollFd());
             return;
         }
         for(int index = 0; index < _epollS.getNumberEvents(); ++index)
@@ -440,16 +443,14 @@ void WebServ::mainLoop()
 				if(_epollS.getClientFd() == events[index].data.fd)
 				{
                     ssize_t bytesSent = send(_epollS.getClientFd(), _response.c_str(), _response.length(), 0);
-                    if(bytesSent == -1)
+                    if(bytesSent == -1 || bytesSent == 0)
 					{
 						_epollS._event.data.fd = _epollS.getClientFd();
 						_epollS._event.events = EPOLLOUT;
 						epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS.getClientFd(), &_epollS._event);
 						close(_epollS.getClientFd());
 					} else {
-                        std::cout << YELLOW << "\n-----------------------------------------" << END << std::endl;
-                        std::cout << YELLOW << "----- FECHOU A CONEXÃO COM O CLIENTE ----" << END << std::endl;
-                        std::cout << YELLOW << "-----------------------------------------" << END << std::endl;
+                        std::cout << YELLOW << "----- SENT DATA AND CLOSED CONNECTION WITH CLIENT ----" << END << std::endl;
 						_epollS._event.data.fd = _epollS.getClientFd();
 						_epollS._event.events = EPOLLOUT;
 						epoll_ctl(_epollS.getEpollFd(), EPOLL_CTL_DEL, _epollS.getClientFd(), &_epollS._event);

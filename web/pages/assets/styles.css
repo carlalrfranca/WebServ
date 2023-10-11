@@ -506,6 +506,11 @@ footer {
 	display: none;
 }
 
+.resize-image {
+	max-width: 500px;
+	max-height: 500px;
+}
+
 #fileUpload {
 
 	color: #bb9b49;
@@ -529,4 +534,34 @@ footer {
 
 	background-color: #272727;
 	border: 1px solid #bb9b49;
+}
+
+ul {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	padding-top: 1rem;
+}
+
+li {
+	color: #756d6d;
+	list-style: none;
+}
+
+.delete-button {
+	font-size: 1rem;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #3b3b3b;
+}
+
+.delete-button:hover {
+	border: none;
+	box-shadow: 0px 0px 10px 0px #3b3b3b;
+	color: #3b3b3b;
+	font-weight: bold;
+	transform: scale(1.2);
 }

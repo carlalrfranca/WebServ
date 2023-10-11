@@ -85,5 +85,4 @@ class WebServ
             std::string _errorMessage;
     	};
     };
-
 #endif

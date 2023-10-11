@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/29 19:53:24 by lfranca-          #+#    #+#             */
-/*   Updated: 2023/10/10 23:57:53 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/11 16:30:25 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,6 @@ CGI::CGI(const std::string& root, std::vector<std::string> commands, std::vector
 	setCommands(commands);
 	setExtensions(extensions);
 	setPathToScript(scriptName);
-	// struct stat info;
-
-	// if(stat(_scriptName.c_str(), &info) != 0)
-	// {
-	// 	throw ErrorException("Script Error: Path doesn't exist");
-	// }
 }
 
 CGI::~CGI()
@@ -41,6 +35,16 @@ const std::string& CGI::getPathToScript(void) const
 const std::string& CGI::getUploadStore() const
 {
 	return _uploadStore;
+}
+
+void CGI::setLocation(std::string location)
+{
+	_locationUri = location;
+}
+
+std::string CGI::getLocation()const
+{
+	return _locationUri;
 }
 
 void CGI::setScriptNameDirectly(std::string scriptName)
@@ -207,10 +211,13 @@ int CGI::uploadImage(Request &request, std::string request_content, size_t data_
 int CGI::uploadImageCGI(Request &request)
 {
 	setenv("CONTENT_TYPE", request.getFileFormat().c_str(), 1);
-	setenv("LOCATION", "/images/", 1);
+	std::string location = getLocation();
+	if (location[location.size() - 1] != '/')
+		location = location + '/';
+	setenv("LOCATION", location.c_str(), 1);
 	setenv("FILE_NAME", request.getFilename().c_str(), 1);
 	setenv("CONTENT_LENGTH", request.getContentLength().c_str(), 1);
-	setenv("E_ARQUIVO", "ARQ", 1);
+	setenv("E_FILE", "ARQ", 1);
 	_inputFormData = request.getBody();
 	std::string fileName = request.getFilename();
 	for (size_t i = 0; i < fileName.length(); i++) {
@@ -236,7 +243,12 @@ int CGI::uploadImageCGI(Request &request)
 	int resultCGI = 0;
 	std::string pathToStore = getUploadStore() + request.getFilename();
 	resultCGI = executeScript(pipefd, pathToStore);
-	
+	unsetenv("CONTENT_TYPE");
+	unsetenv("LOCATION");
+	unsetenv("FILE_NAME");
+	unsetenv("CONTENT_LENGTH");
+	unsetenv("E_FILE");
+
 	if(resultCGI == 504)
 		return 504;
 	if(_scriptOutput.empty())
@@ -257,7 +269,8 @@ int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_co
 		return 500;
 	}
 	int resultCGI = 0;
-	std::string pathToStore = getUploadStore() + "form_data.txt";
+	std::string pathToStore = getUploadStore() + PATH_FORM_DATA;
+	std::cout << "Path to store: " << pathToStore << std::endl;
 	resultCGI = executeScript(pipefd, pathToStore);
 	if(resultCGI == 504)
 		return 504;
@@ -266,7 +279,6 @@ int CGI::storeFormInput(std::size_t data_init_pos, const std::string& request_co
 	_response += _scriptOutput;
 	return 204;
 }
-
 
 int CGI::executeScriptForGET(int *pipefd, std::string requestedFilePath)
 {

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+         #
+#    By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/03 13:28:38 by cleticia          #+#    #+#              #
-#    Updated: 2023/10/10 21:55:15 by cleticia         ###   ########.fr        #
+#    Updated: 2023/10/11 17:50:40 by lfranca-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -64,6 +64,12 @@ $(DIR_OBJ)/%.o: $(DIR_SRCS)/%.cpp
 	@mkdir -p $(DIR_OBJ)
 	@$(CC) $(CFLAGS) $(INC) -c $< -o $@
 	@echo "Compiling \033[1;36m$<\033[0m"
+
+$(PYTHON):
+	sudo apt-get update -y && sudo apt-get install -y python3
+
+$(SIEGE):
+	sudo apt-get install -y siege
 
 run: $(NAME)
 	@make banner

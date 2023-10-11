@@ -6,7 +6,7 @@
 /*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/18 18:00:34 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/11 00:00:01 by lfranca-         ###   ########.fr       */
+/*   Updated: 2023/10/11 17:56:35 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,25 +38,24 @@ void Response::setAllowedMethods(const std::vector<std::string> allowedMethods)
 std::string Response::postMethodTryCGI(Request &request, SocketS &server, std::string uploadStoreFolder, CGI script)
 {
 	try
+	{
+		script.setUploadStoreFolder(uploadStoreFolder);
+		int resultCode = 0;
+		resultCode = script.handleCGIRequest(request);
+		if(resultCode != 204 && resultCode != 200)
 		{
-			script.setUploadStoreFolder(uploadStoreFolder);
-			int resultCode = 0;
-			resultCode = script.handleCGIRequest(request);
-			std::cout << "statusCode: " << resultCode << END << std::endl;
-			if(resultCode != 204 && resultCode != 200)
-			{
-				errorCodeHtml(resultCode, server);
-				return getResponse();
-			}
-			setResponse(script.getResponse());
+			errorCodeHtml(resultCode, server);
 			return getResponse();
 		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << '\n';
-			errorCodeHtml(404, server);
-			return getResponse();
-		}
+		setResponse(script.getResponse());
+		return getResponse();
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+		errorCodeHtml(404, server);
+		return getResponse();
+	}
 }
 
 std::string Response::postMethod(Request &request, SocketS &server, Response *this_response)
@@ -70,7 +69,6 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 
 	if(it != serverLocations.end())
 	{
-		std::cout << BLUE << "Location found! >> " << it->first << END << std::endl;
 		std::string scriptName = this_response->extractScriptName(uri);
 		if(scriptName.size() == 0)
 			scriptName = PATH_POST_INFO;
@@ -114,7 +112,14 @@ std::string Response::postMethod(Request &request, SocketS &server, Response *th
 		try
 		{
 			CGI script(root_for_response, scriptsCommands, scriptsExtensions, scriptName);
+			script.setLocation(it->first);
 			script.setScriptNameDirectly(PATH_INFO);
+			struct stat info;
+
+			if(stat(script.getPathToScript().c_str(), &info) != 0)
+			{
+				throw ErrorException("Script Error: Path doesn't exist");
+			}
 			std::string responseReturned = this_response->postMethodTryCGI(request, server, uploadStoreFolder, script);
 			return responseReturned;
 		}
@@ -502,7 +507,7 @@ bool Response::isResponseADirectoryListingOrErrorPage(std::string path, SocketS 
 	return false;
 }
 
-std::string Response::extractUriAndBuildPathToResource(std::string root, std::vector<std::string>& parts_uri, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
+std::string Response::extractUriAndBuildPathToResource(std::string root, std::string& uri, std::map<std::string, LocationDirective>::iterator& it)
 {
 	std::string this_location = it->first;
 	std::string commonSubstring = "";
@@ -539,7 +544,7 @@ bool Response::buildPathToResource(std::string root, Request &request, SocketS &
 
 	if (parts_uri.size() > 1)
 	{
-		std::string pathToResource = extractUriAndBuildPathToResource(root, parts_uri, uri, it);
+		std::string pathToResource = extractUriAndBuildPathToResource(root, uri, it);
 		
 		if(_utilsResponse.isDirectory(pathToResource))
 		{
@@ -611,7 +616,6 @@ std::string Response::httpGet(Request &request, SocketS &server, Response *this_
     std::map<std::string, std::vector< std::string > > locationDirectives;
     if(it != serverLocations.end())
 	{
-        std::cout << "Location found! >> " << it->first << std::endl;
         locationDirectives = it->second.getDirectives();
         std::map<std::string, std::vector<std::string> >::iterator itReturn = locationDirectives.find("return");
         if(itReturn != locationDirectives.end())

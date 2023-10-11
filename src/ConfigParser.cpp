@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cleticia <cleticia@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lfranca- <lfranca-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 21:24:02 by cleticia          #+#    #+#             */
-/*   Updated: 2023/10/10 21:46:31 by cleticia         ###   ########.fr       */
+/*   Updated: 2023/10/11 17:58:00 by lfranca-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ void ConfigParser::checkErrorPages()
     {
         struct stat info;
         if (stat(it->second.c_str(), &info) != 0)
-            std::cout << "This error page " << it->first << " does not exist." << std::endl;
+            throw ErrorException("Error: This error page doesn't exist.");
     }
 }
 
@@ -356,8 +356,6 @@ void ConfigParser::hasprohibitedDirectiveInLocation(std::string &directive)
 		throw ErrorException("Configuration Error: Prohibited directive in location block");
 }
 
-
-
 void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine)
 {
 	std::string currentLocation = _currentLocationPathOnMap;
@@ -387,7 +385,6 @@ void ConfigParser::storeCurrentLocationDirectives(std::string &directiveLine)
 			while(currentIndex < totalValues)
 			{
 				it->second.addDirective(splittedLine[0], splittedLine[currentIndex]);
-				std::cout << currentIndex << std::endl;
 				currentIndex++;
 			}
 		}
@@ -549,7 +546,6 @@ void ConfigParser::processClientMaxBodySize(std::string &line)
     std::size_t pos = line.find(directive);
     if(pos != std::string::npos)
     {
-		//std::cout << YELLOW << "Client_Max_Body_Size no Config File: " << line << END << std::endl;
 		std::vector<std::string> maxBodyLine;
 		std::istringstream iss(line);
 		std::string value;
@@ -561,7 +557,6 @@ void ConfigParser::processClientMaxBodySize(std::string &line)
 			throw ErrorException("Syntax Error: Client_Max_Body_Size directive must COME FIRST IN LINE.");
 		if(containsInvalidCaractersForMaxBodySize(maxBodyLine[1]))
 			throw ErrorException("Syntax Error: Client_Max_Body_Size value must contain only numbers finalized by K/M/G/k/m/g caracters.");
-		//std::cout << YELLOW << "client_max_body_size: " << maxBodyLine[1] << END << std::endl;
 		if(maxBodyLine[1][maxBodyLine[1].size() - 1] != 'K' && maxBodyLine[1][maxBodyLine[1].size() - 1] != 'k')
 			_maxBodySize = convertToKB(maxBodyLine[1]);
 		else

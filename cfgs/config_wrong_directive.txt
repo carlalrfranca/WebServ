@@ -1,0 +1,42 @@
+server{
+    listen localhost:2002;
+	allow_methods GET POST DELETE
+    root web/pages/;
+	something
+
+	location / {
+		index index.html
+		auto_index off
+	}
+
+	location /images {
+		root web/images/
+		auto_index 0
+	}
+
+	location /upload {
+		root web/cgi-bin/
+      	cgi_path /bin/bash
+      	cgi_ext ../
+		upload_store web/images/
+	}
+
+	location /about {
+		index index.css
+		return 0 tourII.html
+	}
+
+	location /cgi-bin {
+      root ../cgi-bin/;
+      cgi_p1th /bin/bash;
+  	}
+
+	cgi_ext .sh;
+
+	location /upload {
+		root web/cgi-bin/;
+      	cgi_path /bin/bash;
+      	cgi_ext .sh;
+		upload_store web/images/
+	}	
+}
