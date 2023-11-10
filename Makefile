@@ -11,20 +11,16 @@
 # **************************************************************************** #
 
 # program name
-
 NAME = webserv
 
 # compiler
-
 CC = g++
 
 # directories
-
 DIR_SRCS = src
 DIR_OBJ = obj
 
 # origin files
-
 OBJS = $(patsubst $(DIR_SRCS)/%.cpp,$(DIR_OBJ)/%.o,$(SRCS))
 SRCS = $(wildcard $(DIR_SRCS)/*.cpp)
 
