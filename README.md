@@ -11,15 +11,25 @@ O objetivo deste projeto é criar um servidor HTTP usando multiplexação de E/S
 ## **Tecnologias utilizadas**
 
 - [**Analysis tool**](https://valgrind.org/docs/manual/manual-core-adv.html) : software para depuração e localização de erros.
-- [**C++**](https://cplusplus.com/) : linguagem que suporta o paradigma de orientação à objetos. 
+- 
+- [**C++**](https://cplusplus.com/) : linguagem que suporta o paradigma de orientação à objetos.
+- 
 - [**Curl**](https://curl.se/) : ferramenta de linha de comando para transmissão de dados. Protocolos usados : HTTP, DNS, ICMP (como utilitário PING).
+- 
 - [**Git**](https://git-scm.com/) : para controle das versões dos arquivos.
+- 
 - [**Github**](https://github.com/carlalrfranca/WebServ) : repositório para os arquivos.
+- 
 - [**Makefile**](https://www.gnu.org/software/make/) : script aplicado para automatizar a compilação do projeto.
+- 
 - [**Trello**](https://trello.com/c/IVK7hJ26/13-2007) : ferramenta visual para planejamento e organização.
+- 
 - [**Stackedit**](https://stackedit.io/) : editor Markdown para escrever a documenntação do projeto.
+- 
 - [**Vscode**](https://code.visualstudio.com/) : editor de código-fonte.
+- 
 - [**Diagrams**](https://app.diagrams.net/) : ferramenta para criação de diagramas.
+- 
 - [**Markdown**](https://www.markdownguide.org/) : linguagem de marcação padronizada para formatação de textos Web, usada para escrever a documentação.
 
 
